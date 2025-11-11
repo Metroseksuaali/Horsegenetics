@@ -87,7 +87,9 @@ class PhenotypeCalculator:
         Determine if Sooty gene is visible on given phenotype.
 
         Sooty adds darker (black) hairs to red/pheomelanin pigment.
-        It is NOT visible on fully black horses.
+        It is NOT visible on:
+        - Fully black horses (no red pigment to darken)
+        - Double cream dilutes (nearly white, sooty effect invisible)
 
         Args:
             phenotype: Current phenotype string
@@ -96,22 +98,13 @@ class PhenotypeCalculator:
         Returns:
             bool: True if sooty is visible
         """
-        # Sooty does not affect fully black horses
-        fully_black_colors = [
-            'Black',
-            'Smoky Black',
-            'Smoky Cream',  # Double cream on black - nearly white
-            'Classic Champagne'  # Black + champagne
-        ]
+        # Sooty NEVER affects pure black base colors
+        if base_color == 'black':
+            # Any black-based color (even with dilutions) won't show sooty
+            # because there's no red pigment to add darker hairs to
+            return False
 
-        # Check if phenotype is fully black (excluding Dun/nd1 notation)
-        phenotype_base = phenotype.split(' Dun')[0].split(' (nd1)')[0]
-
-        for black_color in fully_black_colors:
-            if phenotype_base == black_color:
-                return False
-
-        # Sooty is visible on colors with red pigment
+        # Sooty is visible on bay and chestnut bases (they have red pigment)
         return True
 
     def _apply_dilution(self, base_color, cr_count, prl_count):
