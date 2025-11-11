@@ -117,6 +117,7 @@ class HorseGeneticsGUI:
             width=70,
             font=('Courier New', 10),
             bg=self.colors['panel_bg'],
+            fg='black',
             relief=tk.FLAT,
             padx=10,
             pady=10
@@ -191,6 +192,7 @@ class HorseGeneticsGUI:
             width=70,
             font=('Courier New', 10),
             bg=self.colors['panel_bg'],
+            fg='black',
             relief=tk.FLAT,
             padx=10,
             pady=10
