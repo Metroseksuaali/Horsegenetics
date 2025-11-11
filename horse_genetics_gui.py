@@ -1,0 +1,619 @@
+#!/usr/bin/env python3
+"""
+Horse Genetics GUI - Cross-platform graphical interface for horse coat color genetics
+Uses tkinter for compatibility across Windows, macOS, and Linux
+"""
+
+import tkinter as tk
+from tkinter import ttk, messagebox, scrolledtext
+import sys
+from horse_genetics import HorseGeneticGenerator
+
+
+class HorseGeneticsGUI:
+    """GUI application for horse coat color genetics simulation"""
+
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Horse Coat Color Genetics Simulator")
+        self.root.geometry("1000x700")
+        self.root.minsize(900, 650)
+
+        # Initialize generator
+        self.generator = HorseGeneticGenerator()
+
+        # Color scheme
+        self.colors = {
+            'primary': '#4A90E2',
+            'secondary': '#7ED321',
+            'background': '#FFFFFF',
+            'panel_bg': '#F8F9FA',
+            'border': '#DEE2E6',
+            'text': '#212529',
+            'text_secondary': '#6C757D'
+        }
+
+        # Configure styles
+        self.setup_styles()
+
+        # Create tabbed interface
+        self.notebook = ttk.Notebook(root)
+        self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Create tabs
+        self.create_random_generator_tab()
+        self.create_breeding_tab()
+        self.create_help_tab()
+
+    def setup_styles(self):
+        """Configure ttk styles for consistent appearance"""
+        style = ttk.Style()
+
+        # Try to use a modern theme
+        try:
+            style.theme_use('clam')
+        except:
+            pass
+
+        # Configure styles
+        style.configure('Title.TLabel', font=('Segoe UI', 14, 'bold'))
+        style.configure('Heading.TLabel', font=('Segoe UI', 11, 'bold'))
+        style.configure('Gene.TLabel', font=('Segoe UI', 10))
+        style.configure('Primary.TButton', font=('Segoe UI', 11, 'bold'))
+
+    def create_random_generator_tab(self):
+        """Create the Random Generator tab"""
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text='Random Generator')
+
+        # Main container
+        container = ttk.Frame(tab, padding=20)
+        container.pack(fill=tk.BOTH, expand=True)
+
+        # Title
+        title = ttk.Label(container, text="Generate Random Horse", style='Title.TLabel')
+        title.pack(pady=(0, 20))
+
+        # Generate button
+        btn_frame = ttk.Frame(container)
+        btn_frame.pack(pady=10)
+
+        generate_btn = tk.Button(
+            btn_frame,
+            text="Generate New Horse",
+            command=self.generate_random_horse,
+            font=('Segoe UI', 12, 'bold'),
+            bg=self.colors['secondary'],
+            fg='white',
+            padx=40,
+            pady=15,
+            relief=tk.RAISED,
+            cursor='hand2'
+        )
+        generate_btn.pack()
+
+        # Result display frame
+        result_frame = ttk.LabelFrame(container, text="Generated Horse", padding=15)
+        result_frame.pack(fill=tk.BOTH, expand=True, pady=20)
+
+        # Phenotype display
+        pheno_frame = ttk.Frame(result_frame)
+        pheno_frame.pack(fill=tk.X, pady=(0, 15))
+
+        ttk.Label(pheno_frame, text="Phenotype:", style='Heading.TLabel').pack(anchor=tk.W)
+        self.random_phenotype_label = ttk.Label(
+            pheno_frame,
+            text="(Click 'Generate New Horse' to start)",
+            font=('Segoe UI', 16, 'bold'),
+            foreground=self.colors['primary']
+        )
+        self.random_phenotype_label.pack(anchor=tk.W, pady=5)
+
+        # Genotype display
+        geno_frame = ttk.Frame(result_frame)
+        geno_frame.pack(fill=tk.BOTH, expand=True)
+
+        ttk.Label(geno_frame, text="Genotype:", style='Heading.TLabel').pack(anchor=tk.W)
+
+        self.random_genotype_text = tk.Text(
+            geno_frame,
+            height=8,
+            width=70,
+            font=('Courier New', 10),
+            bg=self.colors['panel_bg'],
+            relief=tk.FLAT,
+            padx=10,
+            pady=10
+        )
+        self.random_genotype_text.pack(fill=tk.BOTH, expand=True, pady=5)
+        self.random_genotype_text.config(state=tk.DISABLED)
+
+        # Action buttons
+        action_frame = ttk.Frame(container)
+        action_frame.pack(pady=10)
+
+        tk.Button(
+            action_frame,
+            text="Copy Genotype",
+            command=self.copy_random_genotype,
+            font=('Segoe UI', 10),
+            padx=15,
+            pady=8
+        ).pack(side=tk.LEFT, padx=5)
+
+    def create_breeding_tab(self):
+        """Create the Breeding Simulator tab"""
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text='Breeding Simulator')
+
+        # Main container
+        container = ttk.Frame(tab, padding=20)
+        container.pack(fill=tk.BOTH, expand=True)
+
+        # Title
+        title = ttk.Label(container, text="Breed Two Horses", style='Title.TLabel')
+        title.pack(pady=(0, 15))
+
+        # Parents container
+        parents_frame = ttk.Frame(container)
+        parents_frame.pack(fill=tk.BOTH, expand=False, pady=10)
+
+        # Parent 1
+        self.parent1_frame = self.create_parent_input_frame(parents_frame, "Parent 1 (Sire)", 1)
+        self.parent1_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 10))
+
+        # Parent 2
+        self.parent2_frame = self.create_parent_input_frame(parents_frame, "Parent 2 (Dam)", 2)
+        self.parent2_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # Breed button
+        breed_btn_frame = ttk.Frame(container)
+        breed_btn_frame.pack(pady=15)
+
+        breed_btn = tk.Button(
+            breed_btn_frame,
+            text="♥ Breed Horses ♥",
+            command=self.breed_horses,
+            font=('Segoe UI', 12, 'bold'),
+            bg=self.colors['primary'],
+            fg='white',
+            padx=30,
+            pady=12,
+            relief=tk.RAISED,
+            cursor='hand2'
+        )
+        breed_btn.pack()
+
+        # Offspring display
+        offspring_frame = ttk.LabelFrame(container, text="Offspring", padding=15)
+        offspring_frame.pack(fill=tk.BOTH, expand=True, pady=10)
+
+        # Phenotype
+        ttk.Label(offspring_frame, text="Phenotype:", style='Heading.TLabel').pack(anchor=tk.W)
+        self.offspring_phenotype_label = ttk.Label(
+            offspring_frame,
+            text="(Breed two horses to see offspring)",
+            font=('Segoe UI', 14, 'bold'),
+            foreground=self.colors['primary']
+        )
+        self.offspring_phenotype_label.pack(anchor=tk.W, pady=5)
+
+        # Genotype
+        ttk.Label(offspring_frame, text="Genotype:", style='Heading.TLabel').pack(anchor=tk.W, pady=(10, 0))
+        self.offspring_genotype_text = tk.Text(
+            offspring_frame,
+            height=6,
+            width=70,
+            font=('Courier New', 10),
+            bg=self.colors['panel_bg'],
+            relief=tk.FLAT,
+            padx=10,
+            pady=10
+        )
+        self.offspring_genotype_text.pack(fill=tk.BOTH, expand=True, pady=5)
+        self.offspring_genotype_text.config(state=tk.DISABLED)
+
+        # Action buttons
+        action_frame = ttk.Frame(container)
+        action_frame.pack(pady=5)
+
+        tk.Button(
+            action_frame,
+            text="Breed Again",
+            command=self.breed_horses,
+            font=('Segoe UI', 10),
+            padx=15,
+            pady=8
+        ).pack(side=tk.LEFT, padx=5)
+
+        tk.Button(
+            action_frame,
+            text="Clear All",
+            command=self.clear_breeding,
+            font=('Segoe UI', 10),
+            padx=15,
+            pady=8
+        ).pack(side=tk.LEFT, padx=5)
+
+    def create_parent_input_frame(self, parent, title, parent_num):
+        """Create input frame for a parent horse"""
+        frame = ttk.LabelFrame(parent, text=title, padding=10)
+
+        # Store dropdown references
+        dropdowns = {}
+
+        # Gene definitions
+        genes = [
+            ('E', ['E', 'e']),
+            ('A', ['A', 'a']),
+            ('Dil', ['N', 'Cr', 'Prl']),
+            ('D', ['D', 'nd1', 'nd2']),
+            ('Z', ['Z', 'n']),
+            ('Ch', ['Ch', 'n']),
+            ('F', ['F', 'f']),
+            ('STY', ['STY', 'sty'])
+        ]
+
+        for gene_label, alleles in genes:
+            gene_frame = ttk.Frame(frame)
+            gene_frame.pack(fill=tk.X, pady=3)
+
+            ttk.Label(gene_frame, text=f"{gene_label}:", width=5, style='Gene.TLabel').pack(side=tk.LEFT)
+
+            # First allele dropdown
+            var1 = tk.StringVar(value=alleles[0])
+            dropdown1 = ttk.Combobox(gene_frame, textvariable=var1, values=alleles, width=6, state='readonly')
+            dropdown1.pack(side=tk.LEFT, padx=2)
+
+            ttk.Label(gene_frame, text="/").pack(side=tk.LEFT)
+
+            # Second allele dropdown
+            var2 = tk.StringVar(value=alleles[-1])
+            dropdown2 = ttk.Combobox(gene_frame, textvariable=var2, values=alleles, width=6, state='readonly')
+            dropdown2.pack(side=tk.LEFT, padx=2)
+
+            dropdowns[gene_label] = (var1, var2)
+
+            # Bind change event to update phenotype
+            dropdown1.bind('<<ComboboxSelected>>', lambda e, pn=parent_num: self.update_parent_phenotype(pn))
+            dropdown2.bind('<<ComboboxSelected>>', lambda e, pn=parent_num: self.update_parent_phenotype(pn))
+
+        # Store dropdowns
+        if parent_num == 1:
+            self.parent1_dropdowns = dropdowns
+        else:
+            self.parent2_dropdowns = dropdowns
+
+        # Phenotype display
+        pheno_frame = ttk.Frame(frame)
+        pheno_frame.pack(fill=tk.X, pady=(10, 0))
+
+        ttk.Label(pheno_frame, text="Phenotype:", style='Gene.TLabel').pack(anchor=tk.W)
+        pheno_label = ttk.Label(
+            pheno_frame,
+            text="Bay",
+            font=('Segoe UI', 11, 'bold'),
+            foreground=self.colors['primary'],
+            wraplength=250
+        )
+        pheno_label.pack(anchor=tk.W, pady=2)
+
+        if parent_num == 1:
+            self.parent1_phenotype_label = pheno_label
+        else:
+            self.parent2_phenotype_label = pheno_label
+
+        # Helper buttons
+        btn_frame = ttk.Frame(frame)
+        btn_frame.pack(fill=tk.X, pady=(10, 0))
+
+        tk.Button(
+            btn_frame,
+            text="Random",
+            command=lambda: self.randomize_parent(parent_num),
+            font=('Segoe UI', 9),
+            padx=10,
+            pady=5
+        ).pack(side=tk.LEFT, padx=2)
+
+        return frame
+
+    def create_help_tab(self):
+        """Create the Help & Reference tab"""
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text='Help')
+
+        # Main container
+        container = ttk.Frame(tab, padding=20)
+        container.pack(fill=tk.BOTH, expand=True)
+
+        # Title
+        title = ttk.Label(container, text="Gene Reference", style='Title.TLabel')
+        title.pack(pady=(0, 15))
+
+        # Scrolled text for help content
+        help_text = scrolledtext.ScrolledText(
+            container,
+            wrap=tk.WORD,
+            font=('Segoe UI', 10),
+            padx=15,
+            pady=15
+        )
+        help_text.pack(fill=tk.BOTH, expand=True)
+
+        # Insert help content
+        help_content = """
+HORSE COAT COLOR GENETICS REFERENCE
+
+═══════════════════════════════════════════════════════════════
+
+EXTENSION GENE (E)
+• E - Allows black pigment (eumelanin) to be produced (dominant)
+• e - Restricts pigment to red/chestnut (recessive)
+
+Valid genotypes: E/E, E/e, e/e
+Phenotypes:
+  - E/E or E/e: Allows black pigment (can be bay or black depending on Agouti)
+  - e/e: Chestnut (red) coat regardless of other genes
+
+Note: Extension is epistatic to Agouti (e/e overrides Agouti effects)
+
+───────────────────────────────────────────────────────────────
+
+AGOUTI GENE (A)
+• A - Restricts black pigment to "points" (mane, tail, legs, ear tips) creating bay pattern (dominant)
+• a - Allows black pigment all over the body (recessive)
+
+Valid genotypes: A/A, A/a, a/a
+Phenotypes:
+  - A/A or A/a: Bay pattern (only visible with E/_ genotype)
+  - a/a: Solid black (only visible with E/_ genotype)
+
+Note: Only affects horses with black pigment (E/_ genotype)
+
+───────────────────────────────────────────────────────────────
+
+DILUTION GENE (Dil) - SLC45A2
+IMPORTANT: Cream and Pearl are alleles of the SAME gene!
+
+• N - Wild-type (no dilution)
+• Cr - Cream allele (incomplete dominant)
+• Prl - Pearl allele (recessive)
+
+Valid genotypes: N/N, N/Cr, Cr/Cr, N/Prl, Prl/Prl, Cr/Prl
+Phenotypes:
+  - N/N: No dilution
+  - N/Cr: Single cream dilution (Palomino on chestnut, Buckskin on bay, Smoky Black on black)
+  - Cr/Cr: Double cream dilution (Cremello on chestnut, Perlino on bay, Smoky Cream on black)
+  - N/Prl: Pearl carrier (no visible effect)
+  - Prl/Prl: Double pearl dilution (Apricot on chestnut, Pearl Bay on bay, Pearl Black on black)
+  - Cr/Prl: Compound heterozygote - pseudo-double dilute effect!
+
+Note: A horse can have at most ONE Cr and ONE Prl allele simultaneously (Cr/Prl genotype)
+
+───────────────────────────────────────────────────────────────
+
+DUN GENE (D)
+• D - Dun dilution with primitive markings (dorsal stripe, leg barring) (dominant)
+• nd1 - Non-dun 1, may show faint primitive markings
+• nd2 - Non-dun 2, no primitive markings (recessive)
+
+Valid genotypes: D/D, D/nd1, D/nd2, nd1/nd1, nd1/nd2, nd2/nd2
+Dominance: D > nd1 > nd2
+Phenotypes:
+  - D/_: Dun dilution with clear primitive markings
+  - nd1/nd1 or nd1/nd2: Possible faint markings
+  - nd2/nd2: No dun dilution
+
+───────────────────────────────────────────────────────────────
+
+SILVER GENE (Z)
+• Z - Silver dilution (dominant)
+• n - Non-silver (wild-type)
+
+Valid genotypes: Z/Z, Z/n, n/n
+Phenotypes:
+  - Z/Z or Z/n: Dilutes black pigment (eumelanin) to silver/chocolate, especially in mane and tail
+  - n/n: No silver dilution
+
+Note: ONLY affects horses with black pigment. No effect on chestnut horses (e/e).
+
+───────────────────────────────────────────────────────────────
+
+SOOTY GENE (STY)
+• STY - Sooty modifier, adds darker hairs along topline (dominant)
+• sty - Non-sooty
+
+Valid genotypes: STY/STY, STY/sty, sty/sty
+Phenotypes:
+  - STY/_: Darker hairs, especially on back, shoulders, and face
+  - sty/sty: No sooty modifier
+
+Note: Simplified model. In reality, sooty is polygenic (multiple genes).
+
+═══════════════════════════════════════════════════════════════
+
+GENOTYPE INPUT FORMAT
+
+When entering genotypes manually:
+Gene:Allele1/Allele2 (separated by spaces)
+
+Example: E:E/e A:A/a Dil:N/Cr D:D/nd2 Z:n/n STY:STY/sty
+
+═══════════════════════════════════════════════════════════════
+
+BREEDING INHERITANCE
+
+Each parent contributes ONE randomly selected allele from each gene to the offspring.
+This follows Mendelian inheritance patterns.
+
+Example:
+  Parent 1: E/e (can pass E or e)
+  Parent 2: E/E (can only pass E)
+  Offspring: 50% E/E, 50% E/e
+
+═══════════════════════════════════════════════════════════════
+"""
+
+        help_text.insert('1.0', help_content)
+        help_text.config(state=tk.DISABLED)
+
+    # Event handlers
+    def generate_random_horse(self):
+        """Generate and display a random horse"""
+        horse = self.generator.generate_horse()
+
+        # Update phenotype
+        self.random_phenotype_label.config(text=horse['phenotype'])
+
+        # Update genotype
+        self.random_genotype_text.config(state=tk.NORMAL)
+        self.random_genotype_text.delete('1.0', tk.END)
+
+        # Format genotype nicely
+        genotype_text = self.format_genotype_detailed(horse['genotype'])
+        self.random_genotype_text.insert('1.0', genotype_text)
+        self.random_genotype_text.config(state=tk.DISABLED)
+
+        # Store current horse
+        self.current_random_horse = horse
+
+    def format_genotype_detailed(self, genotype):
+        """Format genotype with gene names for display"""
+        lines = []
+        gene_names = {
+            'extension': 'Extension',
+            'agouti': 'Agouti',
+            'dilution': 'Dilution',
+            'dun': 'Dun',
+            'silver': 'Silver',
+            'champagne': 'Champagne',
+            'flaxen': 'Flaxen',
+            'sooty': 'Sooty'
+        }
+
+        for gene_key, name in gene_names.items():
+            alleles = '/'.join(genotype[gene_key])
+            lines.append(f"{name:12} : {alleles}")
+
+        return '\n'.join(lines)
+
+    def copy_random_genotype(self):
+        """Copy the random horse genotype to clipboard"""
+        if hasattr(self, 'current_random_horse'):
+            genotype_str = self.generator.format_genotype(self.current_random_horse['genotype'])
+            self.root.clipboard_clear()
+            self.root.clipboard_append(genotype_str)
+            messagebox.showinfo("Copied", "Genotype copied to clipboard!")
+        else:
+            messagebox.showwarning("No Horse", "Generate a horse first!")
+
+    def get_parent_genotype(self, parent_num):
+        """Get genotype from parent dropdowns"""
+        dropdowns = self.parent1_dropdowns if parent_num == 1 else self.parent2_dropdowns
+
+        genotype = {}
+        gene_map = {
+            'E': 'extension',
+            'A': 'agouti',
+            'Dil': 'dilution',
+            'D': 'dun',
+            'Z': 'silver',
+            'Ch': 'champagne',
+            'F': 'flaxen',
+            'STY': 'sooty'
+        }
+
+        for gene_label, gene_name in gene_map.items():
+            var1, var2 = dropdowns[gene_label]
+            alleles = self.generator._sort_alleles([var1.get(), var2.get()])
+            genotype[gene_name] = alleles
+
+        return genotype
+
+    def update_parent_phenotype(self, parent_num):
+        """Update parent phenotype display based on current genotype"""
+        try:
+            genotype = self.get_parent_genotype(parent_num)
+            phenotype = self.generator.determine_phenotype(genotype)
+
+            if parent_num == 1:
+                self.parent1_phenotype_label.config(text=phenotype)
+            else:
+                self.parent2_phenotype_label.config(text=phenotype)
+        except Exception as e:
+            print(f"Error updating phenotype: {e}")
+
+    def randomize_parent(self, parent_num):
+        """Randomize parent genotype"""
+        dropdowns = self.parent1_dropdowns if parent_num == 1 else self.parent2_dropdowns
+
+        # Generate random genotype
+        random_genotype = self.generator.generate_genotype()
+
+        # Update dropdowns
+        gene_map = {
+            'E': 'extension',
+            'A': 'agouti',
+            'Dil': 'dilution',
+            'D': 'dun',
+            'Z': 'silver',
+            'Ch': 'champagne',
+            'F': 'flaxen',
+            'STY': 'sooty'
+        }
+
+        for gene_label, gene_name in gene_map.items():
+            var1, var2 = dropdowns[gene_label]
+            alleles = random_genotype[gene_name]
+            var1.set(alleles[0])
+            var2.set(alleles[1])
+
+        # Update phenotype
+        self.update_parent_phenotype(parent_num)
+
+    def breed_horses(self):
+        """Breed two parent horses and display offspring"""
+        try:
+            # Get parent genotypes
+            parent1_geno = self.get_parent_genotype(1)
+            parent2_geno = self.get_parent_genotype(2)
+
+            # Breed
+            offspring_geno = self.generator.breed_horses(parent1_geno, parent2_geno)
+            offspring_pheno = self.generator.determine_phenotype(offspring_geno)
+
+            # Update display
+            self.offspring_phenotype_label.config(text=offspring_pheno)
+
+            self.offspring_genotype_text.config(state=tk.NORMAL)
+            self.offspring_genotype_text.delete('1.0', tk.END)
+            genotype_text = self.format_genotype_detailed(offspring_geno)
+            self.offspring_genotype_text.insert('1.0', genotype_text)
+            self.offspring_genotype_text.config(state=tk.DISABLED)
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error breeding horses: {e}")
+
+    def clear_breeding(self):
+        """Clear breeding results"""
+        # Reset dropdowns to default
+        self.randomize_parent(1)
+        self.randomize_parent(2)
+
+        # Clear offspring
+        self.offspring_phenotype_label.config(text="(Breed two horses to see offspring)")
+        self.offspring_genotype_text.config(state=tk.NORMAL)
+        self.offspring_genotype_text.delete('1.0', tk.END)
+        self.offspring_genotype_text.config(state=tk.DISABLED)
+
+
+def main():
+    """Main entry point for GUI application"""
+    root = tk.Tk()
+    app = HorseGeneticsGUI(root)
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    main()
