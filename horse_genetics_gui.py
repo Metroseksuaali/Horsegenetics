@@ -27,8 +27,8 @@ class HorseGeneticsGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Horse Coat Color Genetics Simulator")
-        self.root.geometry("1000x700")
-        self.root.minsize(900, 650)
+        self.root.geometry("1200x850")
+        self.root.minsize(1000, 700)
 
         self.generator = HorseGeneticGenerator()
 
@@ -77,14 +77,14 @@ class HorseGeneticsGUI:
         tab = ttk.Frame(self.notebook)
         self.notebook.add(tab, text='Random Generator')
 
-        container = ttk.Frame(tab, padding=20)
+        container = ttk.Frame(tab, padding=(20, 10, 20, 10))
         container.pack(fill=tk.BOTH, expand=True)
 
         title = ttk.Label(container, text="Generate Random Horse", style='Title.TLabel')
-        title.pack(pady=(0, 20))
+        title.pack(pady=(0, 10))
 
         btn_frame = ttk.Frame(container)
-        btn_frame.pack(pady=10)
+        btn_frame.pack(pady=5)
 
         generate_btn = tk.Button(
             btn_frame,
@@ -100,11 +100,11 @@ class HorseGeneticsGUI:
         )
         generate_btn.pack()
 
-        result_frame = ttk.LabelFrame(container, text="Generated Horse", padding=15)
-        result_frame.pack(fill=tk.BOTH, expand=True, pady=20)
+        result_frame = ttk.LabelFrame(container, text="Generated Horse", padding=10)
+        result_frame.pack(fill=tk.X, pady=10)
 
         pheno_frame = ttk.Frame(result_frame)
-        pheno_frame.pack(fill=tk.X, pady=(0, 15))
+        pheno_frame.pack(fill=tk.X, pady=(0, 8))
 
         ttk.Label(pheno_frame, text="Phenotype:", style='Heading.TLabel').pack(anchor=tk.W)
         self.random_phenotype_label = ttk.Label(
@@ -116,7 +116,7 @@ class HorseGeneticsGUI:
         self.random_phenotype_label.pack(anchor=tk.W, pady=5)
 
         geno_frame = ttk.Frame(result_frame)
-        geno_frame.pack(fill=tk.BOTH, expand=True)
+        geno_frame.pack(fill=tk.X)
 
         ttk.Label(geno_frame, text="Genotype:", style='Heading.TLabel').pack(anchor=tk.W)
 
@@ -131,11 +131,11 @@ class HorseGeneticsGUI:
             padx=10,
             pady=10
         )
-        self.random_genotype_text.pack(fill=tk.BOTH, expand=True, pady=5)
+        self.random_genotype_text.pack(fill=tk.X, pady=5)
         self.random_genotype_text.config(state=tk.DISABLED)
 
         action_frame = ttk.Frame(container)
-        action_frame.pack(pady=10)
+        action_frame.pack(pady=5)
 
         tk.Button(
             action_frame,
@@ -150,7 +150,46 @@ class HorseGeneticsGUI:
         tab = ttk.Frame(self.notebook)
         self.notebook.add(tab, text='Breeding Simulator')
 
-        container = ttk.Frame(tab, padding=20)
+        # Create canvas with scrollbar
+        canvas = tk.Canvas(tab, bg=self.colors['background'], highlightthickness=0)
+        scrollbar = ttk.Scrollbar(tab, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+
+        # Configure scroll region when content changes
+        def on_frame_configure(event):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+            # Update the window width to match canvas width
+            canvas.itemconfig(canvas_window, width=canvas.winfo_width())
+
+        scrollable_frame.bind("<Configure>", on_frame_configure)
+
+        # Create window and store the window ID for later configuration
+        canvas_window = canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Update canvas window width when canvas is resized
+        def on_canvas_configure(event):
+            canvas.itemconfig(canvas_window, width=event.width)
+        canvas.bind("<Configure>", on_canvas_configure)
+
+        # Pack scrollbar and canvas
+        scrollbar.pack(side="right", fill="y")
+        canvas.pack(side="left", fill="both", expand=True)
+
+        # Enable mousewheel scrolling only when mouse is over this canvas
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+        def _bind_mousewheel(event):
+            canvas.bind_all("<MouseWheel>", _on_mousewheel)
+
+        def _unbind_mousewheel(event):
+            canvas.unbind_all("<MouseWheel>")
+
+        canvas.bind("<Enter>", _bind_mousewheel)
+        canvas.bind("<Leave>", _unbind_mousewheel)
+
+        container = ttk.Frame(scrollable_frame, padding=20)
         container.pack(fill=tk.BOTH, expand=True)
 
         title = ttk.Label(container, text="Breed Two Horses", style='Title.TLabel')
@@ -183,7 +222,7 @@ class HorseGeneticsGUI:
         breed_btn.pack()
 
         offspring_frame = ttk.LabelFrame(container, text="Offspring", padding=15)
-        offspring_frame.pack(fill=tk.BOTH, expand=True, pady=10)
+        offspring_frame.pack(fill=tk.X, pady=10)
 
         ttk.Label(offspring_frame, text="Phenotype:", style='Heading.TLabel').pack(anchor=tk.W)
         self.offspring_phenotype_label = ttk.Label(
@@ -197,20 +236,21 @@ class HorseGeneticsGUI:
         ttk.Label(offspring_frame, text="Genotype:", style='Heading.TLabel').pack(anchor=tk.W, pady=(10, 0))
         self.offspring_genotype_text = tk.Text(
             offspring_frame,
-            height=6,
+            height=9,
             width=70,
             font=('Courier New', 10),
             bg=self.colors['panel_bg'],
             fg='black',
             relief=tk.FLAT,
             padx=10,
-            pady=10
+            pady=10,
+            wrap=tk.NONE
         )
-        self.offspring_genotype_text.pack(fill=tk.BOTH, expand=True, pady=5)
+        self.offspring_genotype_text.pack(fill=tk.X, pady=5)
         self.offspring_genotype_text.config(state=tk.DISABLED)
 
-        action_frame = ttk.Frame(container)
-        action_frame.pack(pady=5)
+        action_frame = ttk.Frame(offspring_frame)
+        action_frame.pack(pady=10)
 
         tk.Button(
             action_frame,
@@ -534,16 +574,26 @@ Example:
             offspring_geno = self.generator.breed_horses(parent1_geno, parent2_geno)
             offspring_pheno = self.generator.determine_phenotype(offspring_geno)
 
-            self.offspring_phenotype_label.config(text=offspring_pheno)
+            # Update phenotype with correct color
+            self.offspring_phenotype_label.config(
+                text=offspring_pheno,
+                foreground=self.colors['primary']
+            )
 
+            # Update genotype text
             self.offspring_genotype_text.config(state=tk.NORMAL)
             self.offspring_genotype_text.delete('1.0', tk.END)
             genotype_text = self.format_genotype_detailed(offspring_geno)
             self.offspring_genotype_text.insert('1.0', genotype_text)
             self.offspring_genotype_text.config(state=tk.DISABLED)
 
+            # Force UI update
+            self.offspring_phenotype_label.update_idletasks()
+            self.offspring_genotype_text.update_idletasks()
+
         except Exception as e:
             messagebox.showerror("Error", f"Error breeding horses: {e}")
+            self.offspring_phenotype_label.config(text="Error breeding horses", foreground='red')
 
     def clear_breeding(self):
         self.randomize_parent(1)
