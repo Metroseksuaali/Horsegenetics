@@ -267,8 +267,10 @@ class PhenotypeCalculator:
             'Classic Cream Champagne': 'Silver Classic Cream Champagne',
         }
 
-        # Apply silver mapping
-        for base, silver_version in silver_map.items():
+        # Apply silver mapping - sort by length (longest first) to avoid partial matches
+        # E.g., "Smoky Black" must be checked before "Black" to get correct word order
+        sorted_map = sorted(silver_map.items(), key=lambda x: len(x[0]), reverse=True)
+        for base, silver_version in sorted_map:
             if base in phenotype:
                 return phenotype.replace(base, silver_version)
 
