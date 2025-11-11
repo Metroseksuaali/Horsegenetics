@@ -92,7 +92,7 @@ This program simulates realistic horse coat color genetics using Mendelian inher
 - ✓ Fixed Sooty gene visibility (no longer appears on fully black horses)
 - ✓ Corrected double Pearl on black: "Smoky Pearl" (not "Pearl Black")
 - ✓ Fixed Champagne naming on double dilutes (e.g., "Perlino Champagne")
-- ✓ Silver no longer shows on double cream dilutes (minimal visible effect)
+- ✓ Silver correctly shows on double cream dilutes (Perlino, Smoky Cream)
 - ✓ Modular architecture for future expansion
 
 **Note:** The Sooty and Flaxen genes are simplified in this simulator. In real horses, these traits are controlled by multiple genes.
