@@ -1,6 +1,8 @@
 # Horse Coat Color Genetics Simulator
 
-A horse color genetics simulator that generates random horses and enables breeding between two horses. The program works both in terminal and with a graphical user interface.
+A scientifically accurate horse color genetics simulator that generates random horses and enables breeding between two horses. The program works both in terminal and with a graphical user interface.
+
+**Version 2.0** - Refactored with modular architecture for scalability to thousands of genetic traits.
 
 ## Features
 
@@ -63,11 +65,37 @@ Interactive menu:
 - **Silver Bay** - Bay with silver mane and tail
 - **Sooty Dun** - Dark dun with primitive markings
 
+## Project Structure
+
+```
+genetics/
+├── __init__.py          # Module initialization
+├── core.py              # Gene pools and allele definitions
+├── phenotype.py         # Phenotype calculation and color nomenclature
+└── breeding.py          # Breeding simulation (Mendelian inheritance)
+
+horse_genetics.py        # Command-line interface
+horse_genetics_gui.py    # Graphical user interface
+```
+
+**Why Modular?** The new structure separates genetics logic from UI, making it easier to:
+- Add new genes and traits
+- Fix genetic inaccuracies
+- Scale to thousands of genetic combinations
+- Test individual components
+
 ## About
 
 This program simulates realistic horse coat color genetics using Mendelian inheritance patterns. All color combinations are based on real equine genetics research.
 
-**Note:** The Sooty gene is simplified in this simulator. In real horses, this trait is controlled by multiple genes.
+**Version 2.0 Improvements:**
+- ✓ Fixed Sooty gene visibility (no longer appears on fully black horses)
+- ✓ Corrected double Pearl on black: "Smoky Pearl" (not "Pearl Black")
+- ✓ Fixed Champagne naming on double dilutes (e.g., "Perlino Champagne")
+- ✓ Silver no longer shows on double cream dilutes (minimal visible effect)
+- ✓ Modular architecture for future expansion
+
+**Note:** The Sooty and Flaxen genes are simplified in this simulator. In real horses, these traits are controlled by multiple genes.
 
 ---
 
