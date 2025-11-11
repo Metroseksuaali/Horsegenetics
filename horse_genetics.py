@@ -68,6 +68,14 @@ class HorseGeneticGenerator:
         """
         return self.breeding_sim.parse_genotype_input(genotype_str)
 
+    def _sort_alleles(self, alleles):
+        """
+        Sort alleles by dominance for consistent display.
+
+        This is a wrapper for backwards compatibility with GUI.
+        """
+        return self.breeding_sim.gene_pool._sort_alleles(alleles)
+
 
 def print_horse(generator, horse, title="HORSE"):
     """Print a horse's genotype and phenotype."""

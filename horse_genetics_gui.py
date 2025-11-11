@@ -292,13 +292,24 @@ class HorseGeneticsGUI:
 
             ttk.Label(gene_frame, text=f"{gene_label}:", width=5, style='Gene.TLabel').pack(side=tk.LEFT)
 
-            var1 = tk.StringVar(value=alleles[0])
+            # Set better defaults for common genotypes
+            if gene_label == 'Dil':
+                default1, default2 = 'N', 'N'  # Wild-type (no dilution)
+            elif gene_label == 'D':
+                default1, default2 = 'nd2', 'nd2'  # Non-dun
+            elif gene_label in ['Z', 'Ch']:
+                default1, default2 = 'n', 'n'  # Wild-type
+            else:
+                default1 = alleles[0]
+                default2 = alleles[-1]
+
+            var1 = tk.StringVar(value=default1)
             dropdown1 = ttk.Combobox(gene_frame, textvariable=var1, values=alleles, width=6, state='readonly')
             dropdown1.pack(side=tk.LEFT, padx=2)
 
             ttk.Label(gene_frame, text="/").pack(side=tk.LEFT)
 
-            var2 = tk.StringVar(value=alleles[-1])
+            var2 = tk.StringVar(value=default2)
             dropdown2 = ttk.Combobox(gene_frame, textvariable=var2, values=alleles, width=6, state='readonly')
             dropdown2.pack(side=tk.LEFT, padx=2)
 
@@ -329,6 +340,9 @@ class HorseGeneticsGUI:
             self.parent1_phenotype_label = pheno_label
         else:
             self.parent2_phenotype_label = pheno_label
+
+        # Update phenotype with default genotype
+        self.root.after(100, lambda: self.update_parent_phenotype(parent_num))
 
         btn_frame = ttk.Frame(frame)
         btn_frame.pack(fill=tk.X, pady=(10, 0))
@@ -543,11 +557,16 @@ Example:
             phenotype = self.generator.determine_phenotype(genotype)
 
             if parent_num == 1:
-                self.parent1_phenotype_label.config(text=phenotype)
+                self.parent1_phenotype_label.config(text=phenotype, foreground=self.colors['primary'])
             else:
-                self.parent2_phenotype_label.config(text=phenotype)
+                self.parent2_phenotype_label.config(text=phenotype, foreground=self.colors['primary'])
         except Exception as e:
-            error_msg = "Invalid genotype"
+            # Show actual error for debugging
+            error_msg = f"Invalid: {str(e)}"
+            print(f"Error updating parent {parent_num} phenotype: {e}")  # Debug print
+            import traceback
+            traceback.print_exc()  # Print full traceback for debugging
+
             if parent_num == 1:
                 self.parent1_phenotype_label.config(text=error_msg, foreground='red')
             else:
