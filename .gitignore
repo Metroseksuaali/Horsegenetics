@@ -2,3 +2,7 @@
 __pycache__/
 .claude/
 CLAUDE.md
+
+# Test files
+test_*.py
+GENETICS_AUDIT_REPORT.md
