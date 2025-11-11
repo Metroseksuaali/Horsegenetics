@@ -1,143 +1,143 @@
 # Horse Coat Color Genetics Simulator
 
-Hevosen värigenetiikka simulaattori, joka generoi satunnaisia hevosia ja mahdollistaa kahden hevosen jalostamisen. Ohjelma toimii sekä terminaalissa että graafisella käyttöliittymällä.
+A horse color genetics simulator that generates random horses and enables breeding between two horses. The program works both in terminal and with a graphical user interface.
 
-## Ominaisuudet
+## Features
 
-### Genetiikka (8 geeniä)
-1. **Extension (E/e)** - Määrittää onko pigmentti mustaa vai punaista
-2. **Agouti (A/a)** - Määrittää mustan jakautumisen (bay vs black)
-3. **Dilution (N/Cr/Prl)** - Laimennusgeeni kolmella alleelilla (Cream ja Pearl SAMASSA geenissä!)
-4. **Dun (D/nd1/nd2)** - Dun-laimennus primitiivisillä merkeillä
-5. **Silver (Z/n)** - Vaalentaa mustaa pigmenttiä (erityisesti harja ja häntä)
-6. **Champagne (Ch/n)** - Vaalentaa SEKÄ punaista ETTÄ mustaa pigmenttiä (SLC36A1)
-7. **Flaxen (F/f)** - Vaalentaa harjaa/häntää VAIN ruunikoilla (resessiivinen)
-8. **Sooty (STY/sty)** - Lisää tummempia karvoja
+### Genetics (8 genes)
+1. **Extension (E/e)** - Determines whether pigment is black or red
+2. **Agouti (A/a)** - Controls black pigment distribution (bay vs black)
+3. **Dilution (N/Cr/Prl)** - Dilution gene with three alleles (Cream and Pearl in the SAME gene!)
+4. **Dun (D/nd1/nd2)** - Dun dilution with primitive markings
+5. **Silver (Z/n)** - Lightens black pigment (especially mane and tail)
+6. **Champagne (Ch/n)** - Lightens BOTH red AND black pigment (SLC36A1)
+7. **Flaxen (F/f)** - Lightens mane/tail ONLY on chestnuts (recessive)
+8. **Sooty (STY/sty)** - Adds darker hairs
 
-### Tärkeä biologinen korjaus
-**Cream ja Pearl ovat samassa geenissä (SLC45A2), eivät erillisiä geenejä!**
+### Important Biological Correction
+**Cream and Pearl are in the same gene (SLC45A2), not separate genes!**
 
-Mahdolliset genotyypit: N/N, N/Cr, Cr/Cr, N/Prl, Prl/Prl, Cr/Prl
+Possible genotypes: N/N, N/Cr, Cr/Cr, N/Prl, Prl/Prl, Cr/Prl
 
-Cr/Prl-yhdistelmä tuottaa "pseudo-double dilute" -efektin!
+Cr/Prl combination produces a "pseudo-double dilute" effect!
 
-## Käyttö
+## Usage
 
-### GUI-versio (Suositeltu)
+### GUI Version (Recommended)
 
 ```bash
 python3 horse_genetics_gui.py
 ```
 
-**Vaatimukset:**
-- Python 3 (tkinter tulee mukana)
-- Toimii Windowsissa, macOS:ssä ja Linux-työpöytäympäristöissä
-- EI toimi WSL:ssä ilman X-serveriä (normaalia)
+**Requirements:**
+- Python 3 (tkinter comes built-in)
+- Works on Windows, macOS, and Linux desktop environments
+- Does NOT work in WSL without X server (this is normal)
 
-**Kolme välilehteä:**
-1. **Random Generator** - Generoi satunnainen hevonen yhdellä klikkauksella
-2. **Breeding Simulator** - Jalosta kaksi hevosta pudotusvalikoiden avulla
-3. **Help** - Kattava genetiikka-opas
+**Three tabs:**
+1. **Random Generator** - Generate a random horse with one click
+2. **Breeding Simulator** - Breed two horses using dropdown menus
+3. **Help** - Comprehensive genetics guide
 
-### Terminaaliversio
+### Terminal Version
 
 ```bash
 python3 horse_genetics.py
 ```
 
-Interaktiivinen tekstipohjainen käyttöliittymä:
-1. Generoi satunnainen hevonen
-2. Jalosta kaksi hevosta (syötä genotyypit manuaalisesti)
+Interactive text-based interface:
+1. Generate a random horse
+2. Breed two horses (manually input genotypes)
 
-## Genotyypin syöttöformaatti
+## Genotype Input Format
 
 ```
 E:E/e A:A/a Dil:N/Cr D:D/nd1 Z:n/n Ch:n/n F:F/f STY:STY/sty
 ```
 
-**Alleelien vaihtoehdot:**
+**Allele options:**
 - E: E, e
 - A: A, a
-- Dil: N, Cr, Prl (kolme vaihtoehtoa!)
+- Dil: N, Cr, Prl (three options!)
 - D: D, nd1, nd2
 - Z: Z, n
 - Ch: Ch, n
 - F: F, f
 - STY: STY, sty
 
-## Esimerkkejä fenotyypeistä
+## Phenotype Examples
 
-### Perusvärit
-- **Chestnut** - e/e (punainen)
-- **Bay** - E/- A/- (ruskea, musta vain pistoissa)
-- **Black** - E/- a/a (musta)
+### Base Colors
+- **Chestnut** - e/e (red)
+- **Bay** - E/- A/- (brown, black only on points)
+- **Black** - E/- a/a (black)
 
-### Cream-laimennukset
-- **Palomino** - e/e N/Cr (kullanvärinen ruunikko)
-- **Buckskin** - E/- A/- N/Cr (vaalean ruskea)
-- **Cremello** - e/e Cr/Cr (hyvin vaalea, melkein valkoinen)
+### Cream Dilutions
+- **Palomino** - e/e N/Cr (golden chestnut)
+- **Buckskin** - E/- A/- N/Cr (light brown)
+- **Cremello** - e/e Cr/Cr (very light, almost white)
 
-### Pearl ja yhdistelmät
-- **Pseudo-Cremello** - e/e Cr/Prl (Cream + Pearl yhdistelmä!)
-- **Apricot** - e/e Prl/Prl (aprikoosi väri)
+### Pearl and Combinations
+- **Pseudo-Cremello** - e/e Cr/Prl (Cream + Pearl combination!)
+- **Apricot** - e/e Prl/Prl (apricot color)
 
-### Champagne-värit
-- **Gold Champagne** - e/e Ch/- (kultainen, champagne-silmät)
-- **Amber Champagne** - E/- A/- Ch/- (meripihkan värinen)
-- **Classic Champagne** - E/- a/a Ch/- (tummempi champagne)
+### Champagne Colors
+- **Gold Champagne** - e/e Ch/- (golden with champagne eyes)
+- **Amber Champagne** - E/- A/- Ch/- (amber colored)
+- **Classic Champagne** - E/- a/a Ch/- (darker champagne)
 - **Gold Cream Champagne** - e/e N/Cr Ch/- (Palomino + Champagne)
 
-### Flaxen ja muut modifioijat
-- **Flaxen Chestnut** - e/e f/f (ruunikko vaalean harjan/hännän kanssa)
-- **Flaxen Palomino** - e/e N/Cr f/f (hyvin vaalea harja/häntä)
-- **Silver Bay** - E/- A/- Z/- (hopeanvärinen harja ja häntä)
-- **Sooty Dun** - STY/- D/- (tumma dunväri primitiivisillä merkeillä)
-- **Gold Champagne with Flaxen Dun** - e/e Ch/- f/f D/- (monimutkainen yhdistelmä!)
+### Flaxen and Other Modifiers
+- **Flaxen Chestnut** - e/e f/f (chestnut with light mane/tail)
+- **Flaxen Palomino** - e/e N/Cr f/f (very light mane/tail)
+- **Silver Bay** - E/- A/- Z/- (silver mane and tail)
+- **Sooty Dun** - STY/- D/- (dark dun with primitive markings)
+- **Gold Champagne with Flaxen Dun** - e/e Ch/- f/f D/- (complex combination!)
 
-## Tekninen toteutus
+## Technical Implementation
 
-- **Kieli:** Python 3
-- **GUI:** tkinter (sisäänrakennettu, cross-platform)
-- **Genetiikka:** Biologisesti tarkka Mendelin periytyminen
-- **Epistasia:** Extension epistaattinen Agoutille
-- **Compound heterozygote:** Cr/Prl yhdistelmä toimii oikein
+- **Language:** Python 3
+- **GUI:** tkinter (built-in, cross-platform)
+- **Genetics:** Biologically accurate Mendelian inheritance
+- **Epistasis:** Extension is epistatic to Agouti
+- **Compound heterozygote:** Cr/Prl combination works correctly
 
-## Tiedostot
+## Files
 
-- `horse_genetics.py` - Genetiikka-moottori ja terminaaliversio
-- `horse_genetics_gui.py` - Graafinen käyttöliittymä
-- `CLAUDE.md` - Tekninen dokumentaatio kehittäjille
-- `README.md` - Tämä tiedosto
+- `horse_genetics.py` - Genetics engine and terminal version
+- `horse_genetics_gui.py` - Graphical user interface
+- `README.md` - This file
 
-## Testaus
+## Testing
 
 ```bash
-# Testaa satunnainen generointi
+# Test random generation
 python3 -c "from horse_genetics import HorseGeneticGenerator; g = HorseGeneticGenerator(); print(g.generate_horse())"
 
-# Testaa jalostus
-python3 -c "from horse_genetics import HorseGeneticGenerator; g = HorseGeneticGenerator(); p1 = g.parse_genotype_input('E:E/E A:A/A Dil:Cr/Cr D:D/D Z:n/n STY:sty/sty'); p2 = g.parse_genotype_input('E:e/e A:a/a Dil:Prl/Prl D:nd2/nd2 Z:Z/Z STY:STY/STY'); offspring = g.breed_horses(p1, p2); print(f'Offspring: {g.determine_phenotype(offspring)}')"
+# Test breeding
+python3 -c "from horse_genetics import HorseGeneticGenerator; g = HorseGeneticGenerator(); p1 = g.parse_genotype_input('E:E/E A:A/A Dil:Cr/Cr D:D/D Z:n/n Ch:n/n F:F/F STY:sty/sty'); p2 = g.parse_genotype_input('E:e/e A:a/a Dil:Prl/Prl D:nd2/nd2 Z:Z/Z Ch:Ch/Ch F:f/f STY:STY/STY'); offspring = g.breed_horses(p1, p2); print(f'Offspring: {g.determine_phenotype(offspring)}')"
 ```
 
-## Lisenssi ja käyttö
+## License and Usage
 
-Ohjelma on luotu opetus- ja harrastustarkoituksiin. Genetiikka perustuu tieteelliseen tutkimukseen.
+This program is created for educational and hobby purposes. Genetics are based on scientific research.
 
-## Huomioita
+## Notes
 
-- **Sooty-geeni on yksinkertaistettu** - Todellisuudessa se on polygeeninen (useita geenejä)
-- **GUI vaatii näyttöpalvelimen** - Ei toimi WSL:ssä ilman X-serveriä
-- **Biologisesti tarkka** - Cream ja Pearl on korjattu samaan geeniin kuten oikeassa genetiikassa
+- **Sooty gene is simplified** - In reality it is polygenic (multiple genes)
+- **GUI requires display server** - Does not work in WSL without X server
+- **Biologically accurate** - Cream and Pearl have been corrected to the same gene as in real genetics
 
-## Lähteet
+## Sources
 
-Genetiikka perustuu tutkimukseen hevosen värigeeneistä, erityisesti:
-- SLC45A2 (Cream/Pearl -geeni)
+Genetics are based on research into equine color genes, especially:
+- SLC45A2 (Cream/Pearl gene)
 - MC1R (Extension)
 - ASIP (Agouti)
 - TBX3 (Dun)
 - PMEL17 (Silver)
+- SLC36A1 (Champagne)
 
 ---
 
-**Nauti hevosgenetiikan tutkimisesta!** 🐴
+**Enjoy exploring horse genetics!** 🐴
