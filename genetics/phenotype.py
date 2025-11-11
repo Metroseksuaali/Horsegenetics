@@ -230,7 +230,10 @@ class PhenotypeCalculator:
 
         Does NOT affect:
         - Chestnut (no black pigment)
-        - Double cream colors (minimal black pigment left)
+
+        NOTE: Silver DOES affect double cream dilutes (Perlino, Smoky Cream)
+        even though the effect is subtle. It must be noted for genetic accuracy
+        and breeding purposes.
 
         Args:
             phenotype: Current phenotype string
@@ -239,16 +242,15 @@ class PhenotypeCalculator:
         Returns:
             str: Silver-modified phenotype (if applicable)
         """
-        # Silver does not affect chestnut
+        # Silver does not affect chestnut (no black pigment)
         if base_color == 'chestnut':
             return phenotype
 
-        # Silver effect is minimal/invisible on double cream dilutes
-        # Removed: Perlino, Smoky Cream mappings as per genetics correction
-        if 'Cremello' in phenotype or 'Perlino' in phenotype or 'Smoky Cream' in phenotype:
-            return phenotype
-
         silver_map = {
+            # Double cream dilutes - Silver still applies
+            'Perlino': 'Silver Perlino',
+            'Smoky Cream': 'Silver Smoky Cream',
+            # Note: Cremello is chestnut-based, filtered above
             'Pseudo-Cremello': 'Silver Pseudo-Cremello',
             'Pseudo-Perlino': 'Silver Pseudo-Perlino',
             'Pseudo-Smoky Cream': 'Silver Pseudo-Smoky Cream',
