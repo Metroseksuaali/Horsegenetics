@@ -13,16 +13,25 @@ from horse_genetics import HorseGeneticGenerator
 class HorseGeneticsGUI:
     """GUI application for horse coat color genetics simulation"""
 
+    GENE_MAP = {
+        'E': 'extension',
+        'A': 'agouti',
+        'Dil': 'dilution',
+        'D': 'dun',
+        'Z': 'silver',
+        'Ch': 'champagne',
+        'F': 'flaxen',
+        'STY': 'sooty'
+    }
+
     def __init__(self, root):
         self.root = root
         self.root.title("Horse Coat Color Genetics Simulator")
         self.root.geometry("1000x700")
         self.root.minsize(900, 650)
 
-        # Initialize generator
         self.generator = HorseGeneticGenerator()
 
-        # Color scheme
         self.colors = {
             'primary': '#4A90E2',
             'secondary': '#7ED321',
@@ -33,48 +42,38 @@ class HorseGeneticsGUI:
             'text_secondary': '#6C757D'
         }
 
-        # Configure styles
         self.setup_styles()
 
-        # Create tabbed interface
         self.notebook = ttk.Notebook(root)
         self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        # Create tabs
         self.create_random_generator_tab()
         self.create_breeding_tab()
         self.create_help_tab()
 
     def setup_styles(self):
-        """Configure ttk styles for consistent appearance"""
         style = ttk.Style()
 
-        # Try to use a modern theme
         try:
             style.theme_use('clam')
-        except:
+        except tk.TclError:
             pass
 
-        # Configure styles
         style.configure('Title.TLabel', font=('Segoe UI', 14, 'bold'))
         style.configure('Heading.TLabel', font=('Segoe UI', 11, 'bold'))
         style.configure('Gene.TLabel', font=('Segoe UI', 10))
         style.configure('Primary.TButton', font=('Segoe UI', 11, 'bold'))
 
     def create_random_generator_tab(self):
-        """Create the Random Generator tab"""
         tab = ttk.Frame(self.notebook)
         self.notebook.add(tab, text='Random Generator')
 
-        # Main container
         container = ttk.Frame(tab, padding=20)
         container.pack(fill=tk.BOTH, expand=True)
 
-        # Title
         title = ttk.Label(container, text="Generate Random Horse", style='Title.TLabel')
         title.pack(pady=(0, 20))
 
-        # Generate button
         btn_frame = ttk.Frame(container)
         btn_frame.pack(pady=10)
 
@@ -92,11 +91,9 @@ class HorseGeneticsGUI:
         )
         generate_btn.pack()
 
-        # Result display frame
         result_frame = ttk.LabelFrame(container, text="Generated Horse", padding=15)
         result_frame.pack(fill=tk.BOTH, expand=True, pady=20)
 
-        # Phenotype display
         pheno_frame = ttk.Frame(result_frame)
         pheno_frame.pack(fill=tk.X, pady=(0, 15))
 
@@ -109,7 +106,6 @@ class HorseGeneticsGUI:
         )
         self.random_phenotype_label.pack(anchor=tk.W, pady=5)
 
-        # Genotype display
         geno_frame = ttk.Frame(result_frame)
         geno_frame.pack(fill=tk.BOTH, expand=True)
 
@@ -128,7 +124,6 @@ class HorseGeneticsGUI:
         self.random_genotype_text.pack(fill=tk.BOTH, expand=True, pady=5)
         self.random_genotype_text.config(state=tk.DISABLED)
 
-        # Action buttons
         action_frame = ttk.Frame(container)
         action_frame.pack(pady=10)
 
@@ -142,31 +137,24 @@ class HorseGeneticsGUI:
         ).pack(side=tk.LEFT, padx=5)
 
     def create_breeding_tab(self):
-        """Create the Breeding Simulator tab"""
         tab = ttk.Frame(self.notebook)
         self.notebook.add(tab, text='Breeding Simulator')
 
-        # Main container
         container = ttk.Frame(tab, padding=20)
         container.pack(fill=tk.BOTH, expand=True)
 
-        # Title
         title = ttk.Label(container, text="Breed Two Horses", style='Title.TLabel')
         title.pack(pady=(0, 15))
 
-        # Parents container
         parents_frame = ttk.Frame(container)
         parents_frame.pack(fill=tk.BOTH, expand=False, pady=10)
 
-        # Parent 1
         self.parent1_frame = self.create_parent_input_frame(parents_frame, "Parent 1 (Sire)", 1)
         self.parent1_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 10))
 
-        # Parent 2
         self.parent2_frame = self.create_parent_input_frame(parents_frame, "Parent 2 (Dam)", 2)
         self.parent2_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        # Breed button
         breed_btn_frame = ttk.Frame(container)
         breed_btn_frame.pack(pady=15)
 
@@ -184,11 +172,9 @@ class HorseGeneticsGUI:
         )
         breed_btn.pack()
 
-        # Offspring display
         offspring_frame = ttk.LabelFrame(container, text="Offspring", padding=15)
         offspring_frame.pack(fill=tk.BOTH, expand=True, pady=10)
 
-        # Phenotype
         ttk.Label(offspring_frame, text="Phenotype:", style='Heading.TLabel').pack(anchor=tk.W)
         self.offspring_phenotype_label = ttk.Label(
             offspring_frame,
@@ -198,7 +184,6 @@ class HorseGeneticsGUI:
         )
         self.offspring_phenotype_label.pack(anchor=tk.W, pady=5)
 
-        # Genotype
         ttk.Label(offspring_frame, text="Genotype:", style='Heading.TLabel').pack(anchor=tk.W, pady=(10, 0))
         self.offspring_genotype_text = tk.Text(
             offspring_frame,
@@ -213,7 +198,6 @@ class HorseGeneticsGUI:
         self.offspring_genotype_text.pack(fill=tk.BOTH, expand=True, pady=5)
         self.offspring_genotype_text.config(state=tk.DISABLED)
 
-        # Action buttons
         action_frame = ttk.Frame(container)
         action_frame.pack(pady=5)
 
@@ -236,13 +220,10 @@ class HorseGeneticsGUI:
         ).pack(side=tk.LEFT, padx=5)
 
     def create_parent_input_frame(self, parent, title, parent_num):
-        """Create input frame for a parent horse"""
         frame = ttk.LabelFrame(parent, text=title, padding=10)
 
-        # Store dropdown references
         dropdowns = {}
 
-        # Gene definitions
         genes = [
             ('E', ['E', 'e']),
             ('A', ['A', 'a']),
@@ -260,31 +241,26 @@ class HorseGeneticsGUI:
 
             ttk.Label(gene_frame, text=f"{gene_label}:", width=5, style='Gene.TLabel').pack(side=tk.LEFT)
 
-            # First allele dropdown
             var1 = tk.StringVar(value=alleles[0])
             dropdown1 = ttk.Combobox(gene_frame, textvariable=var1, values=alleles, width=6, state='readonly')
             dropdown1.pack(side=tk.LEFT, padx=2)
 
             ttk.Label(gene_frame, text="/").pack(side=tk.LEFT)
 
-            # Second allele dropdown
             var2 = tk.StringVar(value=alleles[-1])
             dropdown2 = ttk.Combobox(gene_frame, textvariable=var2, values=alleles, width=6, state='readonly')
             dropdown2.pack(side=tk.LEFT, padx=2)
 
             dropdowns[gene_label] = (var1, var2)
 
-            # Bind change event to update phenotype
             dropdown1.bind('<<ComboboxSelected>>', lambda e, pn=parent_num: self.update_parent_phenotype(pn))
             dropdown2.bind('<<ComboboxSelected>>', lambda e, pn=parent_num: self.update_parent_phenotype(pn))
 
-        # Store dropdowns
         if parent_num == 1:
             self.parent1_dropdowns = dropdowns
         else:
             self.parent2_dropdowns = dropdowns
 
-        # Phenotype display
         pheno_frame = ttk.Frame(frame)
         pheno_frame.pack(fill=tk.X, pady=(10, 0))
 
@@ -303,7 +279,6 @@ class HorseGeneticsGUI:
         else:
             self.parent2_phenotype_label = pheno_label
 
-        # Helper buttons
         btn_frame = ttk.Frame(frame)
         btn_frame.pack(fill=tk.X, pady=(10, 0))
 
@@ -319,19 +294,15 @@ class HorseGeneticsGUI:
         return frame
 
     def create_help_tab(self):
-        """Create the Help & Reference tab"""
         tab = ttk.Frame(self.notebook)
         self.notebook.add(tab, text='Help')
 
-        # Main container
         container = ttk.Frame(tab, padding=20)
         container.pack(fill=tk.BOTH, expand=True)
 
-        # Title
         title = ttk.Label(container, text="Gene Reference", style='Title.TLabel')
         title.pack(pady=(0, 15))
 
-        # Scrolled text for help content
         help_text = scrolledtext.ScrolledText(
             container,
             wrap=tk.WORD,
@@ -341,7 +312,6 @@ class HorseGeneticsGUI:
         )
         help_text.pack(fill=tk.BOTH, expand=True)
 
-        # Insert help content
         help_content = """
 HORSE COAT COLOR GENETICS REFERENCE
 
@@ -458,28 +428,21 @@ Example:
         help_text.insert('1.0', help_content)
         help_text.config(state=tk.DISABLED)
 
-    # Event handlers
     def generate_random_horse(self):
-        """Generate and display a random horse"""
         horse = self.generator.generate_horse()
 
-        # Update phenotype
         self.random_phenotype_label.config(text=horse['phenotype'])
 
-        # Update genotype
         self.random_genotype_text.config(state=tk.NORMAL)
         self.random_genotype_text.delete('1.0', tk.END)
 
-        # Format genotype nicely
         genotype_text = self.format_genotype_detailed(horse['genotype'])
         self.random_genotype_text.insert('1.0', genotype_text)
         self.random_genotype_text.config(state=tk.DISABLED)
 
-        # Store current horse
         self.current_random_horse = horse
 
     def format_genotype_detailed(self, genotype):
-        """Format genotype with gene names for display"""
         lines = []
         gene_names = {
             'extension': 'Extension',
@@ -499,7 +462,6 @@ Example:
         return '\n'.join(lines)
 
     def copy_random_genotype(self):
-        """Copy the random horse genotype to clipboard"""
         if hasattr(self, 'current_random_horse'):
             genotype_str = self.generator.format_genotype(self.current_random_horse['genotype'])
             self.root.clipboard_clear()
@@ -509,22 +471,11 @@ Example:
             messagebox.showwarning("No Horse", "Generate a horse first!")
 
     def get_parent_genotype(self, parent_num):
-        """Get genotype from parent dropdowns"""
         dropdowns = self.parent1_dropdowns if parent_num == 1 else self.parent2_dropdowns
 
         genotype = {}
-        gene_map = {
-            'E': 'extension',
-            'A': 'agouti',
-            'Dil': 'dilution',
-            'D': 'dun',
-            'Z': 'silver',
-            'Ch': 'champagne',
-            'F': 'flaxen',
-            'STY': 'sooty'
-        }
 
-        for gene_label, gene_name in gene_map.items():
+        for gene_label, gene_name in self.GENE_MAP.items():
             var1, var2 = dropdowns[gene_label]
             alleles = self.generator._sort_alleles([var1.get(), var2.get()])
             genotype[gene_name] = alleles
@@ -532,7 +483,6 @@ Example:
         return genotype
 
     def update_parent_phenotype(self, parent_num):
-        """Update parent phenotype display based on current genotype"""
         try:
             genotype = self.get_parent_genotype(parent_num)
             phenotype = self.generator.determine_phenotype(genotype)
@@ -542,48 +492,29 @@ Example:
             else:
                 self.parent2_phenotype_label.config(text=phenotype)
         except Exception as e:
-            print(f"Error updating phenotype: {e}")
+            pass
 
     def randomize_parent(self, parent_num):
-        """Randomize parent genotype"""
         dropdowns = self.parent1_dropdowns if parent_num == 1 else self.parent2_dropdowns
 
-        # Generate random genotype
         random_genotype = self.generator.generate_genotype()
 
-        # Update dropdowns
-        gene_map = {
-            'E': 'extension',
-            'A': 'agouti',
-            'Dil': 'dilution',
-            'D': 'dun',
-            'Z': 'silver',
-            'Ch': 'champagne',
-            'F': 'flaxen',
-            'STY': 'sooty'
-        }
-
-        for gene_label, gene_name in gene_map.items():
+        for gene_label, gene_name in self.GENE_MAP.items():
             var1, var2 = dropdowns[gene_label]
             alleles = random_genotype[gene_name]
             var1.set(alleles[0])
             var2.set(alleles[1])
 
-        # Update phenotype
         self.update_parent_phenotype(parent_num)
 
     def breed_horses(self):
-        """Breed two parent horses and display offspring"""
         try:
-            # Get parent genotypes
             parent1_geno = self.get_parent_genotype(1)
             parent2_geno = self.get_parent_genotype(2)
 
-            # Breed
             offspring_geno = self.generator.breed_horses(parent1_geno, parent2_geno)
             offspring_pheno = self.generator.determine_phenotype(offspring_geno)
 
-            # Update display
             self.offspring_phenotype_label.config(text=offspring_pheno)
 
             self.offspring_genotype_text.config(state=tk.NORMAL)
@@ -596,12 +527,9 @@ Example:
             messagebox.showerror("Error", f"Error breeding horses: {e}")
 
     def clear_breeding(self):
-        """Clear breeding results"""
-        # Reset dropdowns to default
         self.randomize_parent(1)
         self.randomize_parent(2)
 
-        # Clear offspring
         self.offspring_phenotype_label.config(text="(Breed two horses to see offspring)")
         self.offspring_genotype_text.config(state=tk.NORMAL)
         self.offspring_genotype_text.delete('1.0', tk.END)
@@ -609,7 +537,6 @@ Example:
 
 
 def main():
-    """Main entry point for GUI application"""
     root = tk.Tk()
     app = HorseGeneticsGUI(root)
     root.mainloop()

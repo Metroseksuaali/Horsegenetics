@@ -17,8 +17,8 @@ class HorseGeneticGenerator:
 
     def __init__(self):
         # Define possible alleles for each gene
-        self.extension_alleles = ['E', 'e']      # E = black pigment, e = red pigment
-        self.agouti_alleles = ['A', 'a']         # A = bay, a = black
+        self.extension_alleles = ['E', 'e']
+        self.agouti_alleles = ['A', 'a']
         # CORRECTED: Cream and Pearl are alleles of the SAME gene (SLC45A2)
         self.dilution_alleles = ['N', 'Cr', 'Prl']  # N = wild-type, Cr = cream, Prl = pearl
         self.dun_alleles = ['D', 'nd1', 'nd2']   # D = dun, nd1 = non-dun1, nd2 = non-dun2
@@ -33,7 +33,6 @@ class HorseGeneticGenerator:
 
     def generate_genotype(self):
         """Generate random genotype for all eight genes."""
-        # Each horse gets two alleles for each gene (diploid)
         extension = self._random_pair(self.extension_alleles)
         agouti = self._random_pair(self.agouti_alleles)
         dilution = self._random_pair(self.dilution_alleles)
@@ -58,46 +57,29 @@ class HorseGeneticGenerator:
         """Generate a random pair of alleles."""
         allele1 = random.choice(alleles)
         allele2 = random.choice(alleles)
-        # Sort to have dominant allele first for display
         return self._sort_alleles([allele1, allele2])
 
     def _sort_alleles(self, allele_list):
         """Sort alleles by dominance for consistent display."""
-        # Define dominance order (most dominant first)
-        # Note: For dilution gene, N is wild-type and shown first
         dominance_order = {
-            # Extension
             'E': 10, 'e': 1,
-            # Agouti
             'A': 10, 'a': 1,
-            # Dilution (SLC45A2) - N is wild-type, Cr and Prl are mutations
-            # N > Cr > Prl for display purposes (wild-type first)
             'N': 10, 'Cr': 5, 'Prl': 3,
-            # Dun (D > nd1 > nd2)
             'D': 10, 'nd1': 5, 'nd2': 1,
-            # Silver
             'Z': 10, 'n': 1,
-            # Champagne (dominant)
             'Ch': 10, 'n': 1,  # Note: 'n' used for both silver and champagne wild-type
-            # Flaxen (recessive)
             'F': 10, 'f': 1,
-            # Sooty
             'STY': 10, 'sty': 1
         }
 
-        # Sort by dominance value, highest first
         sorted_alleles = sorted(allele_list, key=lambda x: dominance_order.get(x, 0), reverse=True)
         return tuple(sorted_alleles)
 
     def determine_base_color(self, extension, agouti):
         """Determine base coat color from Extension and Agouti genes."""
-        # Extension is epistatic to Agouti
-        # If ee or eea, horse is chestnut regardless of Agouti
         if extension == ('e', 'e'):
             return 'chestnut'
 
-        # If horse has at least one E allele
-        # Agouti determines bay vs black
         if 'A' in agouti:
             return 'bay'
         else:
@@ -118,52 +100,34 @@ class HorseGeneticGenerator:
         flaxen = genotype['flaxen']
         sooty = genotype['sooty']
 
-        # Determine base color
         base_color = self.determine_base_color(extension, agouti)
 
-        # Analyze dilution genotype (SLC45A2 gene)
-        # Possible genotypes: N/N, N/Cr, N/Prl, Cr/Cr, Cr/Prl, Prl/Prl
         cr_count = self.count_alleles(dilution, 'Cr')
         prl_count = self.count_alleles(dilution, 'Prl')
 
-        # Check for Champagne (dominant - dilutes both red and black pigment)
         has_champagne = 'Ch' in champagne
-
-        # Check for Silver (only affects black pigment)
         has_silver = 'Z' in silver
-
-        # Check for Dun
         has_dun = 'D' in dun
         has_nd1 = 'nd1' in dun and 'D' not in dun
-
-        # Check for Flaxen (only visible on chestnut base e/e, recessive f/f)
         has_flaxen = (extension == ('e', 'e') and flaxen == ('f', 'f'))
-
-        # Check for Sooty
         has_sooty = 'STY' in sooty
 
-        # Determine final phenotype based on base color and dilutions
         phenotype = self._apply_dilution(base_color, cr_count, prl_count)
 
-        # Apply Champagne dilution (affects all colors)
         if has_champagne:
             phenotype = self._apply_champagne(phenotype, base_color)
 
-        # Apply Silver dilution (only affects black pigment/eumelanin)
         if has_silver and base_color != 'chestnut':
             phenotype = self._apply_silver(phenotype, base_color)
 
-        # Apply Dun dilution
         if has_dun:
             phenotype = f"{phenotype} Dun"
         elif has_nd1:
             phenotype = f"{phenotype} (nd1)"
 
-        # Apply Flaxen modifier (only on chestnuts)
         if has_flaxen:
             phenotype = f"{phenotype} with Flaxen"
 
-        # Apply Sooty modifier
         if has_sooty:
             phenotype = f"Sooty {phenotype}"
 
@@ -280,12 +244,10 @@ class HorseGeneticGenerator:
             'Classic Cream Champagne': 'Silver Classic Cream Champagne',
         }
 
-        # Check if phenotype contains any of these base colors (check longest matches first)
         for base, silver_version in silver_map.items():
             if base in phenotype:
                 return phenotype.replace(base, silver_version)
 
-        # If it's a bay or black based color, add Silver prefix
         if 'bay' in phenotype.lower() or 'black' in phenotype.lower() or 'classic' in phenotype.lower() or 'amber' in phenotype.lower():
             return f"Silver {phenotype}"
 
@@ -322,12 +284,10 @@ class HorseGeneticGenerator:
         """
         offspring_genotype = {}
 
-        # For each gene, randomly pick one allele from each parent
         for gene in ['extension', 'agouti', 'dilution', 'dun', 'silver', 'champagne', 'flaxen', 'sooty']:
             allele_from_parent1 = random.choice(parent1_genotype[gene])
             allele_from_parent2 = random.choice(parent2_genotype[gene])
 
-            # Sort alleles by dominance
             offspring_genotype[gene] = self._sort_alleles([allele_from_parent1, allele_from_parent2])
 
         return offspring_genotype
@@ -341,7 +301,6 @@ class HorseGeneticGenerator:
         genotype = {}
 
         try:
-            # Split by spaces to get each gene
             parts = genotype_str.strip().split()
 
             for part in parts:
@@ -354,7 +313,6 @@ class HorseGeneticGenerator:
                 if len(alleles) != 2:
                     raise ValueError(f"Each gene must have exactly 2 alleles: {part}")
 
-                # Map gene labels to internal names
                 gene_map = {
                     'E': 'extension',
                     'A': 'agouti',
@@ -372,7 +330,6 @@ class HorseGeneticGenerator:
                 gene_name = gene_map[gene_label]
                 genotype[gene_name] = self._sort_alleles(alleles)
 
-            # Verify all genes are present
             required_genes = ['extension', 'agouti', 'dilution', 'dun', 'silver', 'champagne', 'flaxen', 'sooty']
             for gene in required_genes:
                 if gene not in genotype:
@@ -410,7 +367,6 @@ def main():
         choice = input("Enter your choice (1-3): ").strip()
 
         if choice == '1':
-            # Generate random horse
             print("\n" + "=" * 80)
             print("Generating random horse...\n")
 
@@ -419,7 +375,6 @@ def main():
             print("=" * 80)
 
         elif choice == '2':
-            # Breed two horses
             print("\n" + "=" * 80)
             print("BREEDING TWO HORSES")
             print("=" * 80)
@@ -437,7 +392,6 @@ def main():
             print()
 
             try:
-                # Get parent 1 genotype
                 parent1_input = input("Parent 1 genotype: ").strip()
                 if not parent1_input:
                     print("Error: Empty input. Returning to menu.")
@@ -449,7 +403,6 @@ def main():
                     'phenotype': generator.determine_phenotype(parent1_genotype)
                 }
 
-                # Get parent 2 genotype
                 parent2_input = input("Parent 2 genotype: ").strip()
                 if not parent2_input:
                     print("Error: Empty input. Returning to menu.")
@@ -466,7 +419,6 @@ def main():
                 print_horse(generator, parent2, "PARENT 2")
                 print("-" * 80)
 
-                # Breed the horses
                 offspring_genotype = generator.breed_horses(parent1_genotype, parent2_genotype)
                 offspring = {
                     'genotype': offspring_genotype,
