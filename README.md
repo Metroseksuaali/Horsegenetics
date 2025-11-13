@@ -70,17 +70,6 @@ streamlit run streamlit_app.py
 - 🎨 Modern, responsive UI
 - 📱 Works on mobile!
 
-**No tkinter required!** Runs in your browser.
-
-### 🖥️ Desktop GUI (tkinter)
-
-```bash
-python3 horse_genetics_gui.py
-```
-
-**Requirements:** Python 3 with tkinter
-**Features:** Random generator, breeding simulator, help guide
-
 ### Terminal Version
 
 ```bash
@@ -197,7 +186,6 @@ Horsegenetics/
 │   └── main.py                  # FastAPI REST API (NEW v2.1)
 ├── streamlit_app.py             # Web UI (Streamlit) (NEW v2.1)
 ├── horse_genetics.py            # CLI with advanced features
-├── horse_genetics_gui.py        # Desktop GUI (tkinter)
 ├── test_genetics.py             # Unit tests
 ├── test_performance.py          # Performance benchmarks (NEW v2.1)
 ├── Dockerfile                   # Docker container (NEW v2.1)
