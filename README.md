@@ -2,8 +2,6 @@
 
 A scientifically accurate horse color genetics simulator that generates random horses and enables breeding between two horses. The program works both in terminal and with a graphical user interface.
 
-**Version 2.3** - Now with Horse Visualization! Generate SVG images of horses based on their genetics. Includes all 17 genes with accurate color rendering.
-
 [![Python 3.6+](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI Tests](https://github.com/Metroseksuaali/Horsegenetics/actions/workflows/ci.yml/badge.svg)](https://github.com/Metroseksuaali/Horsegenetics/actions/workflows/ci.yml)
@@ -128,61 +126,6 @@ python3 api/main.py
 - `POST /api/batch` - Generate multiple horses
 - `GET /api/genes` - List all genes
 
-## 🎨 Horse Visualization (NEW in v2.3!)
-
-Generate visual representations of horses as SVG images based on their genetics!
-
-### CLI Tool
-
-```bash
-# Generate from phenotype
-python visualize_horse.py --phenotype "Bay Tobiano" --output bay_tobiano.svg
-
-# Generate random horse image
-python visualize_horse.py --random --output random_horse.svg
-
-# Generate from genotype string
-python visualize_horse.py --genotype "E:E/e A:A/a Dil:N/Cr ..." --output horse.svg
-
-# Generate multiple examples
-python visualize_horse.py --examples
-```
-
-### Python API
-
-```python
-from genetics.horse import Horse
-from genetics.visualizer import HorseVisualizer
-
-# Method 1: Using Horse.visualize()
-horse = Horse.random()
-print(f"Generated: {horse.phenotype}")
-horse.visualize("my_horse.svg")  # Creates SVG file
-
-# Method 2: Using HorseVisualizer directly
-visualizer = HorseVisualizer()
-visualizer.save_svg("Buckskin Tobiano", "buckskin.svg")
-
-# Method 3: Get SVG as string
-svg_content = visualizer.generate_svg("Palomino")
-print(svg_content)  # Raw SVG markup
-```
-
-### Features
-- **Accurate Colors**: RGB approximations of real horse coat colors
-- **Pattern Support**: Renders white patterns (Tobiano, Overo, Sabino, Splash)
-- **Appaloosa Spots**: Leopard and fewspot patterns
-- **Roan Effect**: Scattered white hairs throughout coat
-- **Scalable SVG**: Vector graphics that scale to any size
-- **Browser Compatible**: Open SVG files in any web browser
-
-### Example Colors Rendered
-- Base colors: Bay, Chestnut, Black
-- Dilutions: Palomino, Buckskin, Cremello, Perlino
-- Duns: Grullo, Red Dun, Dunalino
-- Patterns: Tobiano, Tovero, Leopard, Fewspot
-- Special: Dominant White, Roan patterns
-
 ## Color Examples
 
 ### Base Colors
@@ -243,7 +186,6 @@ Horsegenetics/
 │   ├── gene_registry.py         # Registry pattern for gene management
 │   ├── gene_interaction.py      # Modular phenotype system
 │   ├── horse.py                 # Fluent API for easy integration
-│   ├── visualizer.py            # Horse SVG generator (NEW v2.3)
 │   ├── breeding_stats.py        # Probability calculator (NEW v2.1)
 │   ├── pedigree.py              # Pedigree tracking (NEW v2.1)
 │   ├── validation.py            # Input validation (NEW v2.1)
@@ -255,10 +197,9 @@ Horsegenetics/
 │   ├── __init__.py
 │   └── main.py                  # FastAPI REST API (NEW v2.1)
 ├── streamlit_app.py             # Web UI (Streamlit) (NEW v2.1)
-├── visualize_horse.py           # Horse visualization CLI (NEW v2.3)
 ├── horse_genetics.py            # CLI with advanced features
 ├── horse_genetics_gui.py        # Desktop GUI (tkinter)
-├── test_genetics.py             # Unit tests (103 tests)
+├── test_genetics.py             # Unit tests
 ├── test_performance.py          # Performance benchmarks (NEW v2.1)
 ├── Dockerfile                   # Docker container (NEW v2.1)
 ├── docker-compose.yml           # Docker Compose (NEW v2.1)
@@ -487,18 +428,7 @@ This program simulates realistic horse coat color genetics using Mendelian inher
 
 **Version History:**
 
-**v2.3** (Latest) - Horse Visualization Update:
-- ✅ **SVG Horse Generator** - Visual representation of horses based on genetics
-- ✅ **CLI Visualization Tool** - `visualize_horse.py` with multiple generation modes
-- ✅ **Horse.visualize() API** - One-line image generation from Horse objects
-- ✅ **Accurate Color Rendering** - RGB approximations for all 17 genes
-- ✅ **Pattern Overlays** - White patterns (Tobiano, Overo, Sabino, Splash)
-- ✅ **Appaloosa Rendering** - Leopard spots and fewspot patterns
-- ✅ **Roan Effect** - Scattered white hairs throughout coat
-- ✅ **103 comprehensive tests** - 10 new tests for visualization functionality
-- ✅ **Browser Compatible SVG** - Scalable vector graphics for any use case
-
-**v2.2** - White Patterns & Appaloosa Update:
+**v2.2** (Latest) - White Patterns & Appaloosa Update:
 - ✅ **17 genes total** - Added Roan, Tobiano, Frame Overo, Sabino, Dominant White (W1-W39), Splash White, Leopard Complex, PATN1
 - ✅ **Dominant White alleles** - W1, W5, W10, W13, W20, W22 with lethality checks (W20 viable)
 - ✅ **Tovero pattern** - Automatic detection of Tobiano + Overo combinations
