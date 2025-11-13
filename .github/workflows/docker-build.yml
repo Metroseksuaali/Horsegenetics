@@ -1,0 +1,68 @@
+name: Docker Build
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: false
+        tags: horse-genetics:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Test Docker container starts
+      run: |
+        docker run --rm -d --name horse-genetics-test -p 8501:8501 horse-genetics:test
+        sleep 10
+        # Check if container is still running
+        if [ "$(docker ps -q -f name=horse-genetics-test)" ]; then
+          echo "✅ Container started successfully"
+          docker stop horse-genetics-test
+        else
+          echo "❌ Container failed to start"
+          docker logs horse-genetics-test
+          exit 1
+        fi
+
+  docker-compose:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Test docker-compose build
+      run: |
+        docker-compose build web
+
+    - name: Test docker-compose up
+      run: |
+        docker-compose up -d web
+        sleep 15
+        # Check if service is running
+        if [ "$(docker-compose ps -q web)" ]; then
+          echo "✅ Docker Compose service started successfully"
+          docker-compose logs web
+          docker-compose down
+        else
+          echo "❌ Docker Compose service failed to start"
+          docker-compose logs web
+          docker-compose down
+          exit 1
+        fi
