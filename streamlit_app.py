@@ -1782,17 +1782,66 @@ elif page == t('nav.statistics', lang):
         # Sort by count (descending)
         sorted_phenotypes = sorted(phenotype_counts.items(), key=lambda x: x[1], reverse=True)
 
-        # Display top 10
-        for phenotype, count in sorted_phenotypes[:10]:
-            percentage = (count / total_horses) * 100
+        # Display mode selection
+        viz_col1, viz_col2 = st.columns([3, 1])
+        with viz_col2:
+            pheno_viz_mode = st.radio(
+                "View",
+                ["Chart", "List"],
+                key="pheno_viz_mode",
+                horizontal=True
+            )
 
-            col_name, col_bar = st.columns([1, 3])
+        if pheno_viz_mode == "Chart":
+            # Create pie chart for top 10 phenotypes
+            if len(sorted_phenotypes) > 0:
+                top_10 = sorted_phenotypes[:10]
+                other_count = sum(count for _, count in sorted_phenotypes[10:])
 
-            with col_name:
-                st.markdown(f"**{phenotype}**")
+                labels = [pheno[:30] + "..." if len(pheno) > 30 else pheno for pheno, _ in top_10]
+                sizes = [count for _, count in top_10]
 
-            with col_bar:
-                st.progress(count / total_horses, text=f"{count} ({percentage:.1f}%)")
+                if other_count > 0:
+                    labels.append("Other")
+                    sizes.append(other_count)
+
+                fig, ax = plt.subplots(figsize=(10, 6))
+                colors = plt.cm.Pastel1(range(len(labels)))
+
+                wedges, texts, autotexts = ax.pie(
+                    sizes,
+                    labels=labels,
+                    autopct='%1.1f%%',
+                    startangle=90,
+                    colors=colors
+                )
+
+                # Make percentage text more readable
+                for autotext in autotexts:
+                    autotext.set_color('black')
+                    autotext.set_fontsize(9)
+                    autotext.set_weight('bold')
+
+                # Make labels more readable
+                for text in texts:
+                    text.set_fontsize(8)
+
+                ax.axis('equal')
+                plt.title('Top 10 Phenotype Distribution', fontsize=14, weight='bold', pad=20)
+                st.pyplot(fig)
+                plt.close()
+        else:
+            # Original list view
+            for phenotype, count in sorted_phenotypes[:10]:
+                percentage = (count / total_horses) * 100
+
+                col_name, col_bar = st.columns([1, 3])
+
+                with col_name:
+                    st.markdown(f"**{phenotype}**")
+
+                with col_bar:
+                    st.progress(count / total_horses, text=f"{count} ({percentage:.1f}%)")
 
         st.markdown("---")
 
@@ -1811,25 +1860,176 @@ elif page == t('nav.statistics', lang):
                 for allele in alleles:
                     gene_alleles[gene_name][allele] = gene_alleles[gene_name].get(allele, 0) + 1
 
+        # Pattern Gene Prevalence Chart
+        st.markdown("#### 🎨 Pattern Gene Prevalence")
+        st.caption("Shows percentage of horses carrying at least one copy of each pattern gene")
+
+        # Calculate prevalence for pattern genes
+        pattern_genes = ['gray', 'dominant_white', 'roan', 'tobiano', 'frame', 'sabino',
+                        'splash', 'leopard', 'champagne']
+        pattern_prevalence = {}
+
+        for gene_name in pattern_genes:
+            if gene_name not in all_genes:
+                continue
+
+            # Count horses with at least one dominant allele
+            horses_with_pattern = 0
+            for item in st.session_state.horses:
+                alleles = item['horse'].genotype[gene_name]
+                # Check if horse has dominant allele (not wild-type)
+                has_dominant = False
+
+                if gene_name == 'gray':
+                    has_dominant = 'G' in alleles
+                elif gene_name == 'dominant_white':
+                    has_dominant = 'W' in alleles or any('W' in a for a in alleles)
+                elif gene_name == 'roan':
+                    has_dominant = 'Rn' in alleles
+                elif gene_name == 'tobiano':
+                    has_dominant = 'TO' in alleles
+                elif gene_name == 'frame':
+                    has_dominant = 'O' in alleles
+                elif gene_name == 'sabino':
+                    has_dominant = 'Sb1' in alleles
+                elif gene_name == 'splash':
+                    has_dominant = 'Spl' in alleles or any('Spl' in a for a in alleles)
+                elif gene_name == 'leopard':
+                    has_dominant = 'Lp' in alleles
+                elif gene_name == 'champagne':
+                    has_dominant = 'Ch' in alleles
+
+                if has_dominant:
+                    horses_with_pattern += 1
+
+            percentage = (horses_with_pattern / total_horses) * 100
+            pattern_prevalence[gene_name] = percentage
+
+        # Create bar chart
+        if pattern_prevalence:
+            gene_viz_mode = st.radio(
+                "Pattern Gene View",
+                ["Chart", "List"],
+                key="gene_viz_mode",
+                horizontal=True
+            )
+
+            if gene_viz_mode == "Chart":
+                fig, ax = plt.subplots(figsize=(12, 6))
+
+                genes = list(pattern_prevalence.keys())
+                percentages = list(pattern_prevalence.values())
+
+                # Create color mapping based on percentage
+                colors = []
+                for pct in percentages:
+                    if pct >= 25:
+                        colors.append('#2E7D32')  # Dark green - common
+                    elif pct >= 10:
+                        colors.append('#1976D2')  # Blue - moderate
+                    elif pct >= 5:
+                        colors.append('#F57C00')  # Orange - uncommon
+                    else:
+                        colors.append('#C62828')  # Red - rare
+
+                bars = ax.bar(genes, percentages, color=colors, alpha=0.8, edgecolor='black', linewidth=1.5)
+
+                # Add value labels on bars
+                for bar, pct in zip(bars, percentages):
+                    height = bar.get_height()
+                    ax.text(bar.get_x() + bar.get_width()/2., height,
+                           f'{pct:.1f}%',
+                           ha='center', va='bottom', fontsize=10, weight='bold')
+
+                ax.set_ylabel('Prevalence (%)', fontsize=12, weight='bold')
+                ax.set_xlabel('Pattern Gene', fontsize=12, weight='bold')
+                ax.set_title('Pattern Gene Prevalence in Population', fontsize=14, weight='bold', pad=20)
+                ax.set_ylim(0, max(percentages) * 1.15 if percentages else 100)
+                ax.grid(axis='y', alpha=0.3, linestyle='--')
+
+                # Rotate x-axis labels
+                plt.xticks(rotation=45, ha='right')
+
+                # Add legend
+                from matplotlib.patches import Patch
+                legend_elements = [
+                    Patch(facecolor='#2E7D32', label='Common (≥25%)'),
+                    Patch(facecolor='#1976D2', label='Moderate (10-25%)'),
+                    Patch(facecolor='#F57C00', label='Uncommon (5-10%)'),
+                    Patch(facecolor='#C62828', label='Rare (<5%)')
+                ]
+                ax.legend(handles=legend_elements, loc='upper right')
+
+                plt.tight_layout()
+                st.pyplot(fig)
+                plt.close()
+
+                # Show realistic comparison
+                st.caption("💡 **Realistic frequencies:** Gray ~30%, Sabino ~26%, Tobiano ~24%, Leopard ~8%, Roan ~7%")
+            else:
+                # List view
+                for gene_name in pattern_genes:
+                    if gene_name in pattern_prevalence:
+                        pct = pattern_prevalence[gene_name]
+                        col_name, col_bar = st.columns([1, 3])
+
+                        with col_name:
+                            st.markdown(f"**{gene_name.replace('_', ' ').title()}**")
+
+                        with col_bar:
+                            st.progress(pct / 100, text=f"{pct:.1f}%")
+
+        st.markdown("---")
+
+        # Individual gene frequency details (in expanders)
+        st.markdown("#### 🔬 Detailed Allele Frequencies")
+
         # Display gene frequency for each gene
         for gene_name in all_genes:
-            with st.expander(f"📊 {t('statistics.gene_diversity', lang, gene=gene_name)}"):
+            with st.expander(f"📊 {gene_name.replace('_', ' ').title()} - Allele Distribution"):
                 allele_counts = gene_alleles[gene_name]
                 total_alleles = sum(allele_counts.values())
 
                 # Sort by frequency
                 sorted_alleles = sorted(allele_counts.items(), key=lambda x: x[1], reverse=True)
 
-                for allele, count in sorted_alleles:
-                    frequency = (count / total_alleles) * 100
+                # Create horizontal bar chart for alleles
+                if len(sorted_alleles) > 1:
+                    alleles = [a for a, _ in sorted_alleles]
+                    counts = [c for _, c in sorted_alleles]
+                    percentages = [(c / total_alleles) * 100 for c in counts]
 
-                    col_allele, col_freq = st.columns([1, 3])
+                    fig, ax = plt.subplots(figsize=(8, max(3, len(alleles) * 0.5)))
 
-                    with col_allele:
-                        st.markdown(f"**{allele}**")
+                    bars = ax.barh(alleles, percentages, color='steelblue', alpha=0.8, edgecolor='black')
 
-                    with col_freq:
-                        st.progress(count / total_alleles, text=f"{count} ({frequency:.1f}%)")
+                    # Add value labels
+                    for bar, pct, count in zip(bars, percentages, counts):
+                        width = bar.get_width()
+                        ax.text(width, bar.get_y() + bar.get_height()/2.,
+                               f' {pct:.1f}% ({count})',
+                               ha='left', va='center', fontsize=10, weight='bold')
+
+                    ax.set_xlabel('Frequency (%)', fontsize=11, weight='bold')
+                    ax.set_title(f'{gene_name.replace("_", " ").title()} Allele Distribution',
+                                fontsize=12, weight='bold')
+                    ax.set_xlim(0, max(percentages) * 1.2)
+                    ax.grid(axis='x', alpha=0.3, linestyle='--')
+
+                    plt.tight_layout()
+                    st.pyplot(fig)
+                    plt.close()
+                else:
+                    # Just show list if only one allele
+                    for allele, count in sorted_alleles:
+                        frequency = (count / total_alleles) * 100
+                        col_allele, col_freq = st.columns([1, 3])
+
+                        with col_allele:
+                            st.markdown(f"**{allele}**")
+
+                        with col_freq:
+                            st.progress(count / total_alleles, text=f"{count} ({frequency:.1f}%)")
 
         st.markdown("---")
 
