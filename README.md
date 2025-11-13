@@ -36,6 +36,12 @@ A scientifically accurate horse color genetics simulator that generates random h
 
 ### 🐳 Docker (Easiest - Recommended!)
 
+**Before building, test that everything works:**
+```bash
+python3 test_docker_build.py
+```
+
+**Then start the application:**
 ```bash
 # Start web interface
 docker-compose up web
