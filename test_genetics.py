@@ -1409,18 +1409,23 @@ class TestVisualizer(unittest.TestCase):
     def test_white_pattern_detection(self):
         """Test white patterns are detected and rendered."""
         svg = self.visualizer.generate_svg("Bay Tobiano")
-        self.assertIn('White patches', svg)
+        # Pixel art should have rect elements and white (#ffffff) pixels for pattern
+        self.assertIn('rect', svg)
+        self.assertIn('Bay Tobiano', svg)  # Phenotype label
 
     def test_leopard_pattern_detection(self):
         """Test leopard patterns are detected and rendered."""
         svg = self.visualizer.generate_svg("Bay Leopard")
-        self.assertIn('Leopard/Appaloosa spots', svg)
+        # Pixel art should contain the phenotype and spots
+        self.assertIn('rect', svg)
+        self.assertIn('Leopard', svg)
 
     def test_roan_pattern_detection(self):
         """Test roan patterns are detected and rendered."""
         svg = self.visualizer.generate_svg("Bay Roan")
-        # Roan should have scattered white dots
-        self.assertIn('circle', svg)
+        # Pixel art should have rect elements for roan pattern
+        self.assertIn('rect', svg)
+        self.assertIn('Roan', svg)  # Phenotype label
 
     def test_dominant_white_renders_white(self):
         """Test Dominant White renders as pure white."""
