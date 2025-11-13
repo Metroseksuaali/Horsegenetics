@@ -856,20 +856,10 @@ if page == t('nav.generator', lang):
 
                 for i, horse in enumerate(generated):
                     with st.expander(f"✨ {horse.phenotype}", expanded=True):
-                        col_img, col_info = st.columns([1, 2])
+                        st.markdown(f"**🎨 {t('generator.color', lang)}:** {horse.phenotype}")
 
-                        with col_img:
-                            # Generate and display horse visualization
-                            from genetics.visualizer import HorseVisualizer
-                            visualizer = HorseVisualizer()
-                            svg_content = visualizer.generate_svg(horse.phenotype, horse.genotype)
-                            st.markdown(svg_content, unsafe_allow_html=True)
-
-                        with col_info:
-                            st.markdown(f"**🎨 {t('generator.color', lang)}:** {horse.phenotype}")
-
-                            with st.expander(f"🧬 {t('generator.genetics', lang)}", expanded=False):
-                                st.code(horse.genotype_string, language="text")
+                        with st.expander(f"🧬 {t('generator.genetics', lang)}", expanded=False):
+                            st.code(horse.genotype_string, language="text")
 
     st.markdown("---")
 
@@ -1133,19 +1123,10 @@ elif page == t('nav.breeding', lang):
 
                         st.markdown("<br>", unsafe_allow_html=True)
 
-                        # Show foal visualization
+                        # Show foal genotype
                         st.markdown(f"### 🎨 {foal_name}")
-                        col_viz, col_gen = st.columns([1, 2])
-
-                        with col_viz:
-                            from genetics.visualizer import HorseVisualizer
-                            visualizer = HorseVisualizer()
-                            svg_content = visualizer.generate_svg(offspring.phenotype, offspring.genotype)
-                            st.markdown(svg_content, unsafe_allow_html=True)
-
-                        with col_gen:
-                            with st.expander(f"🧬 {t('breeding.offspring_genotype', lang)}", expanded=True):
-                                st.code(offspring.genotype_string, language="text")
+                        with st.expander(f"🧬 {t('breeding.offspring_genotype', lang)}", expanded=True):
+                            st.code(offspring.genotype_string, language="text")
 
 elif page == t('nav.probability', lang):
     st.markdown(f'<p class="main-header">📊 {t("probability.title", lang)}</p>', unsafe_allow_html=True)
@@ -1383,20 +1364,10 @@ elif page == t('nav.stable', lang):
                 name = item['name']
 
                 with st.expander(f"🐴 {name} - {horse.phenotype}"):
-                    col_viz, col_info = st.columns([1, 2])
+                    st.markdown(f"**🎨 {t('stable.phenotype_label', lang)}:** {horse.phenotype}")
 
-                    with col_viz:
-                        # Show horse visualization
-                        from genetics.visualizer import HorseVisualizer
-                        visualizer = HorseVisualizer()
-                        svg_content = visualizer.generate_svg(horse.phenotype, horse.genotype)
-                        st.markdown(svg_content, unsafe_allow_html=True)
-
-                    with col_info:
-                        st.markdown(f"**🎨 {t('stable.phenotype_label', lang)}:** {horse.phenotype}")
-
-                        with st.expander("🧬 Genotype", expanded=False):
-                            st.code(horse.genotype_string, language="text")
+                    with st.expander("🧬 Genotype", expanded=False):
+                        st.code(horse.genotype_string, language="text")
 
                         if 'parents' in item:
                             p1_name = st.session_state.horses[item['parents'][0]]['name']
