@@ -709,26 +709,58 @@ if page == t('nav.generator', lang):
             st.markdown("**🎯 Custom Probabilities** - Adjust gene frequencies")
             st.caption("0.0 = always present, 1.0 = never present. Default uses realistic frequencies.")
 
-            col_prob1, col_prob2 = st.columns(2)
+            st.markdown("##### Common Genes (25-35%)")
+            col_common1, col_common2 = st.columns(2)
 
-            with col_prob1:
-                gray_prob = st.slider("Gray frequency", 0.0, 1.0, 0.84, 0.01, key="prob_gray",
+            with col_common1:
+                gray_prob = st.slider("Gray", 0.0, 1.0, 0.84, 0.01, key="prob_gray",
                                      help="Default: 0.84 (→ 30% gray horses)")
-                tobiano_prob = st.slider("Tobiano frequency", 0.0, 1.0, 0.88, 0.01, key="prob_tobiano",
+
+            with col_common2:
+                sabino_prob = st.slider("Sabino", 0.0, 1.0, 0.73, 0.01, key="prob_sabino",
+                                       help="Default: 0.73 (→ 47% sabino horses)")
+
+            st.markdown("##### Moderate Genes (15-25%)")
+            col_mod1, col_mod2 = st.columns(2)
+
+            with col_mod1:
+                tobiano_prob = st.slider("Tobiano", 0.0, 1.0, 0.88, 0.01, key="prob_tobiano",
                                         help="Default: 0.88 (→ 23% tobiano horses)")
-                leopard_prob = st.slider("Leopard frequency", 0.0, 1.0, 0.90, 0.01, key="prob_leopard",
+
+            with col_mod2:
+                leopard_prob = st.slider("Leopard", 0.0, 1.0, 0.90, 0.01, key="prob_leopard",
                                         help="Default: 0.90 (→ 19% leopard horses)")
 
-            with col_prob2:
-                roan_prob = st.slider("Roan frequency", 0.0, 1.0, 0.93, 0.01, key="prob_roan",
+            st.markdown("##### Uncommon Genes (5-10%)")
+            col_unc1, col_unc2 = st.columns(2)
+
+            with col_unc1:
+                roan_prob = st.slider("Roan", 0.0, 1.0, 0.93, 0.01, key="prob_roan",
                                      help="Default: 0.93 (→ 13% roan horses)")
-                champagne_prob = st.slider("Champagne frequency", 0.0, 1.0, 0.95, 0.01, key="prob_champ",
+
+            with col_unc2:
+                champagne_prob = st.slider("Champagne", 0.0, 1.0, 0.95, 0.01, key="prob_champ",
                                           help="Default: 0.95 (→ 10% champagne horses)")
+
+            st.markdown("##### Rare Genes (2-7%)")
+            col_rare1, col_rare2 = st.columns(2)
+
+            with col_rare1:
+                frame_prob = st.slider("Frame", 0.0, 1.0, 0.98, 0.01, key="prob_frame",
+                                      help="Default: 0.98 (→ 4% frame horses)")
+                splash_prob = st.slider("Splash", 0.0, 1.0, 0.96, 0.01, key="prob_splash",
+                                       help="Default: 0.96 (→ 8% splash horses)")
+
+            with col_rare2:
+                dw_prob = st.slider("Dominant White", 0.0, 1.0, 0.99, 0.01, key="prob_dw",
+                                   help="Default: 0.99 (→ 2% dominant white horses)")
 
             # Build custom probabilities dict (only include non-default values)
             custom_probs = {}
             if gray_prob != 0.84:
                 custom_probs['gray'] = gray_prob
+            if sabino_prob != 0.73:
+                custom_probs['sabino'] = sabino_prob
             if tobiano_prob != 0.88:
                 custom_probs['tobiano'] = tobiano_prob
             if leopard_prob != 0.90:
@@ -737,6 +769,12 @@ if page == t('nav.generator', lang):
                 custom_probs['roan'] = roan_prob
             if champagne_prob != 0.95:
                 custom_probs['champagne'] = champagne_prob
+            if frame_prob != 0.98:
+                custom_probs['frame'] = frame_prob
+            if splash_prob != 0.96:
+                custom_probs['splash'] = splash_prob
+            if dw_prob != 0.99:
+                custom_probs['dominant_white'] = dw_prob
 
         if st.button(t('generator.generate_button', lang), type="primary", use_container_width=True):
             with st.spinner(f"🔮 {t('generator.generating', lang)}"):
