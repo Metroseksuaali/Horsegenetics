@@ -1004,8 +1004,6 @@ elif page == t('nav.breeding', lang):
             if forced_exclusions:
                 st.warning(f"⚠️ Forcing exclusion of: {', '.join(forced_exclusions)}")
                 st.caption("This simulates selective breeding where only foals without these traits are kept.")
-        else:
-            forced_exclusions = set()
 
         st.markdown("<br>", unsafe_allow_html=True)
 
