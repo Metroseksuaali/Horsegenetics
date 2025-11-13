@@ -117,9 +117,58 @@ class HorseVisualizer:
         """Check if phenotype is roan."""
         return 'roan' in phenotype.lower()
 
+    def _get_horse_pixel_map(self) -> list:
+        """
+        Get pixel art representation of a horse (side view).
+
+        Returns 2D array where:
+        0 = transparent
+        1 = body
+        2 = mane/tail
+        3 = leg
+        4 = head
+        5 = ear
+        6 = eye
+        """
+        # 40 wide x 32 tall pixel art horse
+        return [
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,5,5,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,5,4,4,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,4,4,6,4,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,2,2,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,2,2,1,1,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,2,2,1,1,1,1,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,2,2,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,2,2,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,2,2,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,2,2,0],
+            [0,0,0,0,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,2,2,2,2,0],
+            [0,0,0,3,3,1,1,1,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,2,2,2,2,2,0],
+            [0,0,0,3,3,3,1,1,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,0],
+            [0,0,0,3,3,3,1,1,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,0,0],
+            [0,0,0,3,3,3,1,1,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,0,0,0],
+            [0,0,0,3,3,3,1,1,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,0,0,0,0],
+            [0,0,0,3,3,3,1,1,3,3,1,1,1,1,1,1,1,1,1,1,1,1,3,1,1,1,3,1,1,1,1,1,1,1,2,0,0,0,0,0],
+            [0,0,0,3,3,3,1,1,3,3,1,1,1,1,1,1,1,1,1,1,1,3,3,1,1,3,3,1,1,1,1,1,1,1,0,0,0,0,0,0],
+            [0,0,0,3,3,3,0,0,3,3,1,1,1,1,1,1,1,1,1,1,1,3,3,1,1,3,3,1,1,1,1,1,1,1,0,0,0,0,0,0],
+            [0,0,0,3,3,3,0,0,3,3,1,1,1,1,1,1,1,1,1,1,1,3,3,1,1,3,3,1,1,1,1,1,1,0,0,0,0,0,0,0],
+            [0,0,0,3,3,3,0,0,3,3,0,0,0,0,0,0,0,0,0,0,0,3,3,0,0,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,3,3,3,0,0,3,3,0,0,0,0,0,0,0,0,0,0,0,3,3,0,0,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,3,3,0,0,0,3,3,0,0,0,0,0,0,0,0,0,0,0,3,3,0,0,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,3,3,0,0,0,3,3,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        ]
+
     def generate_svg(self, phenotype: str, genotype: Optional[Dict] = None) -> str:
         """
-        Generate SVG image of horse based on phenotype.
+        Generate pixel art SVG image of horse based on phenotype.
 
         Args:
             phenotype: Phenotype string (e.g., "Bay Tobiano")
@@ -131,79 +180,106 @@ class HorseVisualizer:
         base_color = self._get_base_color_from_phenotype(phenotype)
         base_hex = self._rgb_to_hex(base_color)
 
-        # Simplified horse silhouette SVG
+        # Get darker shade for mane/tail (black points for bay)
+        is_bay = 'bay' in phenotype.lower() and 'dun' not in phenotype.lower()
+        mane_color = self._rgb_to_hex(self.bay_points if is_bay else tuple(max(0, c-40) for c in base_color))
+
+        # Leg color (black for bay, otherwise base color)
+        leg_color = self._rgb_to_hex(self.bay_points if is_bay else base_color)
+
+        # Head color (same as body)
+        head_color = base_hex
+
+        # Ear color (slightly darker)
+        ear_color = self._rgb_to_hex(tuple(max(0, c-20) for c in base_color))
+
+        pixel_size = 8
+        horse_map = self._get_horse_pixel_map()
+        width = len(horse_map[0]) * pixel_size
+        height = len(horse_map) * pixel_size
+
         svg = f'''<?xml version="1.0" encoding="UTF-8"?>
-<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="bodyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:{base_hex};stop-opacity:1" />
-      <stop offset="100%" style="stop-color:{self._rgb_to_hex(tuple(max(0, c-30) for c in base_color))};stop-opacity:1" />
-    </linearGradient>
-  </defs>
+<svg width="{width + 40}" height="{height + 60}" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#f0f0f0"/>
 
-  <!-- Horse body -->
-  <ellipse cx="200" cy="180" rx="120" ry="80" fill="url(#bodyGradient)" stroke="black" stroke-width="2"/>
-
-  <!-- Horse neck -->
-  <ellipse cx="130" cy="120" rx="40" ry="70" fill="url(#bodyGradient)" stroke="black" stroke-width="2"/>
-
-  <!-- Horse head -->
-  <ellipse cx="100" cy="70" rx="30" ry="35" fill="url(#bodyGradient)" stroke="black" stroke-width="2"/>
-
-  <!-- Legs (front) -->
-  <rect x="160" y="240" width="15" height="55" fill="{base_hex}" stroke="black" stroke-width="2"/>
-  <rect x="190" y="240" width="15" height="55" fill="{base_hex}" stroke="black" stroke-width="2"/>
-
-  <!-- Legs (back) -->
-  <rect x="270" y="240" width="15" height="55" fill="{base_hex}" stroke="black" stroke-width="2"/>
-  <rect x="300" y="240" width="15" height="55" fill="{base_hex}" stroke="black" stroke-width="2"/>
-
-  <!-- Mane -->
-  <path d="M 130 60 Q 120 80 115 100 Q 120 90 125 105 Q 120 95 120 110"
-        fill="{self._rgb_to_hex((0, 0, 0))}" stroke="black" stroke-width="1"/>
-
-  <!-- Tail -->
-  <path d="M 310 170 Q 340 180 350 200 Q 345 185 355 210 Q 350 195 360 220"
-        fill="{self._rgb_to_hex((0, 0, 0))}" stroke="black" stroke-width="1"/>
+  <!-- Pixel art horse -->
+  <g transform="translate(20, 10)">
 '''
+
+        # Render base horse
+        for y, row in enumerate(horse_map):
+            for x, pixel in enumerate(row):
+                if pixel == 0:
+                    continue
+
+                # Determine pixel color
+                if pixel == 1:  # Body
+                    color = base_hex
+                elif pixel == 2:  # Mane/tail
+                    color = mane_color
+                elif pixel == 3:  # Leg
+                    color = leg_color
+                elif pixel == 4:  # Head
+                    color = head_color
+                elif pixel == 5:  # Ear
+                    color = ear_color
+                elif pixel == 6:  # Eye
+                    color = "#000000"
+                else:
+                    color = base_hex
+
+                svg += f'    <rect x="{x * pixel_size}" y="{y * pixel_size}" width="{pixel_size}" height="{pixel_size}" fill="{color}" stroke="#333" stroke-width="0.5"/>\n'
 
         # Add white patterns if present
         if self._has_white_pattern(phenotype):
-            # Tobiano-style white patches
-            svg += '''
-  <!-- White patches (Tobiano/Pinto pattern) -->
-  <ellipse cx="200" cy="140" rx="60" ry="40" fill="white" opacity="0.9"/>
-  <ellipse cx="170" cy="180" rx="40" ry="30" fill="white" opacity="0.9"/>
-  <rect x="270" y="155" width="50" height="50" fill="white" opacity="0.9" rx="10"/>
-'''
+            import random
+            random.seed(hash(phenotype))
+            # Add white patches on body
+            for y, row in enumerate(horse_map):
+                for x, pixel in enumerate(row):
+                    if pixel == 1:  # Only on body
+                        # Create patches based on pattern type
+                        if 'tobiano' in phenotype.lower():
+                            # Tobiano: large patches on back/sides
+                            if (15 <= x <= 30 and 12 <= y <= 20) or (x > 25 and 18 <= y <= 24):
+                                if random.random() < 0.7:
+                                    svg += f'    <rect x="{x * pixel_size}" y="{y * pixel_size}" width="{pixel_size}" height="{pixel_size}" fill="white" stroke="#333" stroke-width="0.5"/>\n'
+                        elif 'frame' in phenotype.lower() or 'overo' in phenotype.lower():
+                            # Frame/Overo: scattered white on body
+                            if 15 <= x <= 28 and 14 <= y <= 22:
+                                if random.random() < 0.4:
+                                    svg += f'    <rect x="{x * pixel_size}" y="{y * pixel_size}" width="{pixel_size}" height="{pixel_size}" fill="white" stroke="#333" stroke-width="0.5"/>\n'
+                        elif 'sabino' in phenotype.lower():
+                            # Sabino: white on legs and belly
+                            if y >= 22 or (16 <= y <= 20 and random.random() < 0.3):
+                                svg += f'    <rect x="{x * pixel_size}" y="{y * pixel_size}" width="{pixel_size}" height="{pixel_size}" fill="white" stroke="#333" stroke-width="0.5"/>\n'
 
         # Add leopard spots if present
         if self._has_leopard(phenotype):
-            svg += '''
-  <!-- Leopard/Appaloosa spots -->
-  <circle cx="180" cy="160" r="8" fill="''' + base_hex + '''" opacity="0.8"/>
-  <circle cx="210" cy="170" r="7" fill="''' + base_hex + '''" opacity="0.8"/>
-  <circle cx="190" cy="190" r="6" fill="''' + base_hex + '''" opacity="0.8"/>
-  <circle cx="230" cy="180" r="8" fill="''' + base_hex + '''" opacity="0.8"/>
-  <circle cx="250" cy="170" r="7" fill="''' + base_hex + '''" opacity="0.8"/>
-  <circle cx="270" cy="190" r="6" fill="''' + base_hex + '''" opacity="0.8"/>
-'''
-
-        # Add roan effect (scattered white hairs)
-        if self._is_roan(phenotype) and not self._has_white_pattern(phenotype):
             import random
-            random.seed(hash(phenotype))  # Consistent pattern for same phenotype
-            roan_dots = ""
-            for _ in range(50):
-                x = random.randint(150, 320)
-                y = random.randint(120, 240)
-                roan_dots += f'  <circle cx="{x}" cy="{y}" r="1" fill="white" opacity="0.6"/>\n'
-            svg += roan_dots
+            random.seed(hash(phenotype) + 1)
+            for y, row in enumerate(horse_map):
+                for x, pixel in enumerate(row):
+                    if pixel == 1 and 12 <= y <= 24:  # Spots on body
+                        if random.random() < 0.15:
+                            spot_size = pixel_size * random.choice([1, 2])
+                            svg += f'    <ellipse cx="{x * pixel_size + pixel_size/2}" cy="{y * pixel_size + pixel_size/2}" rx="{spot_size}" ry="{spot_size}" fill="{mane_color}" opacity="0.8"/>\n'
+
+        # Add roan effect
+        if self._is_roan(phenotype):
+            import random
+            random.seed(hash(phenotype) + 2)
+            for y, row in enumerate(horse_map):
+                for x, pixel in enumerate(row):
+                    if pixel == 1:  # Only on body
+                        if random.random() < 0.25:
+                            svg += f'    <rect x="{x * pixel_size}" y="{y * pixel_size}" width="{pixel_size}" height="{pixel_size}" fill="white" opacity="0.4" stroke="none"/>\n'
+
+        svg += '  </g>\n'
 
         # Phenotype label
         svg += f'''
-  <!-- Phenotype label -->
-  <text x="200" y="290" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">
+  <text x="{(width + 40) / 2}" y="{height + 40}" text-anchor="middle" font-family="monospace" font-size="12" font-weight="bold" fill="#333">
     {phenotype}
   </text>
 
