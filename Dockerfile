@@ -34,4 +34,5 @@ RUN pip install --no-cache-dir streamlit fastapi uvicorn
 EXPOSE 8501 8000
 
 # Default command (Streamlit web UI)
-CMD ["streamlit", "run", "streamlit_app.py", "--server.address", "0.0.0.0", "--client.showDeployButton", "false"]
+# Use minimal toolbar mode to hide Deploy button
+CMD ["streamlit", "run", "streamlit_app.py", "--server.address", "0.0.0.0", "--client.toolbarMode", "minimal"]
