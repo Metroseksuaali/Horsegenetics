@@ -25,6 +25,10 @@ from genetics.io import save_horses_to_json, load_horses_from_json
 import json
 from datetime import datetime
 import random
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from matplotlib.patches import FancyBboxPatch
+import io
 
 # Load translations
 def load_translations(lang='en'):
@@ -147,6 +151,155 @@ def get_phenotype_color(phenotype: str) -> tuple[str, str]:
     # Default (purple gradient)
     else:
         return "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", "white"
+
+def hex_to_rgb(hex_color):
+    """Convert hex color to RGB tuple (0-1 range for matplotlib)."""
+    hex_color = hex_color.lstrip('#')
+    return tuple(int(hex_color[i:i+2], 16) / 255 for i in (0, 2, 4))
+
+def get_phenotype_color_hex(phenotype: str) -> str:
+    """Get a solid hex color for phenotype (for matplotlib)."""
+    phenotype_lower = phenotype.lower()
+
+    # Bay colors (brown)
+    if any(x in phenotype_lower for x in ['bay', 'buckskin', 'amber champagne', 'gold champagne']):
+        return '#8B4513'
+    # Black colors
+    elif any(x in phenotype_lower for x in ['black', 'smoky black', 'smoky cream', 'classic champagne']):
+        return '#2C3E50'
+    # Chestnut colors (red/gold)
+    elif any(x in phenotype_lower for x in ['chestnut', 'flaxen', 'palomino', 'apricot', 'gold pearl']):
+        return '#CD853F'
+    # Cream colors (light)
+    elif any(x in phenotype_lower for x in ['cremello', 'perlino', 'pearl']):
+        return '#FFF8DC'
+    # Gray colors
+    elif any(x in phenotype_lower for x in ['gray', 'grey', 'silver']):
+        return '#A9A9A9'
+    # Champagne
+    elif 'champagne' in phenotype_lower:
+        return '#FFD700'
+    # Default
+    else:
+        return '#667eea'
+
+def generate_pedigree_tree_image(pedigree_tree, horse_id, depth=3):
+    """
+    Generate a visual pedigree tree using matplotlib.
+
+    Args:
+        pedigree_tree: PedigreeTree object
+        horse_id: ID of the horse to visualize
+        depth: Number of generations to show
+
+    Returns:
+        BytesIO buffer containing PNG image
+    """
+    selected_horse = pedigree_tree.horses[horse_id]
+    ancestors = pedigree_tree.get_ancestors(horse_id, depth)
+
+    # Organize horses by generation
+    by_generation = {0: [selected_horse]}
+    for ancestor in ancestors:
+        gen_dist = selected_horse.generation - ancestor.generation
+        if gen_dist not in by_generation:
+            by_generation[gen_dist] = []
+        by_generation[gen_dist].append(ancestor)
+
+    # Create figure
+    fig, ax = plt.subplots(figsize=(14, 10))
+    ax.set_xlim(-0.5, depth + 0.5)
+    ax.set_ylim(-1, len(by_generation.get(max(by_generation.keys()), [])) + 1)
+    ax.axis('off')
+
+    # Calculate positions for each horse
+    positions = {}
+
+    def calculate_positions_recursive(horse, gen_level, y_position):
+        """Recursively calculate positions for the tree."""
+        positions[horse.horse_id] = (gen_level, y_position)
+
+        if gen_level < depth:
+            # Get parents
+            sire = pedigree_tree.horses.get(horse.sire_id) if horse.sire_id else None
+            dam = pedigree_tree.horses.get(horse.dam_id) if horse.dam_id else None
+
+            if sire:
+                calculate_positions_recursive(sire, gen_level + 1, y_position + 0.5)
+            if dam:
+                calculate_positions_recursive(dam, gen_level + 1, y_position - 0.5)
+
+    # Start from selected horse
+    calculate_positions_recursive(selected_horse, 0, 0)
+
+    # Draw connections first (so they appear behind boxes)
+    for horse_id, (x, y) in positions.items():
+        horse = pedigree_tree.horses[horse_id]
+        if horse.sire_id and horse.sire_id in positions:
+            sire_x, sire_y = positions[horse.sire_id]
+            ax.plot([x + 0.4, sire_x - 0.4], [y, sire_y], 'k-', alpha=0.3, linewidth=1.5)
+        if horse.dam_id and horse.dam_id in positions:
+            dam_x, dam_y = positions[horse.dam_id]
+            ax.plot([x + 0.4, dam_x - 0.4], [y, dam_y], 'k-', alpha=0.3, linewidth=1.5)
+
+    # Draw horse boxes
+    for horse_id, (x, y) in positions.items():
+        horse = pedigree_tree.horses[horse_id]
+
+        # Get color
+        color_hex = get_phenotype_color_hex(horse.phenotype)
+        color_rgb = hex_to_rgb(color_hex)
+
+        # Determine text color based on background brightness
+        brightness = (color_rgb[0] * 299 + color_rgb[1] * 587 + color_rgb[2] * 114) / 1000
+        text_color = 'black' if brightness > 0.5 else 'white'
+
+        # Draw box
+        box = FancyBboxPatch(
+            (x - 0.4, y - 0.15),
+            0.8, 0.3,
+            boxstyle="round,pad=0.02",
+            facecolor=color_rgb,
+            edgecolor='black',
+            linewidth=2 if x == 0 else 1
+        )
+        ax.add_patch(box)
+
+        # Add name
+        ax.text(x, y + 0.05, horse.name, ha='center', va='center',
+                fontsize=9, fontweight='bold', color=text_color)
+
+        # Add phenotype
+        ax.text(x, y - 0.08, horse.phenotype, ha='center', va='center',
+                fontsize=7, color=text_color, style='italic')
+
+    # Add generation labels
+    for gen_level in range(depth + 1):
+        if gen_level == 0:
+            label = "Subject"
+        elif gen_level == 1:
+            label = "Parents"
+        elif gen_level == 2:
+            label = "Grandparents"
+        elif gen_level == 3:
+            label = "Great-Grandparents"
+        else:
+            label = f"Generation -{gen_level}"
+
+        ax.text(gen_level, -0.7, label, ha='center', va='center',
+                fontsize=10, fontweight='bold', color='#666')
+
+    # Add title
+    plt.title(f"Pedigree Tree: {selected_horse.name}", fontsize=16, fontweight='bold', pad=20)
+
+    # Save to buffer
+    buf = io.BytesIO()
+    plt.tight_layout()
+    plt.savefig(buf, format='png', dpi=150, bbox_inches='tight')
+    plt.close(fig)
+    buf.seek(0)
+
+    return buf
 
 # Page configuration
 st.set_page_config(
@@ -831,6 +984,33 @@ elif page == t('nav.pedigree', lang):
 
             else:
                 st.info(f"🌱 {t('pedigree.foundation_horse', lang)}")
+
+            # Visual pedigree tree
+            if ancestors:
+                st.markdown("---")
+                st.markdown(f"### 🎨 {t('pedigree.visual_tree_title', lang)}")
+
+                with st.spinner(f"🔮 {t('pedigree.generating_tree', lang)}"):
+                    try:
+                        tree_image = generate_pedigree_tree_image(
+                            st.session_state.pedigree,
+                            selected_id,
+                            depth
+                        )
+
+                        # Display the image
+                        st.image(tree_image, use_container_width=True)
+
+                        # Download button
+                        st.download_button(
+                            label=t('pedigree.download_tree', lang),
+                            data=tree_image,
+                            file_name=f"pedigree_{selected_name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png",
+                            mime="image/png",
+                            use_container_width=True
+                        )
+                    except Exception as e:
+                        st.error(f"Error generating tree visualization: {str(e)}")
 
             # Show genotype details
             st.markdown("---")

@@ -136,7 +136,10 @@
     "view_repeated": "View repeated ancestors",
     "no_inbreeding": "**No inbreeding detected** - This is a diverse pedigree!",
     "foundation_horse": "**Foundation Horse** - This horse was randomly generated and has no ancestors in the pedigree.",
-    "view_genotype": "View Full Genotype"
+    "view_genotype": "View Full Genotype",
+    "visual_tree_title": "Visual Pedigree Tree",
+    "download_tree": "📥 Download Tree as PNG",
+    "generating_tree": "Generating pedigree tree visualization..."
   },
 
   "about": {

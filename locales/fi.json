@@ -136,7 +136,10 @@
     "view_repeated": "Näytä toistuvat esivanhemmat",
     "no_inbreeding": "**Ei sisäsiittoisuutta havaittu** - Tämä on monimuotoinen sukupuu!",
     "foundation_horse": "**Perushevonen** - Tämä hevonen luotiin satunnaisesti eikä sillä ole esivanhempia sukupuussa.",
-    "view_genotype": "Näytä Täydellinen Genotyyppi"
+    "view_genotype": "Näytä Täydellinen Genotyyppi",
+    "visual_tree_title": "Visuaalinen Sukupuu",
+    "download_tree": "📥 Lataa Puu PNG-muodossa",
+    "generating_tree": "Luodaan sukupuun visualisointia..."
   },
 
   "about": {
