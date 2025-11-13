@@ -20,6 +20,7 @@ COPY README.md ./
 # Copy application code
 COPY genetics/ ./genetics/
 COPY api/ ./api/
+COPY locales/ ./locales/
 COPY .streamlit/ ./.streamlit/
 COPY streamlit_app.py ./
 COPY visualize_horse.py ./
