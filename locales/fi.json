@@ -36,7 +36,10 @@
     "genetics": "Genetiikka",
     "tip": "Vinkki: Luo useita hevosia rakentaaksesi tallisi!",
     "recent_horses": "Viimeisimmät Hevoset",
-    "welcome": "Tervetuloa! Luo ensimmäinen hevosesi aloittaaksesi."
+    "welcome": "Tervetuloa! Luo ensimmäinen hevosesi aloittaaksesi.",
+    "naming_title": "Hevosten Nimeäminen",
+    "auto_generate_names": "Luo satunnaiset nimet automaattisesti",
+    "random_name": "🎲 Satunnainen Nimi"
   },
 
   "breeding": {
@@ -56,7 +59,9 @@
     "congratulations": "Onnittelut! Uusi varsa on syntynyt!",
     "meet_foal": "Tapaa Uusi Varsasi!",
     "offspring": "Jälkeläinen",
-    "offspring_genotype": "Jälkeläisen Genotyyppi"
+    "offspring_genotype": "Jälkeläisen Genotyyppi",
+    "foal_name": "Varsan Nimi",
+    "foal_name_placeholder": "Kirjoita varsan nimi..."
   },
 
   "probability": {
@@ -84,6 +89,15 @@
     "total_horses": "Hevosia Yhteensä",
     "bred_horses": "Jalostettuja Hevosia",
     "foundation": "Perushevosia",
+    "search_filter_title": "Haku ja Suodattimet",
+    "search_name": "Hae nimellä",
+    "filter_phenotype": "Suodata fenotyypillä",
+    "filter_type": "Suodata tyypillä",
+    "showing_count": "Näytetään {filtered} / {total} hevosta",
+    "filter_all": "Kaikki",
+    "filter_foundation": "Vain perushevoset",
+    "filter_bred": "Vain jalostetut",
+    "no_results": "Ei tuloksia. Kokeile muuttaa suodattimia.",
     "save_button": "💾 Tallenna Talli (JSON)",
     "load_button": "📂 Lataa Talli",
     "clear_button": "🗑️ Tyhjennä Talli",
@@ -94,7 +108,8 @@
     "parents_label": "Vanhemmat",
     "foundation_horse": "Perushevonen",
     "rename": "Nimeä Uudelleen",
-    "empty_stable": "Tallisi on tyhjä. Käy **Generaattorissa** luomassa hevosia!"
+    "empty_stable": "Tallisi on tyhjä. Käy **Generaattorissa** luomassa hevosia!",
+    "generate_random_name": "🎲 Luo Satunnainen Nimi"
   },
 
   "pedigree": {

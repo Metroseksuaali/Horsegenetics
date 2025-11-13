@@ -36,7 +36,10 @@
     "genetics": "Genetics",
     "tip": "Tip: Generate multiple horses to build your stable!",
     "recent_horses": "Recent Horses",
-    "welcome": "Welcome! Generate your first horse to get started."
+    "welcome": "Welcome! Generate your first horse to get started.",
+    "naming_title": "Horse Naming",
+    "auto_generate_names": "Auto-generate random names",
+    "random_name": "🎲 Random Name"
   },
 
   "breeding": {
@@ -56,7 +59,9 @@
     "congratulations": "Congratulations! A new foal has been born!",
     "meet_foal": "Meet Your New Foal!",
     "offspring": "Offspring",
-    "offspring_genotype": "Offspring Genotype"
+    "offspring_genotype": "Offspring Genotype",
+    "foal_name": "Foal Name",
+    "foal_name_placeholder": "Enter foal name..."
   },
 
   "probability": {
@@ -84,6 +89,15 @@
     "total_horses": "Total Horses",
     "bred_horses": "Bred Horses",
     "foundation": "Foundation",
+    "search_filter_title": "Search & Filter",
+    "search_name": "Search by name",
+    "filter_phenotype": "Filter by phenotype",
+    "filter_type": "Filter by type",
+    "showing_count": "Showing {filtered} of {total} horses",
+    "filter_all": "All",
+    "filter_foundation": "Foundation Only",
+    "filter_bred": "Bred Only",
+    "no_results": "No horses match your filters. Try adjusting your search criteria.",
     "save_button": "💾 Save Stable (JSON)",
     "load_button": "📂 Load Stable",
     "clear_button": "🗑️ Clear Stable",
@@ -94,7 +108,8 @@
     "parents_label": "Parents",
     "foundation_horse": "Foundation Horse",
     "rename": "Rename",
-    "empty_stable": "Your stable is empty. Visit the **Generator** to create horses!"
+    "empty_stable": "Your stable is empty. Visit the **Generator** to create horses!",
+    "generate_random_name": "🎲 Generate Random Name"
   },
 
   "pedigree": {
