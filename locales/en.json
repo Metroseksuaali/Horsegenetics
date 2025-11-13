@@ -9,6 +9,7 @@
     "stable": "📚 My Stable",
     "pedigree": "🌳 Pedigree",
     "compare": "⚖️ Compare",
+    "statistics": "📈 Statistics",
     "about": "📖 About"
   },
 
@@ -113,6 +114,32 @@
     "rename": "Rename",
     "empty_stable": "Your stable is empty. Visit the **Generator** to create horses!",
     "generate_random_name": "🎲 Generate Random Name"
+  },
+
+  "statistics": {
+    "title": "Stable Statistics",
+    "subtitle": "Analyze your horse collection and genetic diversity",
+    "how_to_use": "How to use",
+    "instructions": "**Instructions:**\n1. View statistics automatically calculated from your stable\n2. Explore phenotype distributions and gene frequencies\n3. Understand breeding patterns and genetic diversity\n\n**What you'll see:**\n- **Overview** - Total horses, breeding stats, generation info\n- **Phenotype Distribution** - Most common coat colors\n- **Gene Analysis** - Frequency of alleles in your stable\n- **Diversity Score** - Genetic diversity metrics\n\n**Tip:** Use this to identify which genes are rare in your stable and plan breeding for more diversity!",
+    "need_horses": "You need at least 1 horse to view statistics. Visit the **Generator** page first!",
+    "overview_title": "Stable Overview",
+    "phenotype_title": "Phenotype Distribution",
+    "gene_title": "Gene Frequency Analysis",
+    "diversity_title": "Genetic Diversity",
+    "total_horses": "Total Horses",
+    "foundation_count": "Foundation",
+    "bred_count": "Bred",
+    "unique_phenotypes": "Unique Phenotypes",
+    "most_common_phenotype": "Most Common",
+    "diversity_score": "Diversity Score",
+    "diversity_high": "High - Your stable has excellent genetic diversity!",
+    "diversity_medium": "Medium - Consider breeding for more variety",
+    "diversity_low": "Low - Many horses share similar genetics",
+    "phenotype_count": "Count",
+    "phenotype_percent": "Percentage",
+    "allele": "Allele",
+    "frequency": "Frequency",
+    "gene_diversity": "Gene Diversity for {gene}"
   },
 
   "compare": {

@@ -9,6 +9,7 @@
     "stable": "📚 Talli",
     "pedigree": "🌳 Sukupuu",
     "compare": "⚖️ Vertailu",
+    "statistics": "📈 Tilastot",
     "about": "📖 Tietoja"
   },
 
@@ -113,6 +114,32 @@
     "rename": "Nimeä Uudelleen",
     "empty_stable": "Tallisi on tyhjä. Käy **Generaattorissa** luomassa hevosia!",
     "generate_random_name": "🎲 Luo Satunnainen Nimi"
+  },
+
+  "statistics": {
+    "title": "Tallin Tilastot",
+    "subtitle": "Analysoi hevoskokoelmaasi ja geneettistä monimuotoisuutta",
+    "how_to_use": "Käyttöohjeet",
+    "instructions": "**Ohjeet:**\n1. Katso automaattisesti lasketut tilastot tallista\n2. Tutki fenotyyppien jakaumaa ja geenien esiintymistiheyttä\n3. Ymmärrä jalostussuunnitelmia ja geneettistä monimuotoisuutta\n\n**Mitä näet:**\n- **Yleiskatsaus** - Hevosten kokonaismäärä, jalostustilastot, sukupolvet\n- **Fenotyyppijakauma** - Yleisimmät värit\n- **Geenianalyysi** - Alleelien esiintymistiheys tallissasi\n- **Monimuotoisuuspisteet** - Geneettisen monimuotoisuuden mittarit\n\n**Vinkki:** Käytä tätä tunnistaaksesi mitkä geenit ovat harvinaisia tallissasi ja suunnittele jalostusta lisätäksesi monimuotoisuutta!",
+    "need_horses": "Tarvitset vähintään 1 hevosen nähdäksesi tilastot. Käy ensin **Generaattori**-sivulla!",
+    "overview_title": "Tallin Yleiskatsaus",
+    "phenotype_title": "Fenotyyppijakauma",
+    "gene_title": "Geenien Esiintymistiheys",
+    "diversity_title": "Geneettinen Monimuotoisuus",
+    "total_horses": "Hevosia Yhteensä",
+    "foundation_count": "Perushevosia",
+    "bred_count": "Jalostettuja",
+    "unique_phenotypes": "Uniikkeja Fenotyyppejä",
+    "most_common_phenotype": "Yleisin",
+    "diversity_score": "Monimuotoisuuspisteet",
+    "diversity_high": "Korkea - Tallissasi on erinomainen geneettinen monimuotoisuus!",
+    "diversity_medium": "Kohtalainen - Harkitse jalostusta lisätäksesi vaihtelua",
+    "diversity_low": "Matala - Monilla hevosilla on samankaltainen genetiikka",
+    "phenotype_count": "Määrä",
+    "phenotype_percent": "Prosentti",
+    "allele": "Alleeli",
+    "frequency": "Esiintymistiheys",
+    "gene_diversity": "Geenin Monimuotoisuus: {gene}"
   },
 
   "compare": {

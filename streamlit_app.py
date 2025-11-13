@@ -494,7 +494,8 @@ with st.sidebar:
     page = st.radio(
         "**📍 Navigation**",
         [t('nav.generator', lang), t('nav.breeding', lang), t('nav.probability', lang),
-         t('nav.stable', lang), t('nav.pedigree', lang), t('nav.compare', lang), t('nav.about', lang)],
+         t('nav.stable', lang), t('nav.pedigree', lang), t('nav.compare', lang),
+         t('nav.statistics', lang), t('nav.about', lang)],
         label_visibility="collapsed"
     )
 
@@ -1288,6 +1289,136 @@ elif page == t('nav.compare', lang):
                     st.markdown("✅")
                 else:
                     st.markdown("❌")
+
+elif page == t('nav.statistics', lang):
+    st.markdown(f'<p class="main-header">📈 {t("statistics.title", lang)}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="subtitle">{t("statistics.subtitle", lang)}</p>', unsafe_allow_html=True)
+
+    # Help/Instructions
+    with st.expander(f"ℹ️ {t('statistics.how_to_use', lang)}", expanded=False):
+        st.markdown(t('statistics.instructions', lang))
+
+    st.markdown("---")
+
+    if len(st.session_state.horses) == 0:
+        st.warning(f"⚠️ {t('statistics.need_horses', lang)}")
+    else:
+        # Overview statistics
+        st.markdown(f"### 📊 {t('statistics.overview_title', lang)}")
+
+        total_horses = len(st.session_state.horses)
+        bred_horses = sum(1 for h in st.session_state.horses if 'parents' in h)
+        foundation_horses = total_horses - bred_horses
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+            st.metric(f"🐴 {t('statistics.total_horses', lang)}", total_horses)
+
+        with col2:
+            st.metric(f"✨ {t('statistics.foundation_count', lang)}", foundation_horses)
+
+        with col3:
+            st.metric(f"🧬 {t('statistics.bred_count', lang)}", bred_horses)
+
+        with col4:
+            phenotypes = set(item['horse'].phenotype for item in st.session_state.horses)
+            st.metric(f"🎨 {t('statistics.unique_phenotypes', lang)}", len(phenotypes))
+
+        st.markdown("---")
+
+        # Phenotype distribution
+        st.markdown(f"### 🎨 {t('statistics.phenotype_title', lang)}")
+
+        phenotype_counts = {}
+        for item in st.session_state.horses:
+            pheno = item['horse'].phenotype
+            phenotype_counts[pheno] = phenotype_counts.get(pheno, 0) + 1
+
+        # Sort by count (descending)
+        sorted_phenotypes = sorted(phenotype_counts.items(), key=lambda x: x[1], reverse=True)
+
+        # Display top 10
+        for phenotype, count in sorted_phenotypes[:10]:
+            percentage = (count / total_horses) * 100
+
+            col_name, col_bar = st.columns([1, 3])
+
+            with col_name:
+                st.markdown(f"**{phenotype}**")
+
+            with col_bar:
+                st.progress(count / total_horses, text=f"{count} ({percentage:.1f}%)")
+
+        st.markdown("---")
+
+        # Gene frequency analysis
+        st.markdown(f"### 🧬 {t('statistics.gene_title', lang)}")
+
+        # Collect all alleles for each gene
+        gene_alleles = {}
+        all_genes = list(st.session_state.horses[0]['horse'].genotype.keys())
+
+        for gene_name in all_genes:
+            gene_alleles[gene_name] = {}
+
+        for item in st.session_state.horses:
+            for gene_name, alleles in item['horse'].genotype.items():
+                for allele in alleles:
+                    gene_alleles[gene_name][allele] = gene_alleles[gene_name].get(allele, 0) + 1
+
+        # Display gene frequency for each gene
+        for gene_name in all_genes:
+            with st.expander(f"📊 {t('statistics.gene_diversity', lang, gene=gene_name)}"):
+                allele_counts = gene_alleles[gene_name]
+                total_alleles = sum(allele_counts.values())
+
+                # Sort by frequency
+                sorted_alleles = sorted(allele_counts.items(), key=lambda x: x[1], reverse=True)
+
+                for allele, count in sorted_alleles:
+                    frequency = (count / total_alleles) * 100
+
+                    col_allele, col_freq = st.columns([1, 3])
+
+                    with col_allele:
+                        st.markdown(f"**{allele}**")
+
+                    with col_freq:
+                        st.progress(count / total_alleles, text=f"{count} ({frequency:.1f}%)")
+
+        st.markdown("---")
+
+        # Diversity score
+        st.markdown(f"### 🌈 {t('statistics.diversity_title', lang)}")
+
+        # Calculate diversity score based on phenotype variety
+        phenotype_diversity = len(phenotypes) / total_horses
+        unique_ratio = phenotype_diversity
+
+        # Calculate genetic diversity based on allele distribution
+        total_gene_diversity = 0
+        for gene_name in all_genes:
+            unique_alleles = len(gene_alleles[gene_name])
+            total_gene_diversity += unique_alleles
+
+        avg_gene_diversity = total_gene_diversity / len(all_genes)
+
+        # Overall diversity score (0-100)
+        diversity_score = int(((phenotype_diversity + (avg_gene_diversity / 10)) / 2) * 100)
+
+        col_div1, col_div2 = st.columns([1, 2])
+
+        with col_div1:
+            st.metric(f"🌟 {t('statistics.diversity_score', lang)}", f"{diversity_score}%")
+
+        with col_div2:
+            if diversity_score >= 70:
+                st.success(f"✅ {t('statistics.diversity_high', lang)}")
+            elif diversity_score >= 40:
+                st.info(f"📊 {t('statistics.diversity_medium', lang)}")
+            else:
+                st.warning(f"⚠️ {t('statistics.diversity_low', lang)}")
 
 else:  # About
     st.markdown(f'<p class="main-header">📖 {t("about.title", lang)}</p>', unsafe_allow_html=True)
