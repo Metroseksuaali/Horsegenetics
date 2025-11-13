@@ -95,15 +95,43 @@ class GeneRegistry:
         """
         Generate a random pair of alleles for a gene.
 
+        Avoids lethal combinations:
+        - Frame Overo O/O (LWOS)
+        - Dominant White lethal homozygous (W1/W1, W5/W5, W10/W10, W13/W13, W22/W22)
+
         Args:
             gene: GeneDefinition to generate alleles for
 
         Returns:
-            tuple: Sorted pair of alleles
+            tuple: Sorted pair of alleles (guaranteed viable)
         """
-        allele1 = random.choice(gene.alleles)
-        allele2 = random.choice(gene.alleles)
-        return gene.sort_alleles([allele1, allele2])
+        max_attempts = 100
+        for _ in range(max_attempts):
+            allele1 = random.choice(gene.alleles)
+            allele2 = random.choice(gene.alleles)
+            pair = gene.sort_alleles([allele1, allele2])
+
+            # Check for lethal combinations
+            # Frame Overo: O/O is lethal
+            if gene.name == 'frame' and pair == ('O', 'O'):
+                continue
+
+            # Dominant White: Most homozygous combinations are lethal (except W20/W20)
+            if gene.name == 'dominant_white':
+                lethal_w_alleles = ['W1', 'W5', 'W10', 'W13', 'W22']
+                if pair[0] == pair[1] and pair[0] in lethal_w_alleles:
+                    continue
+
+            # Valid combination found
+            return pair
+
+        # Fallback: force heterozygous or homozygous wildtype
+        if gene.name == 'frame':
+            return ('n', 'n')  # Safe: no Frame Overo
+        elif gene.name == 'dominant_white':
+            return ('W20', 'n')  # Safe: W20 is non-lethal when heterozygous
+        else:
+            return gene.sort_alleles([allele1, allele2])
 
     def count_alleles(self, genotype: Tuple[str, str], allele: str) -> int:
         """

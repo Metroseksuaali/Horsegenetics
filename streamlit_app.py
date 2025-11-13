@@ -184,9 +184,62 @@ def get_phenotype_color_hex(phenotype: str) -> str:
     else:
         return '#667eea'
 
+def check_breeding_risks(parent1, parent2):
+    """
+    Check for potential lethal combinations in breeding.
+
+    Args:
+        parent1: First parent Horse object
+        parent2: Second parent Horse object
+
+    Returns:
+        dict with 'has_risk', 'risk_type', 'risk_percentage', 'warning_message'
+    """
+    risks = []
+
+    # Check Frame Overo (LWOS risk)
+    parent1_frame = parent1.genotype.get('frame', ('n', 'n'))
+    parent2_frame = parent2.genotype.get('frame', ('n', 'n'))
+
+    if 'O' in parent1_frame and 'O' in parent2_frame:
+        risks.append({
+            'type': 'LWOS',
+            'percentage': 25,
+            'message': '⚠️ **LWOS RISK**: Both parents carry Frame Overo (O). 25% chance of lethal white foal that will not survive.'
+        })
+
+    # Check Dominant White lethal combinations
+    lethal_w_alleles = ['W1', 'W5', 'W10', 'W13', 'W22']
+    parent1_w = parent1.genotype.get('dominant_white', ('n', 'n'))
+    parent2_w = parent2.genotype.get('dominant_white', ('n', 'n'))
+
+    parent1_has_lethal_w = any(allele in lethal_w_alleles for allele in parent1_w)
+    parent2_has_lethal_w = any(allele in lethal_w_alleles for allele in parent2_w)
+
+    if parent1_has_lethal_w and parent2_has_lethal_w:
+        # Check if they have the same lethal W allele
+        for allele in lethal_w_alleles:
+            if allele in parent1_w and allele in parent2_w:
+                risks.append({
+                    'type': 'Dominant White',
+                    'percentage': 25,
+                    'message': f'⚠️ **DOMINANT WHITE RISK**: Both parents carry {allele}. 25% chance of lethal homozygous {allele}/{allele} embryo.'
+                })
+                break
+
+    if risks:
+        return {
+            'has_risk': True,
+            'risks': risks,
+            'total_survival_rate': 100 - sum(r['percentage'] for r in risks)
+        }
+    else:
+        return {'has_risk': False, 'risks': []}
+
+
 def generate_pedigree_tree_image(pedigree_tree, horse_id, depth=3):
     """
-    Generate a visual pedigree tree using matplotlib.
+    Generate a modern, beautiful pedigree tree using matplotlib.
 
     Args:
         pedigree_tree: PedigreeTree object
@@ -207,10 +260,11 @@ def generate_pedigree_tree_image(pedigree_tree, horse_id, depth=3):
             by_generation[gen_dist] = []
         by_generation[gen_dist].append(ancestor)
 
-    # Create figure
-    fig, ax = plt.subplots(figsize=(14, 10))
-    ax.set_xlim(-0.5, depth + 0.5)
-    ax.set_ylim(-1, len(by_generation.get(max(by_generation.keys()), [])) + 1)
+    # Create figure with modern styling
+    fig, ax = plt.subplots(figsize=(16, 12), facecolor='#f8f9fa')
+    ax.set_facecolor('#f8f9fa')
+    ax.set_xlim(-0.7, depth + 0.7)
+    ax.set_ylim(-1.5, len(by_generation.get(max(by_generation.keys()), [])) + 1.5)
     ax.axis('off')
 
     # Calculate positions for each horse
@@ -226,24 +280,30 @@ def generate_pedigree_tree_image(pedigree_tree, horse_id, depth=3):
             dam = pedigree_tree.horses.get(horse.dam_id) if horse.dam_id else None
 
             if sire:
-                calculate_positions_recursive(sire, gen_level + 1, y_position + 0.5)
+                calculate_positions_recursive(sire, gen_level + 1, y_position + 0.6)
             if dam:
-                calculate_positions_recursive(dam, gen_level + 1, y_position - 0.5)
+                calculate_positions_recursive(dam, gen_level + 1, y_position - 0.6)
 
     # Start from selected horse
     calculate_positions_recursive(selected_horse, 0, 0)
 
-    # Draw connections first (so they appear behind boxes)
+    # Draw connections with modern gradient style
     for horse_id, (x, y) in positions.items():
         horse = pedigree_tree.horses[horse_id]
         if horse.sire_id and horse.sire_id in positions:
             sire_x, sire_y = positions[horse.sire_id]
-            ax.plot([x + 0.4, sire_x - 0.4], [y, sire_y], 'k-', alpha=0.3, linewidth=1.5)
+            # Draw curved connection to sire
+            ax.plot([x + 0.45, (x + sire_x)/2, sire_x - 0.45],
+                   [y, (y + sire_y)/2, sire_y],
+                   color='#667eea', alpha=0.4, linewidth=2.5, zorder=1)
         if horse.dam_id and horse.dam_id in positions:
             dam_x, dam_y = positions[horse.dam_id]
-            ax.plot([x + 0.4, dam_x - 0.4], [y, dam_y], 'k-', alpha=0.3, linewidth=1.5)
+            # Draw curved connection to dam
+            ax.plot([x + 0.45, (x + dam_x)/2, dam_x - 0.45],
+                   [y, (y + dam_y)/2, dam_y],
+                   color='#f093fb', alpha=0.4, linewidth=2.5, zorder=1)
 
-    # Draw horse boxes
+    # Draw horse boxes with modern card design
     for horse_id, (x, y) in positions.items():
         horse = pedigree_tree.horses[horse_id]
 
@@ -253,50 +313,119 @@ def generate_pedigree_tree_image(pedigree_tree, horse_id, depth=3):
 
         # Determine text color based on background brightness
         brightness = (color_rgb[0] * 299 + color_rgb[1] * 587 + color_rgb[2] * 114) / 1000
-        text_color = 'black' if brightness > 0.5 else 'white'
+        text_color = 'white' if brightness < 0.5 else '#2d3748'
 
-        # Draw box
+        # Draw shadow for depth
+        shadow = FancyBboxPatch(
+            (x - 0.42, y - 0.22),
+            0.9, 0.42,
+            boxstyle="round,pad=0.03",
+            facecolor='#00000020',
+            edgecolor='none',
+            zorder=2
+        )
+        ax.add_patch(shadow)
+
+        # Draw main card with gradient effect
         box = FancyBboxPatch(
-            (x - 0.4, y - 0.15),
-            0.8, 0.3,
-            boxstyle="round,pad=0.02",
+            (x - 0.45, y - 0.2),
+            0.9, 0.4,
+            boxstyle="round,pad=0.03",
             facecolor=color_rgb,
-            edgecolor='black',
-            linewidth=2 if x == 0 else 1
+            edgecolor='white' if x == 0 else '#e2e8f0',
+            linewidth=4 if x == 0 else 2,
+            zorder=3
         )
         ax.add_patch(box)
 
-        # Add name
-        ax.text(x, y + 0.05, horse.name, ha='center', va='center',
-                fontsize=9, fontweight='bold', color=text_color)
+        # Add gender icon
+        gender_icon = '♂' if 'sire' in horse.name.lower() or x > 0 and y > 0 else '♀'
+        if x == 0:
+            gender_icon = '🐴'
 
-        # Add phenotype
-        ax.text(x, y - 0.08, horse.phenotype, ha='center', va='center',
-                fontsize=7, color=text_color, style='italic')
+        ax.text(x - 0.38, y + 0.12, gender_icon, ha='left', va='center',
+                fontsize=11, color=text_color, zorder=4)
 
-    # Add generation labels
+        # Add name with better typography
+        name_text = horse.name if len(horse.name) <= 15 else horse.name[:13] + '...'
+        ax.text(x, y + 0.08, name_text, ha='center', va='center',
+                fontsize=10, fontweight='bold', color=text_color,
+                fontfamily='sans-serif', zorder=4)
+
+        # Add phenotype with truncation
+        phenotype_text = horse.phenotype if len(horse.phenotype) <= 20 else horse.phenotype[:18] + '...'
+        ax.text(x, y - 0.08, phenotype_text, ha='center', va='center',
+                fontsize=8, color=text_color, style='italic',
+                fontfamily='sans-serif', alpha=0.9, zorder=4)
+
+        # Add generation badge for subject
+        if x == 0:
+            badge = FancyBboxPatch(
+                (x - 0.15, y + 0.22),
+                0.3, 0.12,
+                boxstyle="round,pad=0.01",
+                facecolor='#48bb78',
+                edgecolor='white',
+                linewidth=1.5,
+                zorder=5
+            )
+            ax.add_patch(badge)
+            ax.text(x, y + 0.28, 'Subject', ha='center', va='center',
+                    fontsize=7, fontweight='bold', color='white', zorder=6)
+
+    # Add modern generation labels with better styling
     for gen_level in range(depth + 1):
         if gen_level == 0:
-            label = "Subject"
+            label = "🎯 Subject"
+            color = '#48bb78'
         elif gen_level == 1:
-            label = "Parents"
+            label = "👨‍👩 Parents"
+            color = '#667eea'
         elif gen_level == 2:
-            label = "Grandparents"
+            label = "👴👵 Grandparents"
+            color = '#f093fb'
         elif gen_level == 3:
-            label = "Great-Grandparents"
+            label = "🌳 Great-Grandparents"
+            color = '#feca57'
         else:
-            label = f"Generation -{gen_level}"
+            label = f"Gen -{gen_level}"
+            color = '#a0aec0'
 
-        ax.text(gen_level, -0.7, label, ha='center', va='center',
-                fontsize=10, fontweight='bold', color='#666')
+        # Background badge for generation label
+        label_bg = FancyBboxPatch(
+            (gen_level - 0.35, -1.15),
+            0.7, 0.25,
+            boxstyle="round,pad=0.02",
+            facecolor=color,
+            edgecolor='white',
+            linewidth=2,
+            alpha=0.9,
+            zorder=4
+        )
+        ax.add_patch(label_bg)
 
-    # Add title
-    plt.title(f"Pedigree Tree: {selected_horse.name}", fontsize=16, fontweight='bold', pad=20)
+        ax.text(gen_level, -1.02, label, ha='center', va='center',
+                fontsize=10, fontweight='bold', color='white',
+                fontfamily='sans-serif', zorder=5)
 
-    # Save to buffer
+    # Add modern title with styling
+    title_text = f"🐴 Family Tree: {selected_horse.name}"
+    plt.text(depth/2, max(positions.values(), key=lambda p: p[1])[1] + 0.8,
+             title_text,
+             ha='center', va='center',
+             fontsize=18, fontweight='bold',
+             color='#2d3748',
+             fontfamily='sans-serif',
+             bbox=dict(boxstyle='round,pad=0.5',
+                      facecolor='white',
+                      edgecolor='#667eea',
+                      linewidth=3))
+
+    # Save to buffer with high quality
     buf = io.BytesIO()
-    plt.tight_layout()
-    plt.savefig(buf, format='png', dpi=150, bbox_inches='tight')
+    plt.tight_layout(pad=1.5)
+    plt.savefig(buf, format='png', dpi=200, bbox_inches='tight',
+                facecolor='#f8f9fa', edgecolor='none')
     plt.close(fig)
     buf.seek(0)
 
@@ -635,6 +764,15 @@ elif page == t('nav.breeding', lang):
 
         st.markdown("<br>", unsafe_allow_html=True)
 
+        # Check for breeding risks
+        risk_check = check_breeding_risks(parent1, parent2)
+        if risk_check['has_risk']:
+            st.error("🚨 **WARNING: Lethal Gene Combination Detected!**")
+            for risk in risk_check['risks']:
+                st.warning(risk['message'])
+            st.info(f"💡 **Recommendation**: Avoid this breeding pair. Choose a parent without the {risk_check['risks'][0]['type']} gene to ensure 100% viable foals.")
+            st.markdown("---")
+
         # Foal naming section
         st.markdown(f"### 🏷️ {t('generator.naming_title', lang)}")
         col_name1, col_name2 = st.columns([3, 1])
@@ -666,52 +804,102 @@ elif page == t('nav.breeding', lang):
                 with st.spinner(f"🔬 {t('breeding.breeding', lang)}"):
                     offspring = Horse.breed(parent1, parent2)
 
-                    # Use provided name or generate default
-                    if not foal_name:
-                        foal_name = generate_random_horse_name()
+                    # Check if offspring is NONVIABLE
+                    is_nonviable = 'NONVIABLE' in offspring.phenotype
 
-                    st.session_state.horses.append({
-                        'horse': offspring,
-                        'name': foal_name,
-                        'generated_at': datetime.now().isoformat(),
-                        'parents': (parent1_idx, parent2_idx)
-                    })
+                    if is_nonviable:
+                        # Show sad message for lethal foal
+                        st.error("💔 **Breeding Resulted in Non-Viable Foal**")
 
-                    # Add to pedigree
-                    st.session_state.pedigree.add_breeding(
-                        parent1, parent2, offspring,
-                        sire_name=st.session_state.horses[parent1_idx]['name'],
-                        dam_name=st.session_state.horses[parent2_idx]['name'],
-                        foal_name=foal_name
-                    )
+                        st.markdown("### ⚠️ What Happened?")
+                        col_res1, col_res2, col_res3 = st.columns(3)
 
-                    # Clear suggested name after breeding
-                    if 'suggested_foal_name' in st.session_state:
-                        del st.session_state.suggested_foal_name
+                        with col_res1:
+                            st.markdown(f"**👨 {t('breeding.sire', lang)}**")
+                            st.info(parent1.phenotype)
 
-                    st.success(f"🎊 {t('breeding.congratulations', lang)}")
+                        with col_res2:
+                            st.markdown(f"**❌ {t('breeding.offspring', lang)}**")
+                            st.error(f"**{offspring.phenotype}**")
 
-                    # Display offspring beautifully
-                    st.markdown(f"### 🐴 {t('breeding.meet_foal', lang)}")
+                        with col_res3:
+                            st.markdown(f"**👩 {t('breeding.dam', lang)}**")
+                            st.info(parent2.phenotype)
 
-                    col_res1, col_res2, col_res3 = st.columns(3)
+                        st.markdown("<br>", unsafe_allow_html=True)
 
-                    with col_res1:
-                        st.markdown(f"**👨 {t('breeding.sire', lang)}**")
-                        st.info(parent1.phenotype)
+                        # Explain the genetics
+                        st.warning("""
+                        **🧬 Genetic Explanation:**
 
-                    with col_res2:
-                        st.markdown(f"**🐴 {t('breeding.offspring', lang)}**")
-                        st.success(f"**{offspring.phenotype}**")
+                        This foal inherited a lethal gene combination from both parents. In real horse breeding:
+                        - **LWOS (Lethal White Overo Syndrome)**: O/O foals are born all white but lack nerve cells in their intestines. They die within 2-3 days.
+                        - **Dominant White homozygous**: Most W/W combinations (except W20/W20) result in embryonic death.
 
-                    with col_res3:
-                        st.markdown(f"**👩 {t('breeding.dam', lang)}**")
-                        st.info(parent2.phenotype)
+                        **This foal was NOT added to your stable.**
+                        """)
 
-                    st.markdown("<br>", unsafe_allow_html=True)
+                        st.info("""
+                        💡 **Breeding Recommendation:**
 
-                    with st.expander(f"🧬 {t('breeding.offspring_genotype', lang)}", expanded=True):
-                        st.code(offspring.genotype_string, language="text")
+                        To avoid lethal foals:
+                        - ❌ **DON'T breed** Frame Overo (O/n) × Frame Overo (O/n)
+                        - ❌ **DON'T breed** two horses with the same lethal Dominant White allele
+                        - ✅ **DO breed** Frame Overo (O/n) × Solid (n/n) - 100% viable!
+                        - ✅ **DO breed** Dominant White (W/n) × Solid (n/n) - 100% viable!
+                        """)
+
+                        with st.expander(f"🧬 {t('breeding.offspring_genotype', lang)}", expanded=False):
+                            st.code(offspring.genotype_string, language="text")
+
+                    else:
+                        # Healthy foal - add to stable
+                        # Use provided name or generate default
+                        if not foal_name:
+                            foal_name = generate_random_horse_name()
+
+                        st.session_state.horses.append({
+                            'horse': offspring,
+                            'name': foal_name,
+                            'generated_at': datetime.now().isoformat(),
+                            'parents': (parent1_idx, parent2_idx)
+                        })
+
+                        # Add to pedigree
+                        st.session_state.pedigree.add_breeding(
+                            parent1, parent2, offspring,
+                            sire_name=st.session_state.horses[parent1_idx]['name'],
+                            dam_name=st.session_state.horses[parent2_idx]['name'],
+                            foal_name=foal_name
+                        )
+
+                        # Clear suggested name after breeding
+                        if 'suggested_foal_name' in st.session_state:
+                            del st.session_state.suggested_foal_name
+
+                        st.success(f"🎊 {t('breeding.congratulations', lang)}")
+
+                        # Display offspring beautifully
+                        st.markdown(f"### 🐴 {t('breeding.meet_foal', lang)}")
+
+                        col_res1, col_res2, col_res3 = st.columns(3)
+
+                        with col_res1:
+                            st.markdown(f"**👨 {t('breeding.sire', lang)}**")
+                            st.info(parent1.phenotype)
+
+                        with col_res2:
+                            st.markdown(f"**🐴 {t('breeding.offspring', lang)}**")
+                            st.success(f"**{offspring.phenotype}**")
+
+                        with col_res3:
+                            st.markdown(f"**👩 {t('breeding.dam', lang)}**")
+                            st.info(parent2.phenotype)
+
+                        st.markdown("<br>", unsafe_allow_html=True)
+
+                        with st.expander(f"🧬 {t('breeding.offspring_genotype', lang)}", expanded=True):
+                            st.code(offspring.genotype_string, language="text")
 
 elif page == t('nav.probability', lang):
     st.markdown(f'<p class="main-header">📊 {t("probability.title", lang)}</p>', unsafe_allow_html=True)
