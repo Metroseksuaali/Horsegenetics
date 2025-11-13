@@ -1,6 +1,6 @@
 [client]
-# Hide the "Deploy" button in the upper right corner
-showDeployButton = false
+# Use minimal toolbar mode to hide Deploy button
+toolbarMode = "minimal"
 
 [server]
 # Enable CORS for Docker

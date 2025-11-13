@@ -19,7 +19,8 @@ services:
     environment:
       - STREAMLIT_SERVER_PORT=8501
       - STREAMLIT_SERVER_ADDRESS=0.0.0.0
-    command: streamlit run streamlit_app.py --server.address 0.0.0.0
+      - STREAMLIT_CLIENT_TOOLBAR_MODE=minimal
+    command: streamlit run streamlit_app.py --server.address 0.0.0.0 --client.toolbarMode minimal
     restart: unless-stopped
 
   # FastAPI REST API
