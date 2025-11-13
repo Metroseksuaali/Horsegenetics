@@ -22,7 +22,6 @@ Example usage:
 from typing import Dict, Tuple, Optional
 from genetics.gene_registry import GeneRegistry, get_default_registry
 from genetics.gene_interaction import PhenotypeCalculator
-from genetics.visualizer import HorseVisualizer
 
 
 class Horse:
@@ -133,24 +132,6 @@ class Horse:
     def __repr__(self) -> str:
         """Developer representation of horse."""
         return f"Horse(phenotype='{self._phenotype}')"
-
-    def visualize(self, output_file: str = "horse.svg") -> str:
-        """
-        Generate a visual representation of this horse as an SVG image.
-
-        Args:
-            output_file: Output filename (default: horse.svg)
-
-        Returns:
-            str: Path to the generated SVG file
-
-        Example:
-            horse = Horse.random()
-            horse.visualize("my_horse.svg")
-        """
-        visualizer = HorseVisualizer()
-        visualizer.save_svg(self._phenotype, output_file, self._genotype)
-        return output_file
 
     # ========================================================================
     # FACTORY METHODS - Fluent API for creating horses
