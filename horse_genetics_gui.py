@@ -20,7 +20,8 @@ class HorseGeneticsGUI:
         'Z': 'silver',
         'Ch': 'champagne',
         'F': 'flaxen',
-        'STY': 'sooty'
+        'STY': 'sooty',
+        'G': 'gray'
     }
 
     def __init__(self, root):
@@ -282,7 +283,8 @@ class HorseGeneticsGUI:
             ('Z', ['Z', 'n']),
             ('Ch', ['Ch', 'n']),
             ('F', ['F', 'f']),
-            ('STY', ['STY', 'sty'])
+            ('STY', ['STY', 'sty']),
+            ('G', ['G', 'g'])
         ]
 
         for gene_label, alleles in genes:
@@ -520,7 +522,8 @@ Example:
             'silver': 'Silver',
             'champagne': 'Champagne',
             'flaxen': 'Flaxen',
-            'sooty': 'Sooty'
+            'sooty': 'Sooty',
+            'gray': 'Gray'
         }
 
         for gene_key, name in gene_names.items():

@@ -77,7 +77,7 @@ class TestBasicColors(unittest.TestCase):
     def _create_genotype(self, extension, agouti, dilution=('N', 'N'),
                         dun=('nd2', 'nd2'), silver=('n', 'n'),
                         champagne=('n', 'n'), flaxen=('F', 'F'),
-                        sooty=('sty', 'sty')):
+                        sooty=('sty', 'sty'), gray=('g', 'g')):
         """Helper to create genotype dictionaries."""
         return {
             'extension': extension,
@@ -87,7 +87,8 @@ class TestBasicColors(unittest.TestCase):
             'silver': silver,
             'champagne': champagne,
             'flaxen': flaxen,
-            'sooty': sooty
+            'sooty': sooty,
+            'gray': gray
         }
 
     def test_chestnut_base(self):
@@ -139,7 +140,8 @@ class TestCreamDilution(unittest.TestCase):
             'silver': ('n', 'n'),
             'champagne': ('n', 'n'),
             'flaxen': ('F', 'F'),
-            'sooty': ('sty', 'sty')
+            'sooty': ('sty', 'sty'),
+            'gray': ('g', 'g')
         }
         defaults.update(kwargs)
         return {
@@ -201,7 +203,8 @@ class TestPearlDilution(unittest.TestCase):
             'silver': ('n', 'n'),
             'champagne': ('n', 'n'),
             'flaxen': ('F', 'F'),
-            'sooty': ('sty', 'sty')
+            'sooty': ('sty', 'sty'),
+            'gray': ('g', 'g')
         }
         defaults.update(kwargs)
         return {
@@ -270,7 +273,8 @@ class TestChampagneDilution(unittest.TestCase):
             'dun': ('nd2', 'nd2'),
             'silver': ('n', 'n'),
             'flaxen': ('F', 'F'),
-            'sooty': ('sty', 'sty')
+            'sooty': ('sty', 'sty'),
+            'gray': ('g', 'g')
         }
         defaults.update(kwargs)
         return {
@@ -328,7 +332,8 @@ class TestSilverDilution(unittest.TestCase):
             'dun': ('nd2', 'nd2'),
             'champagne': ('n', 'n'),
             'flaxen': ('F', 'F'),
-            'sooty': ('sty', 'sty')
+            'sooty': ('sty', 'sty'),
+            'gray': ('g', 'g')
         }
         defaults.update(kwargs)
         return {
@@ -396,7 +401,8 @@ class TestDunGene(unittest.TestCase):
             'silver': ('n', 'n'),
             'champagne': ('n', 'n'),
             'flaxen': ('F', 'F'),
-            'sooty': ('sty', 'sty')
+            'sooty': ('sty', 'sty'),
+            'gray': ('g', 'g')
         }
         defaults.update(kwargs)
         return {
@@ -462,6 +468,7 @@ class TestFlaxenAndSooty(unittest.TestCase):
             'dun': ('nd2', 'nd2'),
             'silver': ('n', 'n'),
             'champagne': ('n', 'n'),
+            'gray': ('g', 'g')
         }
         defaults.update(kwargs)
         return {
@@ -510,6 +517,84 @@ class TestFlaxenAndSooty(unittest.TestCase):
         self.assertNotIn('Sooty', phenotype)
 
 
+class TestGrayGene(unittest.TestCase):
+    """
+    Test Gray gene (STX17) - progressive graying with age.
+
+    Scientific basis: Dominant gene causing progressive depigmentation.
+    """
+
+    def setUp(self):
+        """Initialize calculator for each test."""
+        self.calc = PhenotypeCalculator()
+
+    def _create_genotype(self, extension, agouti, gray, **kwargs):
+        """Helper to create genotype with gray."""
+        defaults = {
+            'dilution': ('N', 'N'),
+            'dun': ('nd2', 'nd2'),
+            'silver': ('n', 'n'),
+            'champagne': ('n', 'n'),
+            'flaxen': ('F', 'F'),
+            'sooty': ('sty', 'sty')
+        }
+        defaults.update(kwargs)
+        return {
+            'extension': extension,
+            'agouti': agouti,
+            'gray': gray,
+            **defaults
+        }
+
+    def test_gray_on_chestnut(self):
+        """Test gray affects chestnut base."""
+        genotype = self._create_genotype(('e', 'e'), ('A', 'A'), ('G', 'g'))
+        phenotype = self.calc.determine_phenotype(genotype)
+        self.assertIn('Gray', phenotype)
+        self.assertIn('will lighten with age', phenotype)
+        self.assertIn('Chestnut', phenotype)
+
+    def test_gray_on_bay(self):
+        """Test gray affects bay base."""
+        genotype = self._create_genotype(('E', 'E'), ('A', 'A'), ('G', 'G'))
+        phenotype = self.calc.determine_phenotype(genotype)
+        self.assertIn('Gray', phenotype)
+        self.assertIn('will lighten with age', phenotype)
+        self.assertIn('Bay', phenotype)
+
+    def test_gray_on_black(self):
+        """Test gray affects black base."""
+        genotype = self._create_genotype(('E', 'E'), ('a', 'a'), ('G', 'g'))
+        phenotype = self.calc.determine_phenotype(genotype)
+        self.assertIn('Gray', phenotype)
+        self.assertIn('will lighten with age', phenotype)
+        self.assertIn('Black', phenotype)
+
+    def test_gray_with_dilutions(self):
+        """Test gray works with cream dilution."""
+        genotype = self._create_genotype(('e', 'e'), ('A', 'A'), ('G', 'g'),
+                                        dilution=('N', 'Cr'))
+        phenotype = self.calc.determine_phenotype(genotype)
+        self.assertIn('Gray', phenotype)
+        self.assertIn('Palomino', phenotype)
+
+    def test_gray_with_champagne(self):
+        """Test gray works with champagne."""
+        genotype = self._create_genotype(('E', 'E'), ('A', 'A'), ('G', 'g'),
+                                        champagne=('Ch', 'n'))
+        phenotype = self.calc.determine_phenotype(genotype)
+        self.assertIn('Gray', phenotype)
+        self.assertIn('Amber Champagne', phenotype)
+
+    def test_no_gray(self):
+        """Test g/g shows no gray notation."""
+        genotype = self._create_genotype(('E', 'E'), ('A', 'A'), ('g', 'g'))
+        phenotype = self.calc.determine_phenotype(genotype)
+        self.assertNotIn('Gray', phenotype)
+        self.assertNotIn('will lighten', phenotype)
+        self.assertEqual(phenotype, 'Bay')
+
+
 class TestBreeding(unittest.TestCase):
     """
     Test Mendelian inheritance in breeding simulation.
@@ -531,7 +616,8 @@ class TestBreeding(unittest.TestCase):
             'silver': ('n', 'n'),
             'champagne': ('n', 'n'),
             'flaxen': ('F', 'F'),
-            'sooty': ('sty', 'sty')
+            'sooty': ('sty', 'sty'),
+            'gray': ('g', 'g')
         }
         parent2 = {
             'extension': ('e', 'e'),
@@ -541,7 +627,8 @@ class TestBreeding(unittest.TestCase):
             'silver': ('n', 'n'),
             'champagne': ('n', 'n'),
             'flaxen': ('f', 'f'),
-            'sooty': ('sty', 'sty')
+            'sooty': ('sty', 'sty'),
+            'gray': ('g', 'g')
         }
 
         # Test 100 offspring - all should be heterozygous
@@ -568,7 +655,8 @@ class TestBreeding(unittest.TestCase):
             'silver': ('n', 'n'),
             'champagne': ('n', 'n'),
             'flaxen': ('F', 'F'),
-            'sooty': ('sty', 'sty')
+            'sooty': ('sty', 'sty'),
+            'gray': ('g', 'g')
         }
         parent2 = {
             'extension': ('E', 'e'),
@@ -578,7 +666,8 @@ class TestBreeding(unittest.TestCase):
             'silver': ('n', 'n'),
             'champagne': ('n', 'n'),
             'flaxen': ('F', 'F'),
-            'sooty': ('sty', 'sty')
+            'sooty': ('sty', 'sty'),
+            'gray': ('g', 'g')
         }
 
         # Count genotypes in 1000 offspring
@@ -614,7 +703,8 @@ class TestBreeding(unittest.TestCase):
             'silver': ('n', 'n'),
             'champagne': ('n', 'n'),
             'flaxen': ('F', 'F'),
-            'sooty': ('sty', 'sty')
+            'sooty': ('sty', 'sty'),
+            'gray': ('g', 'g')
         }
         parent2 = {
             'extension': ('e', 'e'),
@@ -624,7 +714,8 @@ class TestBreeding(unittest.TestCase):
             'silver': ('n', 'n'),
             'champagne': ('n', 'n'),
             'flaxen': ('F', 'F'),
-            'sooty': ('sty', 'sty')
+            'sooty': ('sty', 'sty'),
+            'gray': ('g', 'g')
         }
 
         # Test 100 breedings - should get some Cr/Cr offspring
@@ -658,7 +749,8 @@ class TestGenotypeFormatting(unittest.TestCase):
             'silver': ('Z', 'n'),
             'champagne': ('Ch', 'n'),
             'flaxen': ('F', 'f'),
-            'sooty': ('STY', 'sty')
+            'sooty': ('STY', 'sty'),
+            'gray': ('G', 'g')
         }
         formatted = self.calc.format_genotype(genotype)
 
@@ -671,10 +763,11 @@ class TestGenotypeFormatting(unittest.TestCase):
         self.assertIn('Ch: Ch/n', formatted)
         self.assertIn('F: F/f', formatted)
         self.assertIn('STY: STY/sty', formatted)
+        self.assertIn('G: G/g', formatted)
 
     def test_parse_genotype_valid(self):
         """Test parsing valid genotype strings."""
-        genotype_str = "E:E/e A:A/a Dil:N/Cr D:D/nd2 Z:Z/n Ch:Ch/n F:F/f STY:STY/sty"
+        genotype_str = "E:E/e A:A/a Dil:N/Cr D:D/nd2 Z:Z/n Ch:Ch/n F:F/f STY:STY/sty G:G/g"
         genotype = self.simulator.parse_genotype_input(genotype_str)
 
         self.assertEqual(genotype['extension'], ('E', 'e'))
@@ -685,6 +778,7 @@ class TestGenotypeFormatting(unittest.TestCase):
         self.assertEqual(genotype['champagne'], ('Ch', 'n'))
         self.assertEqual(genotype['flaxen'], ('F', 'f'))
         self.assertEqual(genotype['sooty'], ('STY', 'sty'))
+        self.assertEqual(genotype['gray'], ('G', 'g'))
 
     def test_parse_genotype_invalid(self):
         """Test parsing invalid genotype strings raises ValueError."""
@@ -712,6 +806,7 @@ def run_tests():
     suite.addTests(loader.loadTestsFromTestCase(TestSilverDilution))
     suite.addTests(loader.loadTestsFromTestCase(TestDunGene))
     suite.addTests(loader.loadTestsFromTestCase(TestFlaxenAndSooty))
+    suite.addTests(loader.loadTestsFromTestCase(TestGrayGene))
     suite.addTests(loader.loadTestsFromTestCase(TestBreeding))
     suite.addTests(loader.loadTestsFromTestCase(TestGenotypeFormatting))
 

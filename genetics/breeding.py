@@ -55,7 +55,7 @@ class BreedingSimulator:
 
         # For each gene, offspring gets one allele from each parent
         for gene in ['extension', 'agouti', 'dilution', 'dun', 'silver',
-                     'champagne', 'flaxen', 'sooty']:
+                     'champagne', 'flaxen', 'sooty', 'gray']:
             # Random allele from parent 1
             allele_from_parent1 = random.choice(parent1_genotype[gene])
             # Random allele from parent 2
@@ -109,7 +109,8 @@ class BreedingSimulator:
                     'Z': 'silver',
                     'Ch': 'champagne',
                     'F': 'flaxen',
-                    'STY': 'sooty'
+                    'STY': 'sooty',
+                    'G': 'gray'
                 }
 
                 if gene_label not in gene_map:
@@ -120,7 +121,7 @@ class BreedingSimulator:
 
             # Verify all required genes are present
             required_genes = ['extension', 'agouti', 'dilution', 'dun',
-                            'silver', 'champagne', 'flaxen', 'sooty']
+                            'silver', 'champagne', 'flaxen', 'sooty', 'gray']
             for gene in required_genes:
                 if gene not in genotype:
                     raise ValueError(f"Missing gene: {gene}")
@@ -144,7 +145,7 @@ class BreedingSimulator:
             ValueError: If genotype is invalid
         """
         required_genes = ['extension', 'agouti', 'dilution', 'dun',
-                         'silver', 'champagne', 'flaxen', 'sooty']
+                         'silver', 'champagne', 'flaxen', 'sooty', 'gray']
 
         for gene in required_genes:
             if gene not in genotype:

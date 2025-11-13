@@ -6,7 +6,7 @@ A scientifically accurate horse color genetics simulator that generates random h
 
 ## Features
 
-### 8 Genetic Traits
+### 9 Genetic Traits
 1. **Extension (E/e)** - Black or red pigment
 2. **Agouti (A/a)** - Bay or black distribution
 3. **Dilution (N/Cr/Prl)** - Cream and Pearl dilutions
@@ -15,6 +15,7 @@ A scientifically accurate horse color genetics simulator that generates random h
 6. **Champagne (Ch/n)** - Lightens both red and black pigment
 7. **Flaxen (F/f)** - Lightens mane/tail on chestnuts only
 8. **Sooty (STY/sty)** - Adds darker hairs
+9. **Gray (G/g)** - Progressive graying with age (dominant)
 
 ## How to Use
 

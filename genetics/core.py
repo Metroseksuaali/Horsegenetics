@@ -49,6 +49,11 @@ class GenePool:
         # STY = sooty, sty = non-sooty
         self.sooty_alleles = ['STY', 'sty']
 
+        # Gray gene (STX17) - progressive graying with age
+        # G = gray (dominant), g = non-gray
+        # Note: Horses are born colored and progressively gray with age
+        self.gray_alleles = ['G', 'g']
+
         # Dominance hierarchy for sorting alleles consistently
         self.dominance_order = {
             'E': 10, 'e': 1,
@@ -58,7 +63,8 @@ class GenePool:
             'Z': 10, 'n': 1,  # Note: 'n' used by both Silver and Champagne
             'Ch': 10,  # 'n' for champagne has same dominance as for silver (1)
             'F': 10, 'f': 1,
-            'STY': 10, 'sty': 1
+            'STY': 10, 'sty': 1,
+            'G': 10, 'g': 1
         }
 
     def generate_random_genotype(self):
@@ -76,7 +82,8 @@ class GenePool:
             'silver': self._random_pair(self.silver_alleles),
             'champagne': self._random_pair(self.champagne_alleles),
             'flaxen': self._random_pair(self.flaxen_alleles),
-            'sooty': self._random_pair(self.sooty_alleles)
+            'sooty': self._random_pair(self.sooty_alleles),
+            'gray': self._random_pair(self.gray_alleles)
         }
 
     def _random_pair(self, alleles):
