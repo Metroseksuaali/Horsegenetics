@@ -14,6 +14,7 @@ Or with Docker:
     # Open http://localhost:8501
 """
 
+import os
 import streamlit as st
 from genetics.horse import Horse
 from genetics.breeding_stats import calculate_offspring_probabilities
@@ -23,6 +24,374 @@ from genetics.pedigree import PedigreeTree
 from genetics.io import save_horses_to_json, load_horses_from_json
 import json
 from datetime import datetime
+import random
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from matplotlib.patches import FancyBboxPatch
+import io
+import csv
+
+# Load translations
+def load_translations(lang='en'):
+    """Load translation file for the specified language."""
+    locale_path = os.path.join(os.path.dirname(__file__), 'locales', f'{lang}.json')
+    try:
+        with open(locale_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        # Fallback to English if translation not found
+        fallback_path = os.path.join(os.path.dirname(__file__), 'locales', 'en.json')
+        with open(fallback_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+
+def t(key, lang='en', **kwargs):
+    """
+    Get translation for a dot-notation key.
+
+    Args:
+        key: Dot-notation key like "nav.generator"
+        lang: Language code (default 'en')
+        **kwargs: Placeholder replacements
+
+    Returns:
+        Translated string with placeholders replaced
+    """
+    translations = load_translations(lang)
+
+    # Navigate through nested dict using dot notation
+    keys = key.split('.')
+    value = translations
+    for k in keys:
+        if isinstance(value, dict) and k in value:
+            value = value[k]
+        else:
+            return key  # Return key if translation not found
+
+    # Replace placeholders
+    if isinstance(value, str) and kwargs:
+        try:
+            return value.format(**kwargs)
+        except KeyError:
+            return value
+
+    return value
+
+def generate_random_horse_name() -> str:
+    """
+    Generate a random horse name by combining prefixes and suffixes.
+
+    Returns:
+        A randomly generated horse name
+    """
+    prefixes = [
+        "Thunder", "Storm", "Star", "Moon", "Shadow", "Silver", "Golden",
+        "Wild", "Spirit", "Midnight", "Dawn", "Sunset", "Lightning", "Frost",
+        "Crystal", "Diamond", "Ruby", "Amber", "Ebony", "Pearl", "Mystic",
+        "Royal", "Noble", "Brave", "Swift", "Mighty", "Majestic", "Elegant",
+        "Dancing", "Running", "Flying", "Soaring", "Galloping", "Whispering"
+    ]
+
+    suffixes = [
+        "Runner", "Dancer", "Wind", "Fire", "Sky", "Dream", "Hope", "Pride",
+        "Glory", "Spirit", "Heart", "Soul", "Blaze", "Flash", "Storm", "Star",
+        "Knight", "Prince", "Princess", "King", "Queen", "Warrior", "Legend",
+        "Magic", "Wonder", "Beauty", "Grace", "Power", "Freedom", "Victory",
+        "Champion", "Hero", "Destiny", "Fortune"
+    ]
+
+    # Also include some single-word names
+    single_names = [
+        "Thunderbolt", "Stardust", "Moonlight", "Shadowfax", "Starfire",
+        "Nightshade", "Sunburst", "Avalanche", "Hurricane", "Tornado",
+        "Comet", "Phoenix", "Pegasus", "Apollo", "Athena", "Zeus", "Hercules",
+        "Valkyrie", "Odin", "Thor", "Artemis", "Aurora", "Eclipse", "Nebula"
+    ]
+
+    # 40% chance of single name, 60% chance of prefix + suffix
+    if random.random() < 0.4:
+        return random.choice(single_names)
+    else:
+        return f"{random.choice(prefixes)} {random.choice(suffixes)}"
+
+def get_phenotype_color(phenotype: str) -> tuple[str, str]:
+    """
+    Get CSS gradient color and text color for a phenotype.
+
+    Args:
+        phenotype: The horse's phenotype name
+
+    Returns:
+        Tuple of (gradient_css, text_color)
+    """
+    phenotype_lower = phenotype.lower()
+
+    # Bay colors (brown tones)
+    if any(x in phenotype_lower for x in ['bay', 'buckskin', 'amber champagne', 'gold champagne']):
+        return "linear-gradient(135deg, #8B4513 0%, #A0522D 100%)", "white"
+
+    # Black colors (dark tones)
+    elif any(x in phenotype_lower for x in ['black', 'smoky black', 'smoky cream', 'classic champagne']):
+        return "linear-gradient(135deg, #2C3E50 0%, #34495E 100%)", "white"
+
+    # Chestnut colors (red/gold tones)
+    elif any(x in phenotype_lower for x in ['chestnut', 'flaxen', 'palomino', 'apricot', 'gold pearl']):
+        return "linear-gradient(135deg, #CD853F 0%, #DAA520 100%)", "white"
+
+    # Cream colors (light tones)
+    elif any(x in phenotype_lower for x in ['cremello', 'perlino', 'pearl']):
+        return "linear-gradient(135deg, #FFF8DC 0%, #FAEBD7 100%)", "#2C3E50"
+
+    # Gray colors (gray tones)
+    elif any(x in phenotype_lower for x in ['gray', 'grey', 'silver']):
+        return "linear-gradient(135deg, #A9A9A9 0%, #C0C0C0 100%)", "white"
+
+    # Champagne colors not covered above (gold tones)
+    elif 'champagne' in phenotype_lower:
+        return "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)", "white"
+
+    # Default (purple gradient)
+    else:
+        return "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", "white"
+
+def hex_to_rgb(hex_color):
+    """Convert hex color to RGB tuple (0-1 range for matplotlib)."""
+    hex_color = hex_color.lstrip('#')
+    return tuple(int(hex_color[i:i+2], 16) / 255 for i in (0, 2, 4))
+
+def get_phenotype_color_hex(phenotype: str) -> str:
+    """Get a solid hex color for phenotype (for matplotlib)."""
+    phenotype_lower = phenotype.lower()
+
+    # Bay colors (brown)
+    if any(x in phenotype_lower for x in ['bay', 'buckskin', 'amber champagne', 'gold champagne']):
+        return '#8B4513'
+    # Black colors
+    elif any(x in phenotype_lower for x in ['black', 'smoky black', 'smoky cream', 'classic champagne']):
+        return '#2C3E50'
+    # Chestnut colors (red/gold)
+    elif any(x in phenotype_lower for x in ['chestnut', 'flaxen', 'palomino', 'apricot', 'gold pearl']):
+        return '#CD853F'
+    # Cream colors (light)
+    elif any(x in phenotype_lower for x in ['cremello', 'perlino', 'pearl']):
+        return '#FFF8DC'
+    # Gray colors
+    elif any(x in phenotype_lower for x in ['gray', 'grey', 'silver']):
+        return '#A9A9A9'
+    # Champagne
+    elif 'champagne' in phenotype_lower:
+        return '#FFD700'
+    # Default
+    else:
+        return '#667eea'
+
+def generate_pedigree_tree_image(pedigree_tree, horse_id, depth=3):
+    """
+    Generate a visual pedigree tree using matplotlib.
+
+    Args:
+        pedigree_tree: PedigreeTree object
+        horse_id: ID of the horse to visualize
+        depth: Number of generations to show
+
+    Returns:
+        BytesIO buffer containing PNG image
+    """
+    selected_horse = pedigree_tree.horses[horse_id]
+    ancestors = pedigree_tree.get_ancestors(horse_id, depth)
+
+    # Organize horses by generation
+    by_generation = {0: [selected_horse]}
+    for ancestor in ancestors:
+        gen_dist = selected_horse.generation - ancestor.generation
+        if gen_dist not in by_generation:
+            by_generation[gen_dist] = []
+        by_generation[gen_dist].append(ancestor)
+
+    # Create figure
+    fig, ax = plt.subplots(figsize=(14, 10))
+    ax.set_xlim(-0.5, depth + 0.5)
+    ax.set_ylim(-1, len(by_generation.get(max(by_generation.keys()), [])) + 1)
+    ax.axis('off')
+
+    # Calculate positions for each horse
+    positions = {}
+
+    def calculate_positions_recursive(horse, gen_level, y_position):
+        """Recursively calculate positions for the tree."""
+        positions[horse.horse_id] = (gen_level, y_position)
+
+        if gen_level < depth:
+            # Get parents
+            sire = pedigree_tree.horses.get(horse.sire_id) if horse.sire_id else None
+            dam = pedigree_tree.horses.get(horse.dam_id) if horse.dam_id else None
+
+            if sire:
+                calculate_positions_recursive(sire, gen_level + 1, y_position + 0.5)
+            if dam:
+                calculate_positions_recursive(dam, gen_level + 1, y_position - 0.5)
+
+    # Start from selected horse
+    calculate_positions_recursive(selected_horse, 0, 0)
+
+    # Draw connections first (so they appear behind boxes)
+    for horse_id, (x, y) in positions.items():
+        horse = pedigree_tree.horses[horse_id]
+        if horse.sire_id and horse.sire_id in positions:
+            sire_x, sire_y = positions[horse.sire_id]
+            ax.plot([x + 0.4, sire_x - 0.4], [y, sire_y], 'k-', alpha=0.3, linewidth=1.5)
+        if horse.dam_id and horse.dam_id in positions:
+            dam_x, dam_y = positions[horse.dam_id]
+            ax.plot([x + 0.4, dam_x - 0.4], [y, dam_y], 'k-', alpha=0.3, linewidth=1.5)
+
+    # Draw horse boxes
+    for horse_id, (x, y) in positions.items():
+        horse = pedigree_tree.horses[horse_id]
+
+        # Get color
+        color_hex = get_phenotype_color_hex(horse.phenotype)
+        color_rgb = hex_to_rgb(color_hex)
+
+        # Determine text color based on background brightness
+        brightness = (color_rgb[0] * 299 + color_rgb[1] * 587 + color_rgb[2] * 114) / 1000
+        text_color = 'black' if brightness > 0.5 else 'white'
+
+        # Draw box
+        box = FancyBboxPatch(
+            (x - 0.4, y - 0.15),
+            0.8, 0.3,
+            boxstyle="round,pad=0.02",
+            facecolor=color_rgb,
+            edgecolor='black',
+            linewidth=2 if x == 0 else 1
+        )
+        ax.add_patch(box)
+
+        # Add name
+        ax.text(x, y + 0.05, horse.name, ha='center', va='center',
+                fontsize=9, fontweight='bold', color=text_color)
+
+        # Add phenotype
+        ax.text(x, y - 0.08, horse.phenotype, ha='center', va='center',
+                fontsize=7, color=text_color, style='italic')
+
+    # Add generation labels
+    for gen_level in range(depth + 1):
+        if gen_level == 0:
+            label = "Subject"
+        elif gen_level == 1:
+            label = "Parents"
+        elif gen_level == 2:
+            label = "Grandparents"
+        elif gen_level == 3:
+            label = "Great-Grandparents"
+        else:
+            label = f"Generation -{gen_level}"
+
+        ax.text(gen_level, -0.7, label, ha='center', va='center',
+                fontsize=10, fontweight='bold', color='#666')
+
+    # Add title
+    plt.title(f"Pedigree Tree: {selected_horse.name}", fontsize=16, fontweight='bold', pad=20)
+
+    # Save to buffer
+    buf = io.BytesIO()
+    plt.tight_layout()
+    plt.savefig(buf, format='png', dpi=150, bbox_inches='tight')
+    plt.close(fig)
+    buf.seek(0)
+
+    return buf
+
+def export_horses_to_csv(horses_list):
+    """
+    Export horses to CSV format.
+
+    Args:
+        horses_list: List of horse items from session state
+
+    Returns:
+        CSV string
+    """
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Write header
+    header = ['Name', 'Phenotype', 'Extension', 'Agouti', 'Cream', 'Dun', 'Silver',
+              'Champagne', 'Flaxen', 'Sooty', 'Gray', 'Has_Parents', 'Generated_At']
+    writer.writerow(header)
+
+    # Write horse data
+    for item in horses_list:
+        horse = item['horse']
+        name = item['name']
+        generated_at = item.get('generated_at', '')
+        has_parents = 'Yes' if 'parents' in item else 'No'
+
+        row = [
+            name,
+            horse.phenotype,
+            '/'.join(horse.genotype.get('Extension', [''])),
+            '/'.join(horse.genotype.get('Agouti', [''])),
+            '/'.join(horse.genotype.get('Cream', [''])),
+            '/'.join(horse.genotype.get('Dun', [''])),
+            '/'.join(horse.genotype.get('Silver', [''])),
+            '/'.join(horse.genotype.get('Champagne', [''])),
+            '/'.join(horse.genotype.get('Flaxen', [''])),
+            '/'.join(horse.genotype.get('Sooty', [''])),
+            '/'.join(horse.genotype.get('Gray', [''])),
+            has_parents,
+            generated_at
+        ]
+        writer.writerow(row)
+
+    return output.getvalue()
+
+def import_horses_from_csv(csv_content):
+    """
+    Import horses from CSV format.
+
+    Args:
+        csv_content: CSV file content as string
+
+    Returns:
+        List of horse items for session state
+    """
+    registry = get_default_registry()
+    calculator = PhenotypeCalculator(registry)
+
+    horses_list = []
+    reader = csv.DictReader(io.StringIO(csv_content.decode('utf-8')))
+
+    for row in reader:
+        # Build genotype dict from CSV columns
+        genotype = {
+            'Extension': row['Extension'].split('/') if row['Extension'] else ['E', 'E'],
+            'Agouti': row['Agouti'].split('/') if row['Agouti'] else ['A', 'A'],
+            'Cream': row['Cream'].split('/') if row['Cream'] else ['N', 'N'],
+            'Dun': row['Dun'].split('/') if row['Dun'] else ['nd1', 'nd1'],
+            'Silver': row['Silver'].split('/') if row['Silver'] else ['n', 'n'],
+            'Champagne': row['Champagne'].split('/') if row['Champagne'] else ['n', 'n'],
+            'Flaxen': row['Flaxen'].split('/') if row['Flaxen'] else ['F', 'F'],
+            'Sooty': row['Sooty'].split('/') if row['Sooty'] else ['sty', 'sty'],
+            'Gray': row['Gray'].split('/') if row['Gray'] else ['g', 'g']
+        }
+
+        # Calculate phenotype
+        phenotype = calculator.calculate_phenotype(genotype)
+
+        # Create horse
+        horse = Horse(genotype, phenotype)
+
+        # Create item
+        item = {
+            'horse': horse,
+            'name': row['Name'],
+            'generated_at': row.get('Generated_At', datetime.now().isoformat())
+        }
+
+        horses_list.append(item)
+
+    return horses_list
 
 # Page configuration
 st.set_page_config(
@@ -51,8 +420,6 @@ st.markdown("""
     .horse-card {
         padding: 1.5rem;
         border-radius: 10px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
         margin-bottom: 1rem;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
@@ -93,17 +460,42 @@ if 'pedigree' not in st.session_state:
     st.session_state.pedigree = PedigreeTree()
 if 'history' not in st.session_state:
     st.session_state.history = []
+if 'lang' not in st.session_state:
+    st.session_state.lang = 'en'
+
+# Get current language
+lang = st.session_state.lang
 
 # Sidebar
 with st.sidebar:
-    st.markdown("# 🐴 Horse Genetics")
-    st.markdown("### Simulator v2.1")
+    st.markdown(f"# 🐴 {t('sidebar.title', lang)}")
+    st.markdown(f"### {t('sidebar.version', lang)}")
+    st.markdown("---")
+
+    # Language selector
+    def format_language(lang_code):
+        trans = load_translations(lang_code)
+        return f"{trans['language_flag']} {trans['language_name']}"
+
+    selected_lang = st.selectbox(
+        t('sidebar.language', lang),
+        options=["en", "fi"],
+        index=["en", "fi"].index(st.session_state.lang),
+        format_func=format_language,
+        key="language_selector"
+    )
+
+    if selected_lang != st.session_state.lang:
+        st.session_state.lang = selected_lang
+        st.rerun()
+
     st.markdown("---")
 
     page = st.radio(
         "**📍 Navigation**",
-        ["🎲 Generator", "🧬 Breeding", "📊 Probability",
-         "📚 My Stable", "🌳 Pedigree", "📖 About"],
+        [t('nav.generator', lang), t('nav.breeding', lang), t('nav.probability', lang),
+         t('nav.stable', lang), t('nav.pedigree', lang), t('nav.compare', lang),
+         t('nav.statistics', lang), t('nav.about', lang)],
         label_visibility="collapsed"
     )
 
@@ -111,80 +503,78 @@ with st.sidebar:
 
     # Quick stats
     if st.session_state.horses:
-        st.markdown("### 📊 Quick Stats")
-        st.metric("Total Horses", len(st.session_state.horses))
-        st.metric("In Pedigree", len(st.session_state.pedigree.horses))
+        st.markdown(f"### 📊 {t('sidebar.quick_stats', lang)}")
+        st.metric(t('sidebar.total_horses', lang), len(st.session_state.horses))
+        st.metric(t('sidebar.in_pedigree', lang), len(st.session_state.pedigree.horses))
 
     st.markdown("---")
-    st.caption("🔬 Scientifically Accurate")
-    st.caption("⚡ 50k+ horses/sec")
+    st.caption(f"🔬 {t('sidebar.scientifically_accurate', lang)}")
+    st.caption(f"⚡ {t('sidebar.performance', lang)}")
     st.caption("[💻 GitHub](https://github.com/Metroseksuaali/Horsegenetics)")
 
 # Main content
-if page == "🎲 Generator":
-    st.markdown('<p class="main-header">🎲 Random Horse Generator</p>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle">Generate horses with scientifically accurate genetics</p>', unsafe_allow_html=True)
+if page == t('nav.generator', lang):
+    st.markdown(f'<p class="main-header">🎲 {t("generator.title", lang)}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="subtitle">{t("generator.subtitle", lang)}</p>', unsafe_allow_html=True)
 
     # Help/Instructions
-    with st.expander("ℹ️ How to use", expanded=False):
-        st.markdown("""
-        **Instructions:**
-        1. Choose how many horses you want to generate (1-10)
-        2. Click **Generate Horses** button
-        3. View your new horses below
-        4. All generated horses are automatically saved to **My Stable**
-
-        **Tip:** Generate multiple horses at once to quickly build your breeding stock!
-        """)
+    with st.expander(f"ℹ️ {t('generator.how_to_use', lang)}", expanded=False):
+        st.markdown(t('generator.instructions', lang))
 
     st.markdown("---")
 
     # Controls in a nice box
     with st.container():
-        col1, col2, col3 = st.columns([2, 2, 1])
+        col1, col2 = st.columns([2, 2])
 
         with col1:
-            num_horses = st.slider("🔢 How many horses?", 1, 10, 1, help="Generate up to 10 horses at once")
+            num_horses = st.slider(f"🔢 {t('generator.how_many', lang)}", 1, 10, 1)
 
         with col2:
-            if st.button("✨ Generate Horses", type="primary", use_container_width=True):
-                with st.spinner("🔮 Creating horses..."):
-                    generated = []
-                    for i in range(num_horses):
-                        horse = Horse.random()
-                        generated.append(horse)
-                        st.session_state.horses.append({
-                            'horse': horse,
-                            'name': f"Horse {len(st.session_state.horses) + 1}",
-                            'generated_at': datetime.now().isoformat()
-                        })
+            auto_name = st.checkbox(t('generator.auto_generate_names', lang), value=True)
 
-                    st.success(f"🎉 Successfully generated {num_horses} horse(s)!")
+        if st.button(t('generator.generate_button', lang), type="primary", use_container_width=True):
+            with st.spinner(f"🔮 {t('generator.generating', lang)}"):
+                generated = []
+                for i in range(num_horses):
+                    horse = Horse.random()
+                    generated.append(horse)
 
-                    # Display generated horses in a nice grid
-                    st.markdown("### 🐴 Your New Horses")
+                    # Generate name based on auto_name setting
+                    if auto_name:
+                        horse_name = generate_random_horse_name()
+                    else:
+                        horse_name = f"Horse {len(st.session_state.horses) + 1}"
 
-                    for i, horse in enumerate(generated):
-                        with st.expander(f"✨ {horse.phenotype}", expanded=True):
-                            col_a, col_b = st.columns([2, 1])
+                    st.session_state.horses.append({
+                        'horse': horse,
+                        'name': horse_name,
+                        'generated_at': datetime.now().isoformat()
+                    })
 
-                            with col_a:
-                                st.markdown(f"**🎨 Color:** {horse.phenotype}")
-                                st.code(horse.genotype_string, language="text")
+                st.success(f"🎉 {t('generator.success', lang, count=num_horses)}")
 
-                            with col_b:
-                                st.markdown("**📊 Genetics**")
-                                for gene_name, alleles in list(horse.genotype.items())[:3]:
-                                    st.caption(f"{gene_name}: {'/'.join(alleles)}")
+                # Display generated horses in a nice grid
+                st.markdown(f"### 🐴 {t('generator.your_new_horses', lang)}")
 
-        with col3:
-            st.info("💡 Tip: Generate multiple horses to build your stable!")
+                for i, horse in enumerate(generated):
+                    with st.expander(f"✨ {horse.phenotype}", expanded=True):
+                        col_a, col_b = st.columns([2, 1])
+
+                        with col_a:
+                            st.markdown(f"**🎨 {t('generator.color', lang)}:** {horse.phenotype}")
+                            st.code(horse.genotype_string, language="text")
+
+                        with col_b:
+                            st.markdown(f"**📊 {t('generator.genetics', lang)}**")
+                            for gene_name, alleles in list(horse.genotype.items())[:3]:
+                                st.caption(f"{gene_name}: {'/'.join(alleles)}")
 
     st.markdown("---")
 
     # Show recent horses in a beautiful grid
     if st.session_state.horses:
-        st.markdown("### 📋 Recent Horses")
+        st.markdown(f"### 📋 {t('generator.recent_horses', lang)}")
         recent = st.session_state.horses[-6:][::-1]
 
         cols = st.columns(3)
@@ -192,38 +582,30 @@ if page == "🎲 Generator":
             with cols[idx % 3]:
                 horse = item['horse']
                 name = item['name']
+                gradient, text_color = get_phenotype_color(horse.phenotype)
 
                 st.markdown(f"""
-                <div class="horse-card">
+                <div class="horse-card" style="background: {gradient}; color: {text_color};">
                     <h3>🐴 {name}</h3>
                     <p style="font-size: 1.1rem; margin: 0;">{horse.phenotype}</p>
                 </div>
                 """, unsafe_allow_html=True)
     else:
-        st.info("👋 Welcome! Generate your first horse to get started.")
+        st.info(f"👋 {t('generator.welcome', lang)}")
 
-elif page == "🧬 Breeding":
-    st.markdown('<p class="main-header">🧬 Breeding Simulator</p>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle">Breed two horses and discover their offspring</p>', unsafe_allow_html=True)
+elif page == t('nav.breeding', lang):
+    st.markdown(f'<p class="main-header">🧬 {t("breeding.title", lang)}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="subtitle">{t("breeding.subtitle", lang)}</p>', unsafe_allow_html=True)
 
     # Help/Instructions
-    with st.expander("ℹ️ How to use", expanded=False):
-        st.markdown("""
-        **Instructions:**
-        1. Select a **Sire** (father) from the left dropdown
-        2. Select a **Dam** (mother) from the right dropdown
-        3. Click **Breed Horses** to create offspring
-        4. The foal will be added to **My Stable** and **Pedigree Tree**
-
-        **Genetics:** Each parent contributes one random allele from each gene to the offspring.
-        Results follow real Mendelian inheritance patterns!
-        """)
+    with st.expander(f"ℹ️ {t('breeding.how_to_use', lang)}", expanded=False):
+        st.markdown(t('breeding.instructions', lang))
 
     st.markdown("---")
 
     if len(st.session_state.horses) < 2:
-        st.warning("⚠️ You need at least 2 horses to breed. Visit the **Generator** page first!")
-        if st.button("🎲 Go to Generator"):
+        st.warning(f"⚠️ {t('breeding.need_horses', lang)}")
+        if st.button(f"🎲 {t('breeding.go_to_generator', lang)}"):
             st.rerun()
     else:
         horse_names = [f"{item['name']} - {item['horse'].phenotype}"
@@ -232,37 +614,65 @@ elif page == "🧬 Breeding":
         col1, col2 = st.columns(2)
 
         with col1:
-            st.markdown("### 👨 Sire (Father)")
-            parent1_idx = st.selectbox("Choose sire", range(len(horse_names)),
+            st.markdown(f"### 👨 {t('breeding.sire', lang)}")
+            parent1_idx = st.selectbox(t('breeding.choose_sire', lang), range(len(horse_names)),
                                        format_func=lambda x: horse_names[x], key="p1",
                                        label_visibility="collapsed")
             parent1 = st.session_state.horses[parent1_idx]['horse']
 
-            with st.expander("🔬 View Genotype"):
+            with st.expander(f"🔬 {t('breeding.view_genotype', lang)}"):
                 st.code(parent1.genotype_string, language="text")
 
         with col2:
-            st.markdown("### 👩 Dam (Mother)")
-            parent2_idx = st.selectbox("Choose dam", range(len(horse_names)),
+            st.markdown(f"### 👩 {t('breeding.dam', lang)}")
+            parent2_idx = st.selectbox(t('breeding.choose_dam', lang), range(len(horse_names)),
                                        format_func=lambda x: horse_names[x], key="p2",
                                        label_visibility="collapsed")
             parent2 = st.session_state.horses[parent2_idx]['horse']
 
-            with st.expander("🔬 View Genotype"):
+            with st.expander(f"🔬 {t('breeding.view_genotype', lang)}"):
                 st.code(parent2.genotype_string, language="text")
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # Foal naming section
+        st.markdown(f"### 🏷️ {t('generator.naming_title', lang)}")
+        col_name1, col_name2 = st.columns([3, 1])
+
+        with col_name1:
+            foal_name = st.text_input(
+                t('breeding.foal_name', lang),
+                value="",
+                placeholder=t('breeding.foal_name_placeholder', lang),
+                key="foal_name_input"
+            )
+
+        with col_name2:
+            if st.button(t('generator.random_name', lang), use_container_width=True):
+                st.session_state.suggested_foal_name = generate_random_horse_name()
+                st.rerun()
+
+        # Use suggested name if available
+        if 'suggested_foal_name' in st.session_state and not foal_name:
+            foal_name = st.session_state.suggested_foal_name
+            st.info(f"💡 Suggested: **{foal_name}**")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
         # Center the breed button
         col_a, col_b, col_c = st.columns([1, 2, 1])
         with col_b:
-            if st.button("💫 Breed Horses", type="primary", use_container_width=True):
-                with st.spinner("🔬 Breeding in progress..."):
+            if st.button(t('breeding.breed_button', lang), type="primary", use_container_width=True):
+                with st.spinner(f"🔬 {t('breeding.breeding', lang)}"):
                     offspring = Horse.breed(parent1, parent2)
+
+                    # Use provided name or generate default
+                    if not foal_name:
+                        foal_name = generate_random_horse_name()
 
                     st.session_state.horses.append({
                         'horse': offspring,
-                        'name': f"Foal {len(st.session_state.horses) + 1}",
+                        'name': foal_name,
                         'generated_at': datetime.now().isoformat(),
                         'parents': (parent1_idx, parent2_idx)
                     })
@@ -272,55 +682,49 @@ elif page == "🧬 Breeding":
                         parent1, parent2, offspring,
                         sire_name=st.session_state.horses[parent1_idx]['name'],
                         dam_name=st.session_state.horses[parent2_idx]['name'],
-                        foal_name=f"Foal {len(st.session_state.horses)}"
+                        foal_name=foal_name
                     )
 
-                    st.success("🎊 Congratulations! A new foal has been born!")
+                    # Clear suggested name after breeding
+                    if 'suggested_foal_name' in st.session_state:
+                        del st.session_state.suggested_foal_name
+
+                    st.success(f"🎊 {t('breeding.congratulations', lang)}")
 
                     # Display offspring beautifully
-                    st.markdown("### 🐴 Meet Your New Foal!")
+                    st.markdown(f"### 🐴 {t('breeding.meet_foal', lang)}")
 
                     col_res1, col_res2, col_res3 = st.columns(3)
 
                     with col_res1:
-                        st.markdown("**👨 Sire**")
+                        st.markdown(f"**👨 {t('breeding.sire', lang)}**")
                         st.info(parent1.phenotype)
 
                     with col_res2:
-                        st.markdown("**🐴 Offspring**")
+                        st.markdown(f"**🐴 {t('breeding.offspring', lang)}**")
                         st.success(f"**{offspring.phenotype}**")
 
                     with col_res3:
-                        st.markdown("**👩 Dam**")
+                        st.markdown(f"**👩 {t('breeding.dam', lang)}**")
                         st.info(parent2.phenotype)
 
                     st.markdown("<br>", unsafe_allow_html=True)
 
-                    with st.expander("🧬 Offspring Genotype", expanded=True):
+                    with st.expander(f"🧬 {t('breeding.offspring_genotype', lang)}", expanded=True):
                         st.code(offspring.genotype_string, language="text")
 
-elif page == "📊 Probability":
-    st.markdown('<p class="main-header">📊 Probability Calculator</p>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle">Calculate breeding outcome chances before you breed</p>', unsafe_allow_html=True)
+elif page == t('nav.probability', lang):
+    st.markdown(f'<p class="main-header">📊 {t("probability.title", lang)}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="subtitle">{t("probability.subtitle", lang)}</p>', unsafe_allow_html=True)
 
     # Help/Instructions
-    with st.expander("ℹ️ How to use", expanded=False):
-        st.markdown("""
-        **Instructions:**
-        1. Select two horses from the dropdowns
-        2. Click **Calculate Probabilities**
-        3. View the probability distribution of all possible offspring colors
-
-        **What does this show?** This calculates ALL possible genetic combinations from breeding
-        these two horses and shows you the exact probability of each color outcome.
-
-        **Tip:** Use this before breeding to see what colors are possible!
-        """)
+    with st.expander(f"ℹ️ {t('probability.how_to_use', lang)}", expanded=False):
+        st.markdown(t('probability.instructions', lang))
 
     st.markdown("---")
 
     if len(st.session_state.horses) < 2:
-        st.warning("⚠️ You need at least 2 horses. Visit the **Generator** page first!")
+        st.warning(f"⚠️ {t('probability.need_horses', lang)}")
     else:
         horse_names = [f"{item['name']} - {item['horse'].phenotype}"
                        for item in st.session_state.horses]
@@ -328,27 +732,27 @@ elif page == "📊 Probability":
         col1, col2 = st.columns(2)
 
         with col1:
-            parent1_idx = st.selectbox("👨 Select Parent 1", range(len(horse_names)),
+            parent1_idx = st.selectbox(f"👨 {t('probability.select_parent1', lang)}", range(len(horse_names)),
                                       format_func=lambda x: horse_names[x])
             parent1 = st.session_state.horses[parent1_idx]['horse']
 
         with col2:
-            parent2_idx = st.selectbox("👩 Select Parent 2", range(len(horse_names)),
+            parent2_idx = st.selectbox(f"👩 {t('probability.select_parent2', lang)}", range(len(horse_names)),
                                       format_func=lambda x: horse_names[x])
             parent2 = st.session_state.horses[parent2_idx]['horse']
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        if st.button("🎯 Calculate Probabilities", type="primary", use_container_width=True):
-            with st.spinner("🧮 Calculating all possible outcomes..."):
+        if st.button(t('probability.calculate_button', lang), type="primary", use_container_width=True):
+            with st.spinner(f"🧮 {t('probability.calculating', lang)}"):
                 probs = calculate_offspring_probabilities(
                     parent1.genotype_string,
                     parent2.genotype_string
                 )
 
-                st.success("✅ Calculation complete!")
+                st.success(f"✅ {t('probability.complete', lang)}")
 
-                st.markdown("### 📈 Probability Distribution")
+                st.markdown(f"### 📈 {t('probability.distribution', lang)}")
 
                 # Show top results
                 top_results = list(probs.items())[:10]
@@ -365,56 +769,112 @@ elif page == "📊 Probability":
                 st.markdown("<br>", unsafe_allow_html=True)
 
                 # Detailed table
-                with st.expander("📋 View All Outcomes"):
+                with st.expander(f"📋 {t('probability.view_all', lang)}"):
                     import pandas as pd
                     df = pd.DataFrame({
-                        'Phenotype': list(probs.keys()),
-                        'Probability': [f"{v*100:.2f}%" for v in probs.values()]
+                        t('probability.phenotype', lang): list(probs.keys()),
+                        t('probability.probability_label', lang): [f"{v*100:.2f}%" for v in probs.values()]
                     })
                     st.dataframe(df, use_container_width=True, hide_index=True)
 
-elif page == "📚 My Stable":
-    st.markdown('<p class="main-header">📚 My Stable</p>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle">Manage your horse collection</p>', unsafe_allow_html=True)
+elif page == t('nav.stable', lang):
+    st.markdown(f'<p class="main-header">📚 {t("stable.title", lang)}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="subtitle">{t("stable.subtitle", lang)}</p>', unsafe_allow_html=True)
 
     # Help/Instructions
-    with st.expander("ℹ️ How to use", expanded=False):
-        st.markdown("""
-        **Instructions:**
-        - **Save Stable:** Download all horses as a JSON file
-        - **Load Stable:** Upload a previously saved JSON file
-        - **Clear Stable:** Remove all horses (cannot be undone!)
-        - **Rename Horses:** Click on any horse and edit its name at the bottom
-
-        **Tip:** Regularly save your stable to keep backups of your breeding work!
-        """)
+    with st.expander(f"ℹ️ {t('stable.how_to_use', lang)}", expanded=False):
+        st.markdown(t('stable.instructions', lang))
 
     st.markdown("---")
 
     # Stats
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("🐴 Total Horses", len(st.session_state.horses))
+        st.metric(f"🐴 {t('stable.total_horses', lang)}", len(st.session_state.horses))
     with col2:
         bred = sum(1 for h in st.session_state.horses if 'parents' in h)
-        st.metric("🧬 Bred Horses", bred)
+        st.metric(f"🧬 {t('stable.bred_horses', lang)}", bred)
     with col3:
         foundation = len(st.session_state.horses) - bred
-        st.metric("✨ Foundation", foundation)
+        st.metric(f"✨ {t('stable.foundation', lang)}", foundation)
     with col4:
-        st.metric("🌳 In Pedigree", len(st.session_state.pedigree.horses))
+        st.metric(f"🌳 {t('sidebar.in_pedigree', lang)}", len(st.session_state.pedigree.horses))
 
     st.markdown("---")
 
-    # Action buttons
-    col_act1, col_act2, col_act3 = st.columns(3)
+    # Search and Filter section
+    st.markdown(f"### 🔍 {t('stable.search_filter_title', lang)}")
+
+    col_search, col_pheno, col_type = st.columns(3)
+
+    with col_search:
+        search_term = st.text_input(
+            t('stable.search_name', lang),
+            key="horse_search",
+            placeholder=t('stable.search_name', lang)
+        )
+
+    with col_pheno:
+        # Get unique phenotypes from horses
+        phenotypes = set()
+        for item in st.session_state.horses:
+            phenotypes.add(item['horse'].phenotype)
+        phenotype_options = [t('stable.filter_all', lang)] + sorted(list(phenotypes))
+
+        selected_phenotype = st.selectbox(
+            t('stable.filter_phenotype', lang),
+            phenotype_options,
+            key="phenotype_filter"
+        )
+
+    with col_type:
+        type_options = [
+            t('stable.filter_all', lang),
+            t('stable.filter_foundation', lang),
+            t('stable.filter_bred', lang)
+        ]
+        selected_type = st.selectbox(
+            t('stable.filter_type', lang),
+            type_options,
+            key="type_filter"
+        )
+
+    # Apply filters
+    filtered_horses = []
+    for idx, item in enumerate(st.session_state.horses):
+        horse = item['horse']
+        name = item['name']
+
+        # Name filter (case-insensitive)
+        if search_term and search_term.lower() not in name.lower():
+            continue
+
+        # Phenotype filter
+        if selected_phenotype != t('stable.filter_all', lang) and horse.phenotype != selected_phenotype:
+            continue
+
+        # Type filter
+        if selected_type == t('stable.filter_foundation', lang) and 'parents' in item:
+            continue
+        elif selected_type == t('stable.filter_bred', lang) and 'parents' not in item:
+            continue
+
+        filtered_horses.append((idx, item))
+
+    # Show count
+    st.caption(t('stable.showing_count', lang, filtered=len(filtered_horses), total=len(st.session_state.horses)))
+
+    st.markdown("---")
+
+    # Action buttons - Row 1: JSON and CSV Export
+    col_act1, col_act2 = st.columns(2)
 
     with col_act1:
         if st.session_state.horses:
             horses_data = [item['horse'].to_dict() for item in st.session_state.horses]
             json_str = json.dumps(horses_data, indent=2)
             st.download_button(
-                "💾 Save Stable (JSON)",
+                t('stable.save_button', lang),
                 json_str,
                 file_name=f"stable_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
                 mime="application/json",
@@ -422,10 +882,24 @@ elif page == "📚 My Stable":
             )
 
     with col_act2:
-        uploaded_file = st.file_uploader("📂 Load Stable", type=['json'], label_visibility="collapsed")
-        if uploaded_file is not None:
+        if st.session_state.horses:
+            csv_str = export_horses_to_csv(st.session_state.horses)
+            st.download_button(
+                t('stable.save_csv_button', lang),
+                csv_str,
+                file_name=f"stable_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+
+    # Action buttons - Row 2: JSON and CSV Import, Clear
+    col_act3, col_act4, col_act5 = st.columns(3)
+
+    with col_act3:
+        uploaded_json = st.file_uploader(t('stable.load_button', lang), type=['json'], label_visibility="collapsed", key="json_upload")
+        if uploaded_json is not None:
             try:
-                horses_data = json.load(uploaded_file)
+                horses_data = json.load(uploaded_json)
                 registry = get_default_registry()
                 calculator = PhenotypeCalculator(registry)
 
@@ -437,13 +911,28 @@ elif page == "📚 My Stable":
                         'generated_at': datetime.now().isoformat()
                     })
 
-                st.success(f"✅ Loaded {len(horses_data)} horses!")
+                st.success(f"✅ {t('stable.loaded', lang, count=len(horses_data))}")
                 st.rerun()
             except Exception as e:
-                st.error(f"❌ Error loading file: {e}")
+                st.error(f"❌ {t('stable.error_loading', lang, error=str(e))}")
 
-    with col_act3:
-        if st.button("🗑️ Clear Stable", use_container_width=True):
+    with col_act4:
+        uploaded_csv = st.file_uploader(t('stable.load_csv_button', lang), type=['csv'], label_visibility="collapsed", key="csv_upload")
+        if uploaded_csv is not None:
+            try:
+                csv_content = uploaded_csv.read()
+                imported_horses = import_horses_from_csv(csv_content)
+
+                for item in imported_horses:
+                    st.session_state.horses.append(item)
+
+                st.success(f"✅ {t('stable.loaded', lang, count=len(imported_horses))}")
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ {t('stable.error_loading', lang, error=str(e))}")
+
+    with col_act5:
+        if st.button(t('stable.clear_button', lang), use_container_width=True):
             st.session_state.horses = []
             st.session_state.pedigree = PedigreeTree()
             st.rerun()
@@ -452,88 +941,86 @@ elif page == "📚 My Stable":
 
     # Display horses in grid
     if st.session_state.horses:
-        st.markdown("### 🐴 All Horses")
+        st.markdown(f"### 🐴 {t('stable.all_horses', lang)}")
 
-        for idx, item in enumerate(st.session_state.horses):
-            horse = item['horse']
-            name = item['name']
+        if filtered_horses:
+            for idx, item in filtered_horses:
+                horse = item['horse']
+                name = item['name']
 
-            with st.expander(f"🐴 {name} - {horse.phenotype}"):
-                col_info1, col_info2 = st.columns([2, 1])
+                with st.expander(f"🐴 {name} - {horse.phenotype}"):
+                    col_info1, col_info2 = st.columns([2, 1])
 
-                with col_info1:
-                    st.markdown(f"**🎨 Phenotype:** {horse.phenotype}")
-                    st.code(horse.genotype_string, language="text")
+                    with col_info1:
+                        st.markdown(f"**🎨 {t('stable.phenotype_label', lang)}:** {horse.phenotype}")
+                        st.code(horse.genotype_string, language="text")
 
-                with col_info2:
-                    if 'parents' in item:
-                        p1_name = st.session_state.horses[item['parents'][0]]['name']
-                        p2_name = st.session_state.horses[item['parents'][1]]['name']
-                        st.markdown("**👪 Parents:**")
-                        st.caption(f"👨 {p1_name}")
-                        st.caption(f"👩 {p2_name}")
-                    else:
-                        st.info("✨ Foundation Horse")
+                    with col_info2:
+                        if 'parents' in item:
+                            p1_name = st.session_state.horses[item['parents'][0]]['name']
+                            p2_name = st.session_state.horses[item['parents'][1]]['name']
+                            st.markdown(f"**👪 {t('stable.parents_label', lang)}:**")
+                            st.caption(f"👨 {p1_name}")
+                            st.caption(f"👩 {p2_name}")
+                        else:
+                            st.info(f"✨ {t('stable.foundation_horse', lang)}")
 
-                # Rename option
-                new_name = st.text_input("✏️ Rename", value=name, key=f"rename_{idx}")
-                if new_name != name:
-                    st.session_state.horses[idx]['name'] = new_name
-                    st.rerun()
+                    # Rename option
+                    col_rename1, col_rename2 = st.columns([3, 1])
+
+                    with col_rename1:
+                        new_name = st.text_input(
+                            f"✏️ {t('stable.rename', lang)}",
+                            value=name,
+                            key=f"rename_{idx}"
+                        )
+
+                    with col_rename2:
+                        st.markdown("<br>", unsafe_allow_html=True)  # Align button with text input
+                        if st.button(t('stable.generate_random_name', lang), key=f"gen_name_{idx}"):
+                            st.session_state.horses[idx]['name'] = generate_random_horse_name()
+                            st.rerun()
+
+                    if new_name != name:
+                        st.session_state.horses[idx]['name'] = new_name
+                        st.rerun()
+        else:
+            st.info(f"🔍 {t('stable.no_results', lang)}")
     else:
-        st.info("👋 Your stable is empty. Visit the **Generator** to create horses!")
+        st.info(f"👋 {t('stable.empty_stable', lang)}")
 
-elif page == "🌳 Pedigree":
-    st.markdown('<p class="main-header">🌳 Pedigree Tree</p>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle">Explore family relationships and breeding history</p>', unsafe_allow_html=True)
+elif page == t('nav.pedigree', lang):
+    st.markdown(f'<p class="main-header">🌳 {t("pedigree.title", lang)}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="subtitle">{t("pedigree.subtitle", lang)}</p>', unsafe_allow_html=True)
 
     # Help/Instructions
-    with st.expander("ℹ️ How to use", expanded=False):
-        st.markdown("""
-        **Instructions:**
-        1. Select a horse from the dropdown menu
-        2. Choose how many generations back to display (1-5)
-        3. View the visual family tree showing all ancestors
-
-        **What you'll see:**
-        - **Parents** (1 generation back)
-        - **Grandparents** (2 generations back)
-        - **Great-Grandparents** (3 generations back)
-        - **Inbreeding warnings** if the same ancestor appears multiple times
-
-        **Note:** Only horses bred using the Breeding page appear in the pedigree tree.
-        Foundation horses (randomly generated) have no ancestors.
-        """)
+    with st.expander(f"ℹ️ {t('pedigree.how_to_use', lang)}", expanded=False):
+        st.markdown(t('pedigree.instructions', lang))
 
     st.markdown("---")
 
     if len(st.session_state.pedigree.horses) == 0:
-        st.warning("⚠️ No pedigree data yet. Breed some horses first using the **Breeding** page!")
-        st.info("""
-        💡 **How to build a pedigree:**
-        1. Go to **Generator** and create some foundation horses
-        2. Go to **Breeding** and breed two horses together
-        3. The offspring will appear here with full pedigree information
-        """)
+        st.warning(f"⚠️ {t('pedigree.no_data', lang)}")
+        st.info(f"💡 {t('pedigree.how_to_build', lang)}")
     else:
         # Statistics
         col1, col2, col3, col4 = st.columns(4)
         with col1:
-            st.metric("🐴 Total", len(st.session_state.pedigree.horses))
+            st.metric(f"🐴 {t('pedigree.total', lang)}", len(st.session_state.pedigree.horses))
         with col2:
-            st.metric("🧬 Breedings", len(st.session_state.pedigree.breedings))
+            st.metric(f"🧬 {t('pedigree.breedings', lang)}", len(st.session_state.pedigree.breedings))
         with col3:
             max_gen = max(h.generation for h in st.session_state.pedigree.horses.values())
-            st.metric("📊 Generations", max_gen + 1)
+            st.metric(f"📊 {t('pedigree.generations', lang)}", max_gen + 1)
         with col4:
             foundation = sum(1 for h in st.session_state.pedigree.horses.values()
                            if h.sire_id is None and h.dam_id is None)
-            st.metric("✨ Foundation", foundation)
+            st.metric(f"✨ {t('stable.foundation', lang)}", foundation)
 
         st.markdown("---")
 
         # Simplified pedigree view
-        st.markdown("### 🐴 Select a Horse")
+        st.markdown(f"### 🐴 {t('pedigree.select_horse', lang)}")
 
         horse_options = {h.name: h.horse_id for h in st.session_state.pedigree.horses.values()}
         horse_list = list(horse_options.keys())
@@ -541,10 +1028,10 @@ elif page == "🌳 Pedigree":
         col_select, col_depth = st.columns([3, 1])
 
         with col_select:
-            selected_name = st.selectbox("Choose a horse to view its pedigree", horse_list, label_visibility="collapsed")
+            selected_name = st.selectbox(t('pedigree.choose_horse', lang), horse_list, label_visibility="collapsed")
 
         with col_depth:
-            depth = st.selectbox("Generations", [1, 2, 3, 4, 5], index=2)
+            depth = st.selectbox(t('pedigree.generations_label', lang), [1, 2, 3, 4, 5], index=2)
 
         if selected_name:
             selected_id = horse_options[selected_name]
@@ -557,7 +1044,7 @@ elif page == "🌳 Pedigree":
             <div class="pedigree-box">
                 <h2>🐴 {selected_name}</h2>
                 <p style="font-size: 1.3rem; margin: 0.5rem 0;">🎨 {selected_horse.phenotype}</p>
-                <p style="color: #6c757d; margin: 0;">📊 Generation {selected_horse.generation}</p>
+                <p style="color: #6c757d; margin: 0;">📊 {t('pedigree.generation', lang)} {selected_horse.generation}</p>
             </div>
             """, unsafe_allow_html=True)
 
@@ -567,7 +1054,7 @@ elif page == "🌳 Pedigree":
             ancestors = st.session_state.pedigree.get_ancestors(selected_id, depth)
 
             if ancestors:
-                st.markdown(f"### 🌳 Family Tree ({len(ancestors)} ancestor(s))")
+                st.markdown(f"### 🌳 {t('pedigree.family_tree', lang)} ({len(ancestors)} {t('pedigree.ancestors', lang)})")
 
                 # Organize ancestors by generation distance
                 by_distance = {}
@@ -580,16 +1067,16 @@ elif page == "🌳 Pedigree":
                 # Display each generation
                 for dist in sorted(by_distance.keys()):
                     if dist == 1:
-                        st.markdown("### 👥 Parents")
+                        st.markdown(f"### 👥 {t('pedigree.parents', lang)}")
                         icon = "👤"
                     elif dist == 2:
-                        st.markdown("### 👴👵 Grandparents")
+                        st.markdown(f"### 👴👵 {t('pedigree.grandparents', lang)}")
                         icon = "👴"
                     elif dist == 3:
-                        st.markdown("### 🧓 Great-Grandparents")
+                        st.markdown(f"### 🧓 {t('pedigree.great_grandparents', lang)}")
                         icon = "🧓"
                     else:
-                        st.markdown(f"### 🧬 Generation -{dist}")
+                        st.markdown(f"### 🧬 {t('pedigree.generation', lang)} -{dist}")
                         icon = "🧬"
 
                     # Display in columns
@@ -606,111 +1093,411 @@ elif page == "🌳 Pedigree":
                     st.markdown("<br>", unsafe_allow_html=True)
 
                 # Inbreeding check
-                st.markdown("### 🔍 Inbreeding Analysis")
+                st.markdown(f"### 🔍 {t('pedigree.inbreeding_analysis', lang)}")
                 inbreeding = st.session_state.pedigree.detect_inbreeding(selected_id, depth)
                 if inbreeding:
-                    st.warning(f"⚠️ **Inbreeding detected!** {len(inbreeding)} ancestor(s) appear multiple times in the pedigree.")
-                    with st.expander("View repeated ancestors"):
+                    st.warning(f"⚠️ {t('pedigree.inbreeding_detected', lang, count=len(inbreeding))}")
+                    with st.expander(t('pedigree.view_repeated', lang)):
                         for anc_id in inbreeding:
                             anc = st.session_state.pedigree.horses[anc_id]
                             st.caption(f"• {anc.name} ({anc.phenotype})")
                 else:
-                    st.success("✅ **No inbreeding detected** - This is a diverse pedigree!")
+                    st.success(f"✅ {t('pedigree.no_inbreeding', lang)}")
 
             else:
-                st.info("🌱 **Foundation Horse** - This horse was randomly generated and has no ancestors in the pedigree.")
+                st.info(f"🌱 {t('pedigree.foundation_horse', lang)}")
+
+            # Visual pedigree tree
+            if ancestors:
+                st.markdown("---")
+                st.markdown(f"### 🎨 {t('pedigree.visual_tree_title', lang)}")
+
+                with st.spinner(f"🔮 {t('pedigree.generating_tree', lang)}"):
+                    try:
+                        tree_image = generate_pedigree_tree_image(
+                            st.session_state.pedigree,
+                            selected_id,
+                            depth
+                        )
+
+                        # Display the image
+                        st.image(tree_image, use_container_width=True)
+
+                        # Download button
+                        st.download_button(
+                            label=t('pedigree.download_tree', lang),
+                            data=tree_image,
+                            file_name=f"pedigree_{selected_name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png",
+                            mime="image/png",
+                            use_container_width=True
+                        )
+                    except Exception as e:
+                        st.error(f"Error generating tree visualization: {str(e)}")
 
             # Show genotype details
             st.markdown("---")
-            with st.expander("🧬 View Full Genotype"):
+            with st.expander(f"🧬 {t('pedigree.view_genotype', lang)}"):
                 st.code(selected_horse.genotype_string, language="text")
 
-else:  # About
-    st.markdown('<p class="main-header">📖 About</p>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle">Horse Genetics Simulator v2.1</p>', unsafe_allow_html=True)
+elif page == t('nav.compare', lang):
+    st.markdown(f'<p class="main-header">⚖️ {t("compare.title", lang)}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="subtitle">{t("compare.subtitle", lang)}</p>', unsafe_allow_html=True)
 
-    tab1, tab2, tab3 = st.tabs(["🧬 Genetics", "🎨 Colors", "💻 Tech"])
+    # Help/Instructions
+    with st.expander(f"ℹ️ {t('compare.how_to_use', lang)}", expanded=False):
+        st.markdown(t('compare.instructions', lang))
+
+    st.markdown("---")
+
+    if len(st.session_state.horses) < 2:
+        st.warning(f"⚠️ {t('compare.need_horses', lang)}")
+    else:
+        horse_names = [f"{item['name']} - {item['horse'].phenotype}"
+                       for item in st.session_state.horses]
+
+        # Horse selection
+        col1, col2 = st.columns(2)
+
+        with col1:
+            horse1_idx = st.selectbox(
+                f"🐴 {t('compare.select_horse1', lang)}",
+                range(len(horse_names)),
+                format_func=lambda x: horse_names[x],
+                key="compare_horse1"
+            )
+            horse1_item = st.session_state.horses[horse1_idx]
+            horse1 = horse1_item['horse']
+
+        with col2:
+            horse2_idx = st.selectbox(
+                f"🐴 {t('compare.select_horse2', lang)}",
+                range(len(horse_names)),
+                format_func=lambda x: horse_names[x],
+                key="compare_horse2"
+            )
+            horse2_item = st.session_state.horses[horse2_idx]
+            horse2 = horse2_item['horse']
+
+        st.markdown("---")
+
+        # Display horses side-by-side
+        col_h1, col_h2 = st.columns(2)
+
+        with col_h1:
+            st.markdown(f"### {t('compare.horse1_details', lang)}")
+            gradient1, text_color1 = get_phenotype_color(horse1.phenotype)
+            st.markdown(f"""
+            <div class="horse-card" style="background: {gradient1}; color: {text_color1};">
+                <h2>🐴 {horse1_item['name']}</h2>
+                <p style="font-size: 1.3rem; margin: 0.5rem 0;">{horse1.phenotype}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+            with st.expander(f"🧬 {t('compare.full_genotype', lang)}"):
+                st.code(horse1.genotype_string, language="text")
+
+        with col_h2:
+            st.markdown(f"### {t('compare.horse2_details', lang)}")
+            gradient2, text_color2 = get_phenotype_color(horse2.phenotype)
+            st.markdown(f"""
+            <div class="horse-card" style="background: {gradient2}; color: {text_color2};">
+                <h2>🐴 {horse2_item['name']}</h2>
+                <p style="font-size: 1.3rem; margin: 0.5rem 0;">{horse2.phenotype}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+            with st.expander(f"🧬 {t('compare.full_genotype', lang)}"):
+                st.code(horse2.genotype_string, language="text")
+
+        st.markdown("---")
+
+        # Gene-by-gene comparison
+        st.markdown(f"### 🔬 {t('compare.gene_comparison', lang)}")
+
+        # Calculate similarity
+        genes1 = horse1.genotype
+        genes2 = horse2.genotype
+
+        matching_genes = []
+        different_genes = []
+
+        for gene_name in genes1.keys():
+            alleles1 = set(genes1[gene_name])
+            alleles2 = set(genes2[gene_name])
+
+            if alleles1 == alleles2:
+                matching_genes.append(gene_name)
+            else:
+                different_genes.append(gene_name)
+
+        # Similarity score
+        total_genes = len(genes1)
+        matching_count = len(matching_genes)
+        similarity_percent = int((matching_count / total_genes) * 100)
+
+        col_sim1, col_sim2, col_sim3 = st.columns(3)
+
+        with col_sim1:
+            st.metric(f"✅ {t('compare.matching', lang)}", f"{matching_count}/{total_genes}")
+
+        with col_sim2:
+            st.metric(f"🔬 {t('compare.compatibility_score', lang)}", f"{similarity_percent}%")
+
+        with col_sim3:
+            st.metric(f"❌ {t('compare.different', lang)}", f"{len(different_genes)}/{total_genes}")
+
+        # Show compatibility message
+        if similarity_percent == 100:
+            st.success(f"🎉 {t('compare.identical_genotype', lang)}")
+        elif similarity_percent >= 70:
+            st.info(f"📊 {t('compare.compatibility_high', lang, percent=similarity_percent)}")
+        elif similarity_percent >= 40:
+            st.info(f"📊 {t('compare.compatibility_medium', lang, percent=similarity_percent)}")
+        else:
+            st.info(f"📊 {t('compare.compatibility_low', lang, percent=similarity_percent)}")
+
+        st.markdown("---")
+
+        # Detailed gene comparison table
+        st.markdown(f"### 📋 {t('compare.gene_comparison', lang)}")
+
+        for gene_name in genes1.keys():
+            alleles1_str = "/".join(genes1[gene_name])
+            alleles2_str = "/".join(genes2[gene_name])
+
+            is_match = gene_name in matching_genes
+
+            col_gene, col_a1, col_a2, col_status = st.columns([2, 2, 2, 1])
+
+            with col_gene:
+                st.markdown(f"**{gene_name}**")
+
+            with col_a1:
+                if is_match:
+                    st.success(alleles1_str)
+                else:
+                    st.warning(alleles1_str)
+
+            with col_a2:
+                if is_match:
+                    st.success(alleles2_str)
+                else:
+                    st.warning(alleles2_str)
+
+            with col_status:
+                if is_match:
+                    st.markdown("✅")
+                else:
+                    st.markdown("❌")
+
+elif page == t('nav.statistics', lang):
+    st.markdown(f'<p class="main-header">📈 {t("statistics.title", lang)}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="subtitle">{t("statistics.subtitle", lang)}</p>', unsafe_allow_html=True)
+
+    # Help/Instructions
+    with st.expander(f"ℹ️ {t('statistics.how_to_use', lang)}", expanded=False):
+        st.markdown(t('statistics.instructions', lang))
+
+    st.markdown("---")
+
+    if len(st.session_state.horses) == 0:
+        st.warning(f"⚠️ {t('statistics.need_horses', lang)}")
+    else:
+        # Overview statistics
+        st.markdown(f"### 📊 {t('statistics.overview_title', lang)}")
+
+        total_horses = len(st.session_state.horses)
+        bred_horses = sum(1 for h in st.session_state.horses if 'parents' in h)
+        foundation_horses = total_horses - bred_horses
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+            st.metric(f"🐴 {t('statistics.total_horses', lang)}", total_horses)
+
+        with col2:
+            st.metric(f"✨ {t('statistics.foundation_count', lang)}", foundation_horses)
+
+        with col3:
+            st.metric(f"🧬 {t('statistics.bred_count', lang)}", bred_horses)
+
+        with col4:
+            phenotypes = set(item['horse'].phenotype for item in st.session_state.horses)
+            st.metric(f"🎨 {t('statistics.unique_phenotypes', lang)}", len(phenotypes))
+
+        st.markdown("---")
+
+        # Phenotype distribution
+        st.markdown(f"### 🎨 {t('statistics.phenotype_title', lang)}")
+
+        phenotype_counts = {}
+        for item in st.session_state.horses:
+            pheno = item['horse'].phenotype
+            phenotype_counts[pheno] = phenotype_counts.get(pheno, 0) + 1
+
+        # Sort by count (descending)
+        sorted_phenotypes = sorted(phenotype_counts.items(), key=lambda x: x[1], reverse=True)
+
+        # Display top 10
+        for phenotype, count in sorted_phenotypes[:10]:
+            percentage = (count / total_horses) * 100
+
+            col_name, col_bar = st.columns([1, 3])
+
+            with col_name:
+                st.markdown(f"**{phenotype}**")
+
+            with col_bar:
+                st.progress(count / total_horses, text=f"{count} ({percentage:.1f}%)")
+
+        st.markdown("---")
+
+        # Gene frequency analysis
+        st.markdown(f"### 🧬 {t('statistics.gene_title', lang)}")
+
+        # Collect all alleles for each gene
+        gene_alleles = {}
+        all_genes = list(st.session_state.horses[0]['horse'].genotype.keys())
+
+        for gene_name in all_genes:
+            gene_alleles[gene_name] = {}
+
+        for item in st.session_state.horses:
+            for gene_name, alleles in item['horse'].genotype.items():
+                for allele in alleles:
+                    gene_alleles[gene_name][allele] = gene_alleles[gene_name].get(allele, 0) + 1
+
+        # Display gene frequency for each gene
+        for gene_name in all_genes:
+            with st.expander(f"📊 {t('statistics.gene_diversity', lang, gene=gene_name)}"):
+                allele_counts = gene_alleles[gene_name]
+                total_alleles = sum(allele_counts.values())
+
+                # Sort by frequency
+                sorted_alleles = sorted(allele_counts.items(), key=lambda x: x[1], reverse=True)
+
+                for allele, count in sorted_alleles:
+                    frequency = (count / total_alleles) * 100
+
+                    col_allele, col_freq = st.columns([1, 3])
+
+                    with col_allele:
+                        st.markdown(f"**{allele}**")
+
+                    with col_freq:
+                        st.progress(count / total_alleles, text=f"{count} ({frequency:.1f}%)")
+
+        st.markdown("---")
+
+        # Diversity score
+        st.markdown(f"### 🌈 {t('statistics.diversity_title', lang)}")
+
+        # Calculate diversity score based on phenotype variety
+        phenotype_diversity = len(phenotypes) / total_horses
+        unique_ratio = phenotype_diversity
+
+        # Calculate genetic diversity based on allele distribution
+        total_gene_diversity = 0
+        for gene_name in all_genes:
+            unique_alleles = len(gene_alleles[gene_name])
+            total_gene_diversity += unique_alleles
+
+        avg_gene_diversity = total_gene_diversity / len(all_genes)
+
+        # Overall diversity score (0-100)
+        diversity_score = int(((phenotype_diversity + (avg_gene_diversity / 10)) / 2) * 100)
+
+        col_div1, col_div2 = st.columns([1, 2])
+
+        with col_div1:
+            st.metric(f"🌟 {t('statistics.diversity_score', lang)}", f"{diversity_score}%")
+
+        with col_div2:
+            if diversity_score >= 70:
+                st.success(f"✅ {t('statistics.diversity_high', lang)}")
+            elif diversity_score >= 40:
+                st.info(f"📊 {t('statistics.diversity_medium', lang)}")
+            else:
+                st.warning(f"⚠️ {t('statistics.diversity_low', lang)}")
+
+else:  # About
+    st.markdown(f'<p class="main-header">📖 {t("about.title", lang)}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="subtitle">{t("about.subtitle", lang)}</p>', unsafe_allow_html=True)
+
+    tab1, tab2, tab3 = st.tabs([t('about.tab_genetics', lang), t('about.tab_colors', lang), t('about.tab_tech', lang)])
 
     with tab1:
-        st.markdown("""
-        ### 🔬 Scientifically Accurate Simulation
+        st.markdown(f"""
+        ### 🔬 {t('about.genetics_title', lang)}
 
-        This simulator models **9 genetic traits** based on peer-reviewed equine genetics research:
+        {t('about.genetics_description', lang)}
 
-        1. **Extension (E/e)** - Black vs. red pigment production
-        2. **Agouti (A/a)** - Distribution of black pigment
-        3. **Dilution (N/Cr/Prl)** - Cream and Pearl dilutions
-        4. **Dun (D/nd1/nd2)** - Dun dilution with primitive markings
-        5. **Silver (Z/n)** - Lightens black pigment
-        6. **Champagne (Ch/n)** - Dilutes both red and black pigment
-        7. **Flaxen (F/f)** - Lightens mane/tail on chestnuts only
-        8. **Sooty (STY/sty)** - Adds darker hairs
-        9. **Gray (G/g)** - Progressive graying with age
+        1. {t('about.genetics_1', lang)}
+        2. {t('about.genetics_2', lang)}
+        3. {t('about.genetics_3', lang)}
+        4. {t('about.genetics_4', lang)}
+        5. {t('about.genetics_5', lang)}
+        6. {t('about.genetics_6', lang)}
+        7. {t('about.genetics_7', lang)}
+        8. {t('about.genetics_8', lang)}
+        9. {t('about.genetics_9', lang)}
 
-        ### 🧮 Mendelian Inheritance
+        ### 🧮 {t('about.mendelian', lang)}
 
-        Each parent contributes one random allele from each gene to the offspring.
-        Complex gene interactions are modeled accurately based on scientific literature.
+        {t('about.mendelian_description', lang)}
         """)
 
     with tab2:
-        st.markdown("""
-        ### 🎨 Over 50 Different Phenotypes
+        st.markdown(f"""
+        ### 🎨 {t('about.colors_title', lang)}
 
-        **Base Colors:**
-        - Bay, Black, Chestnut
+        {t('about.colors_base', lang)}
 
-        **Cream Dilutes:**
-        - Palomino, Buckskin, Smoky Black
-        - Cremello, Perlino, Smoky Cream
+        {t('about.colors_cream', lang)}
 
-        **Pearl Colors:**
-        - Apricot, Pearl Bay, Smoky Pearl
+        {t('about.colors_pearl', lang)}
 
-        **Special Combinations:**
-        - Silver Dapple, Champagne variants
-        - Dun colors, Flaxen variations
-        - Gray and many more!
+        {t('about.colors_special', lang)}
         """)
 
     with tab3:
         col_tech1, col_tech2 = st.columns(2)
 
         with col_tech1:
-            st.markdown("""
-            ### 💻 Technology Stack
+            st.markdown(f"""
+            ### 💻 {t('about.tech_stack', lang)}
 
-            - **Backend:** Python
-            - **Web UI:** Streamlit
-            - **API:** FastAPI
-            - **License:** MIT
+            - {t('about.tech_backend', lang)}
+            - {t('about.tech_web', lang)}
+            - {t('about.tech_api', lang)}
+            - {t('about.tech_license', lang)}
             """)
 
         with col_tech2:
-            st.markdown("""
-            ### 📊 Performance
+            st.markdown(f"""
+            ### 📊 {t('about.performance_title', lang)}
 
-            - **Generation:** >50,000 ops/sec
-            - **Breeding:** >40,000 ops/sec
-            - **Tests:** 65/65 passing
-            - **Memory:** ~184 bytes/horse
+            - {t('about.performance_generation', lang)}
+            - {t('about.performance_breeding', lang)}
+            - {t('about.performance_tests', lang)}
+            - {t('about.performance_memory', lang)}
             """)
 
     st.markdown("---")
 
     col_metric1, col_metric2, col_metric3 = st.columns(3)
     with col_metric1:
-        st.metric("Total Genes", "9")
+        st.metric(t('about.total_genes', lang), "9")
     with col_metric2:
-        st.metric("Phenotypes", "50+")
+        st.metric(t('about.phenotypes', lang), "50+")
     with col_metric3:
-        st.metric("Tests", "65/65 ✅")
+        st.metric(t('about.tests', lang), "65/65 ✅")
 
 # Footer
 st.markdown("---")
-st.markdown("""
+st.markdown(f"""
 <div style="text-align: center; color: #6c757d;">
-    <p>🐴 Horse Genetics Simulator v2.1 | Made with ❤️</p>
-    <p><a href="https://github.com/Metroseksuaali/Horsegenetics" target="_blank">GitHub</a></p>
+    <p>🐴 {t('footer.made_with', lang)}</p>
+    <p><a href="https://github.com/Metroseksuaali/Horsegenetics" target="_blank">{t('footer.github', lang)}</a></p>
 </div>
 """, unsafe_allow_html=True)
