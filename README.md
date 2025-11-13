@@ -183,6 +183,45 @@ Horsegenetics/
 - ✅ Test individual components independently
 - ✅ **Perfect for game integration and external applications**
 
+## 🎮 Game & Bot Integration
+
+**Want to integrate horse genetics into your game, Discord bot, or application?**
+
+👉 **[See the complete GAME INTEGRATION GUIDE](GAME_INTEGRATION.md)** 👈
+
+The core genetics engine requires **ZERO dependencies** (only Python standard library) and is completely standalone!
+
+### Quick Example
+
+```python
+from genetics.horse import Horse
+
+# Generate random horses
+horse = Horse.random()
+print(horse.phenotype)  # "Buckskin"
+
+# Breed horses
+foal = Horse.breed(parent1, parent2)
+print(f"Foal: {foal.phenotype}")
+```
+
+### What You Get
+
+The [GAME_INTEGRATION.md](GAME_INTEGRATION.md) guide includes:
+- ✅ What files you need (just `genetics/` folder!)
+- ✅ Complete Discord bot example with commands
+- ✅ Simple breeding game example
+- ✅ REST API integration example
+- ✅ Save/load system examples
+- ✅ Full API reference
+
+**Perfect for:**
+- 🎮 Horse breeding games
+- 🤖 Discord/Telegram bots
+- 🌐 Web applications
+- 📱 Mobile games
+- 🎓 Educational tools
+
 ## API for Game Projects
 
 **Version 2.0** includes a clean, fluent API perfect for game integration:
@@ -212,6 +251,8 @@ custom_horse = Horse.from_string(
     "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g"
 )
 ```
+
+**For more examples, see [GAME_INTEGRATION.md](GAME_INTEGRATION.md)**
 
 ### Game Integration Example
 
