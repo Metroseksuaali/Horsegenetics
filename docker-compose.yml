@@ -1,0 +1,54 @@
+# Docker Compose for Horse Genetics Simulator
+#
+# Start everything with: docker-compose up
+# Or start specific services:
+#   - Web UI only: docker-compose up web
+#   - API only: docker-compose up api
+
+version: '3.8'
+
+services:
+  # Streamlit Web UI
+  web:
+    build: .
+    container_name: horse-genetics-web
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data  # Persistent storage for saved stables
+    environment:
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+    command: streamlit run streamlit_app.py --server.address 0.0.0.0
+    restart: unless-stopped
+
+  # FastAPI REST API
+  api:
+    build: .
+    container_name: horse-genetics-api
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: python3 api/main.py
+    restart: unless-stopped
+
+  # Both services together
+  # Use: docker-compose up
+  # Uncomment below to run both simultaneously
+
+  # all-in-one:
+  #   build: .
+  #   container_name: horse-genetics-all
+  #   ports:
+  #     - "8501:8501"
+  #     - "8000:8000"
+  #   volumes:
+  #     - ./data:/app/data
+  #   command: >
+  #     sh -c "python3 api/main.py &
+  #            streamlit run streamlit_app.py --server.address 0.0.0.0"
+  #   restart: unless-stopped
+
+volumes:
+  data:

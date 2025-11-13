@@ -32,22 +32,50 @@ A scientifically accurate horse color genetics simulator that generates random h
 - **CLI Arguments**: Batch mode, probability calculation, simulation
 - **Performance Benchmarks**: Ensure fast performance for games
 
-## How to Use
+## 🚀 Quick Start
 
-### GUI Version (Recommended)
+### 🐳 Docker (Easiest - Recommended!)
+
+```bash
+# Start web interface
+docker-compose up web
+
+# Open browser to http://localhost:8501
+```
+
+**Or build and run manually:**
+```bash
+docker build -t horse-genetics .
+docker run -p 8501:8501 horse-genetics
+```
+
+### 🌐 Web Interface (Streamlit)
+
+**Install and run:**
+```bash
+pip install streamlit
+streamlit run streamlit_app.py
+```
+
+**Features:**
+- 🎲 Random horse generator
+- 🧬 Interactive breeding simulator
+- 📊 Probability calculator with charts
+- 📚 My Stable - save/load your horses
+- 💾 Export to JSON
+- 🎨 Modern, responsive UI
+- 📱 Works on mobile!
+
+**No tkinter required!** Runs in your browser.
+
+### 🖥️ Desktop GUI (tkinter)
 
 ```bash
 python3 horse_genetics_gui.py
 ```
 
-**Requirements:**
-- Python 3 with tkinter
-- Works on Windows, macOS, and Linux
-
-**Features:**
-- **Random Generator** - Generate random horses with one click
-- **Breeding Simulator** - Breed two horses using dropdown menus
-- **Help** - Built-in genetics guide
+**Requirements:** Python 3 with tkinter
+**Features:** Random generator, breeding simulator, help guide
 
 ### Terminal Version
 
@@ -135,10 +163,14 @@ Horsegenetics/
 ├── api/
 │   ├── __init__.py
 │   └── main.py                  # FastAPI REST API (NEW v2.1)
+├── streamlit_app.py             # Web UI (Streamlit) (NEW v2.1)
 ├── horse_genetics.py            # CLI with advanced features
-├── horse_genetics_gui.py        # Graphical user interface
+├── horse_genetics_gui.py        # Desktop GUI (tkinter)
 ├── test_genetics.py             # Unit tests (65 tests)
 ├── test_performance.py          # Performance benchmarks (NEW v2.1)
+├── Dockerfile                   # Docker container (NEW v2.1)
+├── docker-compose.yml           # Docker Compose (NEW v2.1)
+├── requirements.txt             # Python dependencies (NEW v2.1)
 ├── pyproject.toml               # Package metadata (NEW v2.1)
 ├── LICENSE                      # MIT License
 └── README.md                    # This file
@@ -250,19 +282,49 @@ python3 test_genetics.py -v
 
 All tests pass with 100% accuracy! ✅
 
-## 📦 Installation for Game Projects
+## 📦 Installation
+
+### Option 1: Docker (Recommended)
 
 ```bash
 # Clone repository
 git clone https://github.com/Metroseksuaali/Horsegenetics.git
 cd Horsegenetics
 
-# Install in development mode
+# Start web UI
+docker-compose up web
+
+# Or start REST API
+docker-compose up api
+
+# Or build manually
+docker build -t horse-genetics .
+docker run -p 8501:8501 horse-genetics
+```
+
+### Option 2: Python (Local Installation)
+
+```bash
+# Clone repository
+git clone https://github.com/Metroseksuaali/Horsegenetics.git
+cd Horsegenetics
+
+# Install core package
 pip install -e .
 
-# Or install dependencies only
-pip install fastapi uvicorn  # For REST API (optional)
-pip install matplotlib       # For pedigree graphs (optional)
+# Install optional dependencies
+pip install -r requirements.txt  # All features
+# OR selectively:
+pip install streamlit            # Web UI
+pip install fastapi uvicorn      # REST API
+pip install matplotlib           # Pedigree graphs
+```
+
+### Option 3: PyPI (when published)
+
+```bash
+pip install horse-genetics
+pip install streamlit  # For web UI
 ```
 
 ## 🤝 Contributing
@@ -290,6 +352,8 @@ This program simulates realistic horse coat color genetics using Mendelian inher
 **Version History:**
 
 **v2.1** (Latest) - Production-Ready Release:
+- ✅ **Streamlit web UI** - Modern browser-based interface
+- ✅ **Docker support** - One-command deployment
 - ✅ Breeding probability calculator
 - ✅ REST API for game integration
 - ✅ Statistics simulation tools
