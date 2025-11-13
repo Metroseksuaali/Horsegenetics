@@ -376,6 +376,52 @@ def apply_roan(ctx: PhenotypeContext) -> None:
         ctx.phenotype = f"{ctx.phenotype} Roan"
 
 
+def apply_dominant_white(ctx: PhenotypeContext) -> None:
+    """
+    Apply Dominant White pattern.
+
+    Dominant White is caused by mutations in the KIT gene (W1-W39 alleles exist).
+    Most W alleles are LETHAL when homozygous, except W20.
+
+    Lethal combinations:
+    - W1/W1, W5/W5, W10/W10, W13/W13, W22/W22 = embryonic lethal
+    - W20/W20 = viable (rare exception)
+
+    Modifies ctx.phenotype
+    """
+    # Check if horse has any W allele
+    w_alleles = ['W1', 'W5', 'W10', 'W13', 'W20', 'W22']
+    has_w = any(ctx.has_allele('dominant_white', allele) for allele in w_alleles)
+
+    if not has_w:
+        return
+
+    # Get genotype to check for lethal homozygous combinations
+    dw_genotype = ctx.get_genotype('dominant_white')
+
+    # Check for lethal homozygous combinations
+    lethal_alleles = ['W1', 'W5', 'W10', 'W13', 'W22']
+    if dw_genotype[0] in lethal_alleles and dw_genotype[0] == dw_genotype[1]:
+        ctx.phenotype = f"NONVIABLE - Homozygous Dominant White ({dw_genotype[0]}/{dw_genotype[1]}) is lethal"
+        return
+
+    # W20/W20 is viable but causes maximum white
+    if dw_genotype == ('W20', 'W20'):
+        ctx.phenotype = f"Dominant White (Homozygous {dw_genotype[0]})"
+        return
+
+    # Heterozygous W alleles cause white/mostly white
+    # Identify which W allele is present
+    w_allele = None
+    for allele in w_alleles:
+        if ctx.has_allele('dominant_white', allele):
+            w_allele = allele
+            break
+
+    if w_allele:
+        ctx.phenotype = f"Dominant White ({w_allele})"
+
+
 def apply_white_patterns(ctx: PhenotypeContext) -> None:
     """
     Apply white spotting patterns (Tobiano, Overo, Sabino, Splash).
@@ -500,6 +546,7 @@ class PhenotypeCalculator:
             apply_flaxen,
             apply_sooty,
             apply_roan,  # Apply before white patterns
+            apply_dominant_white,  # Dominant White (usually overrides base color completely)
             apply_white_patterns,  # Tobiano, Overo, Sabino, Splash, Tovero
             apply_leopard_complex,  # Appaloosa patterns
             apply_gray,  # Usually last (epistatic)

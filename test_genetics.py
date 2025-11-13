@@ -82,6 +82,7 @@ class TestBasicColors(unittest.TestCase):
                         sooty=('sty', 'sty'), gray=('g', 'g'),
                         roan=('n', 'n'), tobiano=('n', 'n'),
                         frame=('n', 'n'), sabino=('n', 'n'),
+                        dominant_white=('n', 'n'),
                         splash=('n', 'n'), leopard=('lp', 'lp'),
                         patn1=('n', 'n')):
         """Helper to create genotype dictionaries."""
@@ -99,6 +100,7 @@ class TestBasicColors(unittest.TestCase):
             'tobiano': tobiano,
             'frame': frame,
             'sabino': sabino,
+            'dominant_white': dominant_white,
             'splash': splash,
             'leopard': leopard,
             'patn1': patn1
@@ -159,6 +161,7 @@ class TestCreamDilution(unittest.TestCase):
             'tobiano': ('n', 'n'),
             'frame': ('n', 'n'),
             'sabino': ('n', 'n'),
+            'dominant_white': ('n', 'n'),
             'splash': ('n', 'n'),
             'leopard': ('lp', 'lp'),
             'patn1': ('n', 'n')
@@ -229,6 +232,7 @@ class TestPearlDilution(unittest.TestCase):
             'tobiano': ('n', 'n'),
             'frame': ('n', 'n'),
             'sabino': ('n', 'n'),
+            'dominant_white': ('n', 'n'),
             'splash': ('n', 'n'),
             'leopard': ('lp', 'lp'),
             'patn1': ('n', 'n')
@@ -306,6 +310,7 @@ class TestChampagneDilution(unittest.TestCase):
             'tobiano': ('n', 'n'),
             'frame': ('n', 'n'),
             'sabino': ('n', 'n'),
+            'dominant_white': ('n', 'n'),
             'splash': ('n', 'n'),
             'leopard': ('lp', 'lp'),
             'patn1': ('n', 'n')
@@ -372,6 +377,7 @@ class TestSilverDilution(unittest.TestCase):
             'tobiano': ('n', 'n'),
             'frame': ('n', 'n'),
             'sabino': ('n', 'n'),
+            'dominant_white': ('n', 'n'),
             'splash': ('n', 'n'),
             'leopard': ('lp', 'lp'),
             'patn1': ('n', 'n')
@@ -448,6 +454,7 @@ class TestDunGene(unittest.TestCase):
             'tobiano': ('n', 'n'),
             'frame': ('n', 'n'),
             'sabino': ('n', 'n'),
+            'dominant_white': ('n', 'n'),
             'splash': ('n', 'n'),
             'leopard': ('lp', 'lp'),
             'patn1': ('n', 'n')
@@ -521,6 +528,7 @@ class TestFlaxenAndSooty(unittest.TestCase):
             'tobiano': ('n', 'n'),
             'frame': ('n', 'n'),
             'sabino': ('n', 'n'),
+            'dominant_white': ('n', 'n'),
             'splash': ('n', 'n'),
             'leopard': ('lp', 'lp'),
             'patn1': ('n', 'n')
@@ -594,6 +602,7 @@ class TestGrayGene(unittest.TestCase):
             'tobiano': ('n', 'n'),
             'frame': ('n', 'n'),
             'sabino': ('n', 'n'),
+            'dominant_white': ('n', 'n'),
             'splash': ('n', 'n'),
             'leopard': ('lp', 'lp'),
             'patn1': ('n', 'n'),
@@ -819,6 +828,7 @@ class TestGenotypeFormatting(unittest.TestCase):
             'tobiano': ('To', 'n'),
             'frame': ('O', 'n'),
             'sabino': ('Sb1', 'n'),
+            'dominant_white': ('W1', 'n'),
             'splash': ('Sw1', 'n'),
             'leopard': ('Lp', 'lp'),
             'patn1': ('PATN1', 'n')
@@ -839,6 +849,7 @@ class TestGenotypeFormatting(unittest.TestCase):
         self.assertIn('To:To/n', formatted)
         self.assertIn('O:O/n', formatted)
         self.assertIn('Sb:Sb1/n', formatted)
+        self.assertIn('W:W1/n', formatted)
         self.assertIn('Spl:Sw1/n', formatted)
         self.assertIn('Lp:Lp/lp', formatted)
         self.assertIn('PATN1:PATN1/n', formatted)
@@ -888,7 +899,7 @@ class TestHorseAPI(unittest.TestCase):
 
         # Should have genotype
         self.assertIsInstance(horse.genotype, dict)
-        self.assertEqual(len(horse.genotype), 16)  # 16 genes (added white patterns + leopard)
+        self.assertEqual(len(horse.genotype), 17)  # 17 genes (added white patterns + leopard + dominant white)
 
         # Should have genotype string
         self.assertIsInstance(horse.genotype_string, str)
@@ -898,7 +909,7 @@ class TestHorseAPI(unittest.TestCase):
         """Test creating horse from genotype string."""
         from genetics.horse import Horse
 
-        genotype_str = "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+        genotype_str = "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
         horse = Horse.from_string(genotype_str)
 
         self.assertEqual(horse.genotype['extension'], ('E', 'e'))
@@ -923,8 +934,8 @@ class TestHorseAPI(unittest.TestCase):
         from genetics.horse import Horse
 
         # Create specific parents
-        mare_str = "E:E/e A:A/A Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
-        stallion_str = "E:e/e A:a/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:f/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+        mare_str = "E:E/e A:A/A Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+        stallion_str = "E:e/e A:a/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:f/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
 
         mare = Horse.from_string(mare_str)
         stallion = Horse.from_string(stallion_str)
@@ -934,7 +945,7 @@ class TestHorseAPI(unittest.TestCase):
 
         # Foal should exist with valid genotype
         self.assertIsNotNone(foal)
-        self.assertEqual(len(foal.genotype), 16)
+        self.assertEqual(len(foal.genotype), 17)
 
         # Extension should be E/e (mare E/e × stallion e/e)
         # Either E/e or e/e
@@ -944,7 +955,7 @@ class TestHorseAPI(unittest.TestCase):
         """Test checking if horse has specific allele."""
         from genetics.horse import Horse
 
-        horse_str = "E:E/E A:A/a Dil:N/Cr D:D/nd2 Z:Z/n Ch:n/n F:F/f STY:STY/sty G:G/g Rn:n/n To:n/n O:n/n Sb:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+        horse_str = "E:E/E A:A/a Dil:N/Cr D:D/nd2 Z:Z/n Ch:n/n F:F/f STY:STY/sty G:G/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
         horse = Horse.from_string(horse_str)
 
         # Should have E
@@ -961,7 +972,7 @@ class TestHorseAPI(unittest.TestCase):
         """Test checking if horse is homozygous for gene."""
         from genetics.horse import Horse
 
-        horse_str = "E:E/E A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+        horse_str = "E:E/E A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
         horse = Horse.from_string(horse_str)
 
         # Extension is homozygous E/E
@@ -1015,12 +1026,12 @@ class TestHorseAPI(unittest.TestCase):
 
         # Siblings may have different genotypes
         # (unless parents are homozygous for all genes)
-        self.assertEqual(len(foal1.genotype), 16)
-        self.assertEqual(len(foal2.genotype), 16)
+        self.assertEqual(len(foal1.genotype), 17)
+        self.assertEqual(len(foal2.genotype), 17)
 
         # Generation 3 - breed siblings
         foal3 = Horse.breed(foal1, foal2)
-        self.assertEqual(len(foal3.genotype), 16)
+        self.assertEqual(len(foal3.genotype), 17)
 
     def test_convenience_functions(self):
         """Test convenience functions for functional style."""
@@ -1036,7 +1047,7 @@ class TestHorseAPI(unittest.TestCase):
         self.assertIsNotNone(foal.phenotype)
 
         # parse_horse
-        genotype_str = "E:E/e A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+        genotype_str = "E:E/e A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
         horse3 = parse_horse(genotype_str)
         self.assertEqual(horse3.genotype['extension'], ('E', 'e'))
 
@@ -1058,8 +1069,8 @@ class TestRoanGene(unittest.TestCase):
                         champagne=('n', 'n'), flaxen=('F', 'F'),
                         sooty=('sty', 'sty'), gray=('g', 'g'),
                         tobiano=('n', 'n'), frame=('n', 'n'),
-                        sabino=('n', 'n'), splash=('n', 'n'),
-                        leopard=('lp', 'lp'), patn1=('n', 'n')):
+                        sabino=('n', 'n'), dominant_white=('n', 'n'),
+                        splash=('n', 'n'), leopard=('lp', 'lp'), patn1=('n', 'n')):
         """Helper to create genotype dictionaries."""
         return {
             'extension': extension,
@@ -1075,6 +1086,7 @@ class TestRoanGene(unittest.TestCase):
             'tobiano': tobiano,
             'frame': frame,
             'sabino': sabino,
+            'dominant_white': dominant_white,
             'splash': splash,
             'leopard': leopard,
             'patn1': patn1
@@ -1117,6 +1129,7 @@ class TestWhitePatterns(unittest.TestCase):
 
     def _create_genotype(self, extension, agouti, tobiano=('n', 'n'),
                         frame=('n', 'n'), sabino=('n', 'n'),
+                        dominant_white=('n', 'n'),
                         splash=('n', 'n'), dilution=('N', 'N'),
                         dun=('nd2', 'nd2'), silver=('n', 'n'),
                         champagne=('n', 'n'), flaxen=('F', 'F'),
@@ -1138,6 +1151,7 @@ class TestWhitePatterns(unittest.TestCase):
             'tobiano': tobiano,
             'frame': frame,
             'sabino': sabino,
+            'dominant_white': dominant_white,
             'splash': splash,
             'leopard': leopard,
             'patn1': patn1
@@ -1216,7 +1230,8 @@ class TestLeopardComplex(unittest.TestCase):
                         flaxen=('F', 'F'), sooty=('sty', 'sty'),
                         gray=('g', 'g'), roan=('n', 'n'),
                         tobiano=('n', 'n'), frame=('n', 'n'),
-                        sabino=('n', 'n'), splash=('n', 'n')):
+                        sabino=('n', 'n'), dominant_white=('n', 'n'),
+                        splash=('n', 'n')):
         """Helper to create genotype dictionaries."""
         return {
             'extension': extension,
@@ -1232,6 +1247,7 @@ class TestLeopardComplex(unittest.TestCase):
             'tobiano': tobiano,
             'frame': frame,
             'sabino': sabino,
+            'dominant_white': dominant_white,
             'splash': splash,
             'leopard': leopard,
             'patn1': patn1
@@ -1263,6 +1279,101 @@ class TestLeopardComplex(unittest.TestCase):
         self.assertEqual(self.calc.determine_phenotype(genotype), 'Bay')
 
 
+class TestDominantWhite(unittest.TestCase):
+    """
+    Test Dominant White gene (KIT).
+
+    Scientific basis: KIT gene mutations W1-W39.
+    Most W alleles are lethal when homozygous, except W20.
+    """
+
+    def setUp(self):
+        """Initialize calculator for each test."""
+        self.calc = PhenotypeCalculator()
+
+    def _create_genotype(self, extension, agouti, dominant_white,
+                        dilution=('N', 'N'), dun=('nd2', 'nd2'),
+                        silver=('n', 'n'), champagne=('n', 'n'),
+                        flaxen=('F', 'F'), sooty=('sty', 'sty'),
+                        gray=('g', 'g'), roan=('n', 'n'),
+                        tobiano=('n', 'n'), frame=('n', 'n'),
+                        sabino=('n', 'n'), splash=('n', 'n'),
+                        leopard=('lp', 'lp'), patn1=('n', 'n')):
+        """Helper to create genotype dictionaries."""
+        return {
+            'extension': extension,
+            'agouti': agouti,
+            'dilution': dilution,
+            'dun': dun,
+            'silver': silver,
+            'champagne': champagne,
+            'flaxen': flaxen,
+            'sooty': sooty,
+            'gray': gray,
+            'roan': roan,
+            'tobiano': tobiano,
+            'frame': frame,
+            'sabino': sabino,
+            'dominant_white': dominant_white,
+            'splash': splash,
+            'leopard': leopard,
+            'patn1': patn1
+        }
+
+    def test_w1_heterozygous(self):
+        """Test W1/n = Dominant White."""
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), ('W1', 'n'))
+        self.assertEqual(self.calc.determine_phenotype(genotype), 'Dominant White (W1)')
+
+    def test_w5_heterozygous(self):
+        """Test W5/n = Dominant White."""
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), ('W5', 'n'))
+        self.assertEqual(self.calc.determine_phenotype(genotype), 'Dominant White (W5)')
+
+    def test_w20_heterozygous(self):
+        """Test W20/n = Dominant White."""
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), ('W20', 'n'))
+        self.assertEqual(self.calc.determine_phenotype(genotype), 'Dominant White (W20)')
+
+    def test_w20_homozygous_viable(self):
+        """Test W20/W20 is viable (exception to lethality rule)."""
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), ('W20', 'W20'))
+        phenotype = self.calc.determine_phenotype(genotype)
+        self.assertIn('Dominant White', phenotype)
+        self.assertNotIn('NONVIABLE', phenotype)
+
+    def test_w1_homozygous_lethal(self):
+        """Test W1/W1 is lethal."""
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), ('W1', 'W1'))
+        phenotype = self.calc.determine_phenotype(genotype)
+        self.assertIn('NONVIABLE', phenotype)
+        self.assertIn('W1/W1', phenotype)
+
+    def test_w5_homozygous_lethal(self):
+        """Test W5/W5 is lethal."""
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), ('W5', 'W5'))
+        phenotype = self.calc.determine_phenotype(genotype)
+        self.assertIn('NONVIABLE', phenotype)
+
+    def test_w10_homozygous_lethal(self):
+        """Test W10/W10 is lethal."""
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), ('W10', 'W10'))
+        phenotype = self.calc.determine_phenotype(genotype)
+        self.assertIn('NONVIABLE', phenotype)
+
+    def test_w13_homozygous_lethal(self):
+        """Test W13/W13 is lethal."""
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), ('W13', 'W13'))
+        phenotype = self.calc.determine_phenotype(genotype)
+        self.assertIn('NONVIABLE', phenotype)
+
+    def test_w22_homozygous_lethal(self):
+        """Test W22/W22 is lethal."""
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), ('W22', 'W22'))
+        phenotype = self.calc.determine_phenotype(genotype)
+        self.assertIn('NONVIABLE', phenotype)
+
+
 def run_tests():
     """Run all tests and print results."""
     # Create test suite
@@ -1281,6 +1392,7 @@ def run_tests():
     suite.addTests(loader.loadTestsFromTestCase(TestGrayGene))
     suite.addTests(loader.loadTestsFromTestCase(TestRoanGene))
     suite.addTests(loader.loadTestsFromTestCase(TestWhitePatterns))
+    suite.addTests(loader.loadTestsFromTestCase(TestDominantWhite))
     suite.addTests(loader.loadTestsFromTestCase(TestLeopardComplex))
     suite.addTests(loader.loadTestsFromTestCase(TestBreeding))
     suite.addTests(loader.loadTestsFromTestCase(TestGenotypeFormatting))

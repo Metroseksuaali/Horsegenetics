@@ -230,6 +230,18 @@ SABINO = GeneDefinition(
     effects='Sb1/Sb1 = maximum sabino (often mostly white), Sb1/n = sabino pattern, n/n = solid'
 )
 
+DOMINANT_WHITE = GeneDefinition(
+    name='dominant_white',
+    symbol='W',
+    full_name='Dominant White',
+    locus='KIT',
+    alleles=['W1', 'W5', 'W10', 'W13', 'W20', 'W22', 'n'],
+    dominance_order={'W1': 10, 'W5': 9, 'W10': 8, 'W13': 7, 'W20': 6, 'W22': 5, 'n': 1},
+    inheritance_pattern=InheritancePattern.DOMINANT,
+    description='White or mostly white coat. Multiple alleles (W1-W39 exist). Most are LETHAL when homozygous.',
+    effects='W_/n = white/mostly white, W20/W20 = viable white, W1/W1, W5/W5, W10/W10, W13/W13, W22/W22 = LETHAL (embryonic death)'
+)
+
 SPLASH_WHITE = GeneDefinition(
     name='splash',
     symbol='Spl',
@@ -286,6 +298,7 @@ ALL_GENES: List[GeneDefinition] = [
     TOBIANO,
     FRAME_OVERO,
     SABINO,
+    DOMINANT_WHITE,
     SPLASH_WHITE,
     LEOPARD_COMPLEX,
     PATN1

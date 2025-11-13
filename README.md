@@ -6,12 +6,12 @@ A scientifically accurate horse color genetics simulator that generates random h
 
 [![Python 3.6+](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-84%20passing-success.svg)](test_genetics.py)
+[![Tests](https://img.shields.io/badge/tests-93%20passing-success.svg)](test_genetics.py)
 
 ## ✨ Features
 
 ### Core Genetics
-- **16 Genetic Traits**: Extension, Agouti, Dilution (Cream/Pearl), Dun, Silver, Champagne, Flaxen, Sooty, Gray, Roan, Tobiano, Frame Overo, Sabino, Splash White, Leopard Complex, PATN1
+- **17 Genetic Traits**: Extension, Agouti, Dilution (Cream/Pearl), Dun, Silver, Champagne, Flaxen, Sooty, Gray, Roan, Tobiano, Frame Overo, Sabino, Dominant White, Splash White, Leopard Complex, PATN1
 - **100+ Phenotypes**: Including rare colors like Smoky Cream, Pearl Bay, Silver Dapple, Tovero, and Leopard Appaloosa
 - **Scientifically Accurate**: Based on peer-reviewed equine genetics research
 - **Mendelian Inheritance**: Realistic breeding simulation with lethal combinations (Frame Overo LWOS)
@@ -160,8 +160,9 @@ python3 api/main.py
 ### White Spotting Patterns
 - **Tobiano** - Large white patches with rounded edges, white crosses back
 - **Frame Overo** - White usually horizontal, rarely crosses back (LETHAL when homozygous - LWOS)
-- **Sabino** - Irregular white edges, high white on legs, white face
-- **Maximum Sabino** - Homozygous sabino, often mostly white
+- **Sabino 1** - Irregular white edges, high white on legs, white face
+- **Maximum Sabino** - Homozygous Sabino 1, often mostly white
+- **Dominant White (W)** - White or mostly white coat. Multiple alleles (W1, W5, W10, W13, W20, W22). Most LETHAL when homozygous except W20.
 - **Splash White** - White from bottom up (legs, belly), often blue eyes
 - **Tovero** - Combination of Tobiano + any Overo pattern (Frame, Sabino, or Splash)
 
@@ -423,12 +424,13 @@ This program simulates realistic horse coat color genetics using Mendelian inher
 **Version History:**
 
 **v2.2** (Latest) - White Patterns & Appaloosa Update:
-- ✅ **16 genes total** - Added Roan, Tobiano, Frame Overo, Sabino, Splash White, Leopard Complex, PATN1
+- ✅ **17 genes total** - Added Roan, Tobiano, Frame Overo, Sabino, Dominant White (W1-W39), Splash White, Leopard Complex, PATN1
+- ✅ **Dominant White alleles** - W1, W5, W10, W13, W20, W22 with lethality checks (W20 viable)
 - ✅ **Tovero pattern** - Automatic detection of Tobiano + Overo combinations
 - ✅ **Appaloosa patterns** - Leopard, Fewspot, and Blanket patterns
-- ✅ **Lethal gene warnings** - Frame Overo LWOS detection
+- ✅ **Lethal gene warnings** - Frame Overo LWOS and Dominant White homozygous detection
 - ✅ **Industry-standard names** - Blue Roan, Red Roan, Tovero, etc.
-- ✅ **84 comprehensive tests** - All pattern combinations tested
+- ✅ **93 comprehensive tests** - All pattern combinations tested including Dominant White
 - ✅ **Roan viability** - Based on 2020 research showing Rn/Rn is viable
 
 **v2.1** - Production-Ready Release:
