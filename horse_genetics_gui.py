@@ -6,7 +6,6 @@ Uses tkinter for compatibility across Windows, macOS, and Linux
 
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
-import sys
 from horse_genetics import HorseGeneticGenerator
 
 
@@ -561,11 +560,8 @@ Example:
             else:
                 self.parent2_phenotype_label.config(text=phenotype, foreground=self.colors['primary'])
         except Exception as e:
-            # Show actual error for debugging
+            # Show error message in GUI
             error_msg = f"Invalid: {str(e)}"
-            print(f"Error updating parent {parent_num} phenotype: {e}")  # Debug print
-            import traceback
-            traceback.print_exc()  # Print full traceback for debugging
 
             if parent_num == 1:
                 self.parent1_phenotype_label.config(text=error_msg, foreground='red')

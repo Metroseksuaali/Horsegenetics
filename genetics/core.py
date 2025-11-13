@@ -55,8 +55,8 @@ class GenePool:
             'A': 10, 'a': 1,
             'N': 10, 'Cr': 5, 'Prl': 3,
             'D': 10, 'nd1': 5, 'nd2': 1,
-            'Z': 10, 'n': 1,
-            'Ch': 10,
+            'Z': 10, 'n': 1,  # Note: 'n' used by both Silver and Champagne
+            'Ch': 10,  # 'n' for champagne has same dominance as for silver (1)
             'F': 10, 'f': 1,
             'STY': 10, 'sty': 1
         }
