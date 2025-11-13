@@ -242,10 +242,54 @@ def apply_dun(ctx: PhenotypeContext) -> None:
 
     Dun (TBX3 gene) creates dilution with primitive markings.
 
+    Uses industry-standard names (e.g., Grullo, Red Dun, Dunalino)
+    with genetic descriptions in parentheses.
+
     Modifies ctx.phenotype
     """
     if ctx.has_allele('dun', 'D'):
-        ctx.phenotype = f"{ctx.phenotype} Dun"
+        # Apply dun and use industry-standard names where applicable
+        genetic_description = f"{ctx.phenotype} Dun"
+
+        # Map common dun colors to industry-standard names
+        # Format: "Industry Name (Genetic Description)"
+        dun_name_map = {
+            # Basic dun colors
+            'Black Dun': 'Grullo (Black Dun)',
+            'Chestnut Dun': 'Red Dun (Chestnut Dun)',
+            'Palomino Dun': 'Dunalino (Palomino Dun)',
+            'Buckskin Dun': 'Dunskin (Buckskin Dun)',
+            'Smoky Black Dun': 'Smoky Grullo (Smoky Black Dun)',
+
+            # Silver variants
+            'Silver Black Dun': 'Silver Grullo (Silver Black Dun)',
+            'Silver Bay Dun': 'Silver Bay Dun',
+
+            # Sooty variants
+            'Sooty Black Dun': 'Sooty Grullo (Sooty Black Dun)',
+            'Sooty Chestnut Dun': 'Sooty Red Dun (Sooty Chestnut Dun)',
+            'Sooty Bay Dun': 'Sooty Bay Dun',
+            'Sooty Palomino Dun': 'Sooty Dunalino (Sooty Palomino Dun)',
+            'Sooty Buckskin Dun': 'Sooty Dunskin (Sooty Buckskin Dun)',
+
+            # Flaxen variants
+            'Chestnut Dun with Flaxen': 'Red Dun with Flaxen (Chestnut Dun with Flaxen)',
+            'Palomino Dun with Flaxen': 'Dunalino with Flaxen (Palomino Dun with Flaxen)',
+            'Sooty Chestnut Dun with Flaxen': 'Sooty Red Dun with Flaxen (Sooty Chestnut Dun with Flaxen)',
+
+            # Champagne variants (already industry standard)
+            'Classic Champagne Dun': 'Classic Champagne Dun',
+            'Gold Champagne Dun': 'Gold Champagne Dun',
+            'Amber Champagne Dun': 'Amber Champagne Dun',
+        }
+
+        # Check if we have an industry name mapping
+        if genetic_description in dun_name_map:
+            ctx.phenotype = dun_name_map[genetic_description]
+        else:
+            # For colors without special industry names, just add "Dun"
+            ctx.phenotype = genetic_description
+
     elif ctx.has_allele('dun', 'nd1') and not ctx.has_allele('dun', 'D'):
         ctx.phenotype = f"{ctx.phenotype} (nd1)"
 
@@ -257,6 +301,8 @@ def apply_flaxen(ctx: PhenotypeContext) -> None:
     Flaxen lightens mane and tail on chestnut horses only.
     Only visible on e/e (chestnut base) with f/f genotype.
 
+    Handles both simple names and industry names with genetic descriptions.
+
     Modifies ctx.phenotype
     """
     extension = ctx.get_genotype('extension')
@@ -264,7 +310,18 @@ def apply_flaxen(ctx: PhenotypeContext) -> None:
 
     # Only visible on chestnut (e/e) with homozygous flaxen (f/f)
     if extension == ('e', 'e') and flaxen == ('f', 'f'):
-        ctx.phenotype = f"{ctx.phenotype} with Flaxen"
+        # If phenotype has format "Industry Name (Genetic Description)",
+        # add "with Flaxen" to both parts
+        if '(' in ctx.phenotype and ')' in ctx.phenotype:
+            # Split into industry name and genetic description
+            parts = ctx.phenotype.split('(', 1)
+            industry_name = parts[0].strip()
+            genetic_desc = parts[1].rstrip(')')
+
+            ctx.phenotype = f"{industry_name} with Flaxen ({genetic_desc} with Flaxen)"
+        else:
+            # Simple format, just append
+            ctx.phenotype = f"{ctx.phenotype} with Flaxen"
 
 
 def apply_sooty(ctx: PhenotypeContext) -> None:
