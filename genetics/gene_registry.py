@@ -99,6 +99,10 @@ class GeneRegistry:
         - Frame Overo O/O (LWOS)
         - Dominant White lethal homozygous (W1/W1, W5/W5, W10/W10, W13/W13, W22/W22)
 
+        Uses weighted probabilities for rare genes:
+        - Dominant White: ~2-5% (rare in real horses)
+        - Frame Overo: ~10% (uncommon)
+
         Args:
             gene: GeneDefinition to generate alleles for
 
@@ -107,8 +111,137 @@ class GeneRegistry:
         """
         max_attempts = 100
         for _ in range(max_attempts):
-            allele1 = random.choice(gene.alleles)
-            allele2 = random.choice(gene.alleles)
+            # Special handling for genes with realistic frequency-based weighted probabilities
+            # Based on research: Sabino/Gray common (25-35%), Tobiano moderate (15-25%),
+            # Roan/Leopard uncommon (5-10%), Frame rare (3-7%), Splash/Champagne very rare (2-5%),
+            # Dominant White extremely rare (1-3%)
+
+            if gene.name == 'dominant_white':
+                # Dominant White: extremely rare (~1-3% population)
+                # "Quite rare, only handful of families" - research
+                if random.random() < 0.99:  # 99% chance of 'n' per allele → ~2% DW
+                    allele1 = 'n'
+                else:
+                    w_alleles = [a for a in gene.alleles if a != 'n']
+                    allele1 = random.choice(w_alleles)
+
+                if random.random() < 0.99:
+                    allele2 = 'n'
+                else:
+                    w_alleles = [a for a in gene.alleles if a != 'n']
+                    allele2 = random.choice(w_alleles)
+
+            elif gene.name == 'frame':
+                # Frame Overo: rare (~3-7% population)
+                # "Rare in most breeds except Paint" - research
+                if random.random() < 0.98:  # 98% chance of 'n' → ~4% Frame
+                    allele1 = 'n'
+                else:
+                    allele1 = 'O'
+
+                if random.random() < 0.98:
+                    allele2 = 'n'
+                else:
+                    allele2 = 'O'
+
+            elif gene.name == 'tobiano':
+                # Tobiano: moderately common (~15-25% population)
+                # Common in Paint, moderate elsewhere
+                if random.random() < 0.88:  # 88% chance of 'n' → ~23% Tobiano
+                    allele1 = 'n'
+                else:
+                    allele1 = 'To'
+
+                if random.random() < 0.88:
+                    allele2 = 'n'
+                else:
+                    allele2 = 'To'
+
+            elif gene.name == 'sabino':
+                # Sabino: common (~25-35% population)
+                # "Extremely widespread, found in virtually all breeds" - research
+                if random.random() < 0.73:  # 73% chance of 'n' → ~47% Sabino
+                    allele1 = 'n'
+                else:
+                    allele1 = 'Sb1'
+
+                if random.random() < 0.73:
+                    allele2 = 'n'
+                else:
+                    allele2 = 'Sb1'
+
+            elif gene.name == 'splash':
+                # Splash White: very rare (~2-5% population)
+                # "Least common overo pattern, very rare" - research
+                if random.random() < 0.96:  # 96% chance of 'n' → ~8% Splash
+                    allele1 = 'n'
+                else:
+                    splash_alleles = [a for a in gene.alleles if a != 'n']
+                    allele1 = random.choice(splash_alleles)
+
+                if random.random() < 0.96:
+                    allele2 = 'n'
+                else:
+                    splash_alleles = [a for a in gene.alleles if a != 'n']
+                    allele2 = random.choice(splash_alleles)
+
+            elif gene.name == 'roan':
+                # Roan: uncommon (~5-10% population)
+                # "Rare in Icelandic horse population" - research
+                if random.random() < 0.93:  # 93% chance of 'n' → ~13% Roan
+                    allele1 = 'n'
+                else:
+                    allele1 = 'Rn'
+
+                if random.random() < 0.93:
+                    allele2 = 'n'
+                else:
+                    allele2 = 'Rn'
+
+            elif gene.name == 'leopard':
+                # Leopard/Appaloosa: uncommon (~5-10% general population)
+                # "Lower frequency in most breeds" - research
+                if random.random() < 0.90:  # 90% chance of 'lp' → ~19% Leopard
+                    allele1 = 'lp'
+                else:
+                    allele1 = 'Lp'
+
+                if random.random() < 0.90:
+                    allele2 = 'lp'
+                else:
+                    allele2 = 'Lp'
+
+            elif gene.name == 'gray':
+                # Gray: common (~25-35% population)
+                # Very common dominant gene across breeds
+                if random.random() < 0.84:  # 84% chance of 'g' → ~30% Gray
+                    allele1 = 'g'
+                else:
+                    allele1 = 'G'
+
+                if random.random() < 0.84:
+                    allele2 = 'g'
+                else:
+                    allele2 = 'G'
+
+            elif gene.name == 'champagne':
+                # Champagne: very rare (~2-4% population)
+                # "Fairly rare gene, less common dilution" - research
+                if random.random() < 0.95:  # 95% chance of 'n' → ~10% Champagne
+                    allele1 = 'n'
+                else:
+                    allele1 = 'Ch'
+
+                if random.random() < 0.95:
+                    allele2 = 'n'
+                else:
+                    allele2 = 'Ch'
+
+            else:
+                # Normal random selection for common genes
+                allele1 = random.choice(gene.alleles)
+                allele2 = random.choice(gene.alleles)
+
             pair = gene.sort_alleles([allele1, allele2])
 
             # Check for lethal combinations
@@ -129,9 +262,9 @@ class GeneRegistry:
         if gene.name == 'frame':
             return ('n', 'n')  # Safe: no Frame Overo
         elif gene.name == 'dominant_white':
-            return ('W20', 'n')  # Safe: W20 is non-lethal when heterozygous
+            return ('n', 'n')  # Safe: no Dominant White
         else:
-            return gene.sort_alleles([allele1, allele2])
+            return gene.sort_alleles([gene.alleles[0], gene.alleles[0]])
 
     def count_alleles(self, genotype: Tuple[str, str], allele: str) -> int:
         """
