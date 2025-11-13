@@ -2,19 +2,19 @@
 
 A scientifically accurate horse color genetics simulator that generates random horses and enables breeding between two horses. The program works both in terminal and with a graphical user interface.
 
-**Version 2.1** - Production-ready with advanced features for game integration!
+**Version 2.2** - Now with White Patterns & Appaloosa spotting! Includes Roan, Tobiano, Frame Overo, Sabino, Splash White, and Leopard Complex genes.
 
 [![Python 3.6+](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-65%20passing-success.svg)](test_genetics.py)
+[![Tests](https://img.shields.io/badge/tests-84%20passing-success.svg)](test_genetics.py)
 
 ## ✨ Features
 
 ### Core Genetics
-- **9 Genetic Traits**: Extension, Agouti, Dilution (Cream/Pearl), Dun, Silver, Champagne, Flaxen, Sooty, Gray
-- **50+ Phenotypes**: Including rare colors like Smoky Cream, Pearl Bay, and Silver Dapple
+- **16 Genetic Traits**: Extension, Agouti, Dilution (Cream/Pearl), Dun, Silver, Champagne, Flaxen, Sooty, Gray, Roan, Tobiano, Frame Overo, Sabino, Splash White, Leopard Complex, PATN1
+- **100+ Phenotypes**: Including rare colors like Smoky Cream, Pearl Bay, Silver Dapple, Tovero, and Leopard Appaloosa
 - **Scientifically Accurate**: Based on peer-reviewed equine genetics research
-- **Mendelian Inheritance**: Realistic breeding simulation
+- **Mendelian Inheritance**: Realistic breeding simulation with lethal combinations (Frame Overo LWOS)
 
 ### Advanced Features (NEW in v2.1!)
 - **📊 Probability Calculator**: See breeding outcome chances before breeding
@@ -151,6 +151,24 @@ python3 api/main.py
 - **Silver Bay** - Bay with silver mane and tail
 - **Silver Grullo (Silver Black Dun)** - Gray with silver and dun
 - **Sooty Red Dun (Sooty Chestnut Dun)** - Dark red dun
+
+### Roan Patterns
+- **Bay Roan (Red Roan)** - Bay with intermingled white hairs
+- **Chestnut Roan** - Chestnut with white hairs (also called Red Roan or Strawberry Roan)
+- **Black Roan (Blue Roan)** - Black with white hairs, appears blue-gray
+
+### White Spotting Patterns
+- **Tobiano** - Large white patches with rounded edges, white crosses back
+- **Frame Overo** - White usually horizontal, rarely crosses back (LETHAL when homozygous - LWOS)
+- **Sabino** - Irregular white edges, high white on legs, white face
+- **Maximum Sabino** - Homozygous sabino, often mostly white
+- **Splash White** - White from bottom up (legs, belly), often blue eyes
+- **Tovero** - Combination of Tobiano + any Overo pattern (Frame, Sabino, or Splash)
+
+### Appaloosa (Leopard Complex)
+- **Leopard** - White coat with colored spots all over (Lp + PATN1)
+- **Fewspot** - Mostly white with minimal spots (Lp/Lp without PATN1)
+- **Blanket** - White blanket over hip with base color spots (Lp/lp without PATN1)
 
 ## 📁 Project Structure
 
@@ -380,11 +398,12 @@ pip install streamlit  # For web UI
 ## 🤝 Contributing
 
 Contributions welcome! Areas for improvement:
-- Additional genes (Roan, Tobiano, Leopard Complex)
-- More phenotype variations
+- Additional genes (e.g., additional Appaloosa pattern genes)
+- More phenotype variations and combinations
 - Performance optimizations
 - Additional language translations
 - GUI improvements
+- Enhanced pedigree visualization
 
 ## 📄 License
 
@@ -403,7 +422,16 @@ This program simulates realistic horse coat color genetics using Mendelian inher
 
 **Version History:**
 
-**v2.1** (Latest) - Production-Ready Release:
+**v2.2** (Latest) - White Patterns & Appaloosa Update:
+- ✅ **16 genes total** - Added Roan, Tobiano, Frame Overo, Sabino, Splash White, Leopard Complex, PATN1
+- ✅ **Tovero pattern** - Automatic detection of Tobiano + Overo combinations
+- ✅ **Appaloosa patterns** - Leopard, Fewspot, and Blanket patterns
+- ✅ **Lethal gene warnings** - Frame Overo LWOS detection
+- ✅ **Industry-standard names** - Blue Roan, Red Roan, Tovero, etc.
+- ✅ **84 comprehensive tests** - All pattern combinations tested
+- ✅ **Roan viability** - Based on 2020 research showing Rn/Rn is viable
+
+**v2.1** - Production-Ready Release:
 - ✅ **Streamlit web UI** - Modern browser-based interface
 - ✅ **Docker support** - One-command deployment
 - ✅ **Industry-standard color names** - Grullo, Red Dun, Dunalino, etc. with genetic descriptions
@@ -415,7 +443,6 @@ This program simulates realistic horse coat color genetics using Mendelian inher
 - ✅ Performance benchmarks (>50k ops/sec)
 - ✅ JSON/CSV I/O for game saves
 - ✅ Input validation with helpful errors
-- ✅ 65 comprehensive tests
 
 **v2.0** - Modular Architecture:
 - ✅ Fixed Sooty gene visibility

@@ -182,6 +182,91 @@ GRAY = GeneDefinition(
     effects='G = horse born with base color, progressively grays/whitens with age'
 )
 
+ROAN = GeneDefinition(
+    name='roan',
+    symbol='Rn',
+    full_name='Roan',
+    locus='KIT',
+    alleles=['Rn', 'n'],
+    dominance_order={'Rn': 10, 'n': 1},
+    inheritance_pattern=InheritancePattern.DOMINANT,
+    description='Intermingled white and colored hairs throughout coat. Historically thought lethal when homozygous, but recent research shows Rn/Rn horses are viable.',
+    effects='Rn/Rn or Rn/n = roan pattern (white hairs evenly intermixed), n/n = solid. Note: Homozygous roans may be less common due to historical beliefs.'
+)
+
+TOBIANO = GeneDefinition(
+    name='tobiano',
+    symbol='To',
+    full_name='Tobiano',
+    locus='KIT',
+    alleles=['To', 'n'],
+    dominance_order={'To': 10, 'n': 1},
+    inheritance_pattern=InheritancePattern.DOMINANT,
+    description='White spotting pattern with rounded edges, white crosses back',
+    effects='To/To or To/n = tobiano pattern (white patches with clean edges). Crosses back between withers and tail.'
+)
+
+FRAME_OVERO = GeneDefinition(
+    name='frame',
+    symbol='O',
+    full_name='Frame Overo',
+    locus='EDNRB',
+    alleles=['O', 'n'],
+    dominance_order={'O': 10, 'n': 1},
+    inheritance_pattern=InheritancePattern.DOMINANT,
+    description='White spotting pattern, rarely crosses back. LETHAL when homozygous (LWOS).',
+    effects='O/n = frame overo pattern (white usually horizontal), O/O = LETHAL (Lethal White Overo Syndrome), n/n = solid'
+)
+
+SABINO = GeneDefinition(
+    name='sabino',
+    symbol='Sb',
+    full_name='Sabino',
+    locus='KIT',
+    alleles=['Sb1', 'n'],
+    dominance_order={'Sb1': 10, 'n': 1},
+    inheritance_pattern=InheritancePattern.INCOMPLETE_DOMINANT,
+    description='White spotting with irregular edges, high white on legs, white face',
+    effects='Sb1/Sb1 = maximum sabino (often mostly white), Sb1/n = sabino pattern, n/n = solid'
+)
+
+SPLASH_WHITE = GeneDefinition(
+    name='splash',
+    symbol='Spl',
+    full_name='Splash White',
+    locus='MITF',
+    alleles=['Sw1', 'Sw2', 'Sw3', 'n'],
+    dominance_order={'Sw1': 10, 'Sw2': 9, 'Sw3': 8, 'n': 1},
+    inheritance_pattern=InheritancePattern.INCOMPLETE_DOMINANT,
+    description='White spotting from bottom up, blue eyes common',
+    effects='Splash alleles cause white from legs/belly upward, often with blue eyes'
+)
+
+LEOPARD_COMPLEX = GeneDefinition(
+    name='leopard',
+    symbol='Lp',
+    full_name='Leopard Complex',
+    locus='TRPM1',
+    alleles=['Lp', 'lp'],
+    dominance_order={'Lp': 10, 'lp': 1},
+    inheritance_pattern=InheritancePattern.INCOMPLETE_DOMINANT,
+    description='Appaloosa spotting pattern, creates various patterns',
+    effects='Lp/Lp = fewspot/snowcap (mostly white with color on head/legs), Lp/lp = leopard/blanket patterns, lp/lp = solid'
+)
+
+# Requires PATN genes for full leopard patterns
+PATN1 = GeneDefinition(
+    name='patn1',
+    symbol='PATN1',
+    full_name='Pattern 1',
+    locus='PATN1',
+    alleles=['PATN1', 'n'],
+    dominance_order={'PATN1': 10, 'n': 1},
+    inheritance_pattern=InheritancePattern.DOMINANT,
+    description='Modifies leopard complex to create leopard pattern (spots all over)',
+    effects='PATN1 + Lp = leopard pattern (white with dark spots). No effect without Lp.'
+)
+
 
 # ============================================================================
 # GENE REGISTRY - Ordered list of all genes
@@ -196,7 +281,14 @@ ALL_GENES: List[GeneDefinition] = [
     CHAMPAGNE,
     FLAXEN,
     SOOTY,
-    GRAY
+    GRAY,
+    ROAN,
+    TOBIANO,
+    FRAME_OVERO,
+    SABINO,
+    SPLASH_WHITE,
+    LEOPARD_COMPLEX,
+    PATN1
 ]
 
 # Quick lookup by name

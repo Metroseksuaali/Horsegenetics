@@ -40,7 +40,7 @@ def validate_genotype_string(genotype_str: str) -> Dict[str, List[str]]:
     # Check if string is empty
     if not genotype_str.strip():
         errors.append("Genotype string is empty")
-        info.append("Expected format: E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g")
+        info.append("Expected format: E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n Spl:n/n Lp:lp/lp PATN1:n/n")
         return {'errors': errors, 'warnings': warnings, 'info': info}
 
     # Check for basic format
@@ -56,7 +56,10 @@ def validate_genotype_string(genotype_str: str) -> Dict[str, List[str]]:
 
     # Parse and check each gene
     parts = genotype_str.strip().split()
-    required_genes = {'E', 'A', 'Dil', 'D', 'Z', 'Ch', 'F', 'STY', 'G'}
+
+    # Get required genes dynamically from gene definitions
+    from genetics.gene_definitions import get_all_gene_symbols
+    required_genes = set(get_all_gene_symbols())
     found_genes = set()
 
     for part in parts:
@@ -92,7 +95,7 @@ def validate_genotype_string(genotype_str: str) -> Dict[str, List[str]]:
     missing_genes = required_genes - found_genes
     if missing_genes:
         errors.append(f"Missing required genes: {', '.join(sorted(missing_genes))}")
-        info.append("All 9 genes are required for a complete genotype")
+        info.append(f"All {len(required_genes)} genes are required for a complete genotype")
 
     # Check for common typos
     if 'dilution' in genotype_str.lower() or 'cream' in genotype_str.lower():
@@ -254,7 +257,7 @@ def quick_validate(genotype_str: str) -> Tuple[bool, str]:
 
     Example:
         >>> from genetics.validation import quick_validate
-        >>> is_valid, msg = quick_validate("E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g")
+        >>> is_valid, msg = quick_validate("E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n Spl:n/n Lp:lp/lp PATN1:n/n")
         >>> is_valid
         True
     """
@@ -285,6 +288,6 @@ def get_example_genotype() -> str:
     Example:
         >>> from genetics.validation import get_example_genotype
         >>> print(get_example_genotype())
-        E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g
+        E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n Spl:n/n Lp:lp/lp PATN1:n/n
     """
-    return "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g"
+    return "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n Spl:n/n Lp:lp/lp PATN1:n/n"

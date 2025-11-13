@@ -305,7 +305,7 @@ class GeneRegistry:
                     error_text += f"  • {info}\n"
 
             error_text += "\nExpected format:\n"
-            error_text += "  E:E/e A:A/a Dil:N/Cr D:D/nd1 Z:n/n Ch:n/n F:F/f STY:STY/sty G:G/g"
+            error_text += "  E:E/e A:A/a Dil:N/Cr D:D/nd1 Z:n/n Ch:n/n F:F/f STY:STY/sty G:G/g Rn:n/n To:n/n O:n/n Sb:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
 
             raise ValueError(error_text)
 
