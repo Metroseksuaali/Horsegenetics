@@ -263,6 +263,9 @@ class HorseVisualizer:
   </text>
 </svg>''')
 
+        # Add XML declaration at the beginning
+        svg_string = '<?xml version="1.0" encoding="UTF-8"?>\n' + svg_string
+
         return svg_string
 
     def _add_white_patterns(self, root, phenotype: str, ns: dict):
