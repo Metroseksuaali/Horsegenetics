@@ -662,11 +662,90 @@ if page == t('nav.generator', lang):
         with col2:
             auto_name = st.checkbox(t('generator.auto_generate_names', lang), value=True)
 
+        # Advanced generation options
+        with st.expander("⚙️ Advanced Options (Gene Control)", expanded=False):
+            st.markdown("**🚫 Exclude Genes** - Prevent specific genes from appearing")
+            st.caption("Useful for breed-specific generation (e.g., no gray horses)")
+
+            col_ex1, col_ex2, col_ex3 = st.columns(3)
+
+            with col_ex1:
+                exclude_gray = st.checkbox("No Gray", value=False, key="ex_gray")
+                exclude_dw = st.checkbox("No Dominant White", value=False, key="ex_dw")
+                exclude_roan = st.checkbox("No Roan", value=False, key="ex_roan")
+
+            with col_ex2:
+                exclude_tobiano = st.checkbox("No Tobiano", value=False, key="ex_tobiano")
+                exclude_frame = st.checkbox("No Frame", value=False, key="ex_frame")
+                exclude_sabino = st.checkbox("No Sabino", value=False, key="ex_sabino")
+
+            with col_ex3:
+                exclude_leopard = st.checkbox("No Leopard", value=False, key="ex_leopard")
+                exclude_champagne = st.checkbox("No Champagne", value=False, key="ex_champ")
+                exclude_splash = st.checkbox("No Splash", value=False, key="ex_splash")
+
+            # Build exclusion set
+            excluded_genes = set()
+            if exclude_gray:
+                excluded_genes.add('gray')
+            if exclude_dw:
+                excluded_genes.add('dominant_white')
+            if exclude_roan:
+                excluded_genes.add('roan')
+            if exclude_tobiano:
+                excluded_genes.add('tobiano')
+            if exclude_frame:
+                excluded_genes.add('frame')
+            if exclude_sabino:
+                excluded_genes.add('sabino')
+            if exclude_leopard:
+                excluded_genes.add('leopard')
+            if exclude_champagne:
+                excluded_genes.add('champagne')
+            if exclude_splash:
+                excluded_genes.add('splash')
+
+            st.markdown("---")
+            st.markdown("**🎯 Custom Probabilities** - Adjust gene frequencies")
+            st.caption("0.0 = always present, 1.0 = never present. Default uses realistic frequencies.")
+
+            col_prob1, col_prob2 = st.columns(2)
+
+            with col_prob1:
+                gray_prob = st.slider("Gray frequency", 0.0, 1.0, 0.84, 0.01, key="prob_gray",
+                                     help="Default: 0.84 (→ 30% gray horses)")
+                tobiano_prob = st.slider("Tobiano frequency", 0.0, 1.0, 0.88, 0.01, key="prob_tobiano",
+                                        help="Default: 0.88 (→ 23% tobiano horses)")
+                leopard_prob = st.slider("Leopard frequency", 0.0, 1.0, 0.90, 0.01, key="prob_leopard",
+                                        help="Default: 0.90 (→ 19% leopard horses)")
+
+            with col_prob2:
+                roan_prob = st.slider("Roan frequency", 0.0, 1.0, 0.93, 0.01, key="prob_roan",
+                                     help="Default: 0.93 (→ 13% roan horses)")
+                champagne_prob = st.slider("Champagne frequency", 0.0, 1.0, 0.95, 0.01, key="prob_champ",
+                                          help="Default: 0.95 (→ 10% champagne horses)")
+
+            # Build custom probabilities dict (only include non-default values)
+            custom_probs = {}
+            if gray_prob != 0.84:
+                custom_probs['gray'] = gray_prob
+            if tobiano_prob != 0.88:
+                custom_probs['tobiano'] = tobiano_prob
+            if leopard_prob != 0.90:
+                custom_probs['leopard'] = leopard_prob
+            if roan_prob != 0.93:
+                custom_probs['roan'] = roan_prob
+            if champagne_prob != 0.95:
+                custom_probs['champagne'] = champagne_prob
+
         if st.button(t('generator.generate_button', lang), type="primary", use_container_width=True):
             with st.spinner(f"🔮 {t('generator.generating', lang)}"):
                 generated = []
                 for i in range(num_horses):
-                    horse = Horse.random()
+                    horse = Horse.random(
+                        excluded_genes=excluded_genes if excluded_genes else None,
+                        custom_probabilities=custom_probs if custom_probs else None
+                    )
                     generated.append(horse)
 
                     # Generate name based on auto_name setting
