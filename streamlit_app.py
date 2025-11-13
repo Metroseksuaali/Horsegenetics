@@ -616,16 +616,6 @@ else:  # About
     - **API**: FastAPI REST API available
     - **License**: MIT (Open Source)
 
-    ### 🚀 For Developers
-
-    This simulator is perfect for:
-    - Game developers needing horse breeding mechanics
-    - Educational tools for genetics
-    - Research and analysis
-
-    Check out the [GitHub repository](https://github.com/Metroseksuaali/Horsegenetics)
-    for API documentation and more!
-
     ### ❤️ Credits
 
     Made with love for horse enthusiasts and game developers.
