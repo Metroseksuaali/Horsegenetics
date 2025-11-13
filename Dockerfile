@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements
+COPY requirements.txt ./
 COPY pyproject.toml ./
 COPY LICENSE ./
 COPY README.md ./
@@ -21,12 +22,13 @@ COPY genetics/ ./genetics/
 COPY api/ ./api/
 COPY .streamlit/ ./.streamlit/
 COPY streamlit_app.py ./
+COPY visualize_horse.py ./
 COPY horse_genetics.py ./
 COPY horse_genetics_gui.py ./
 
 # Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir -e .
-RUN pip install --no-cache-dir streamlit fastapi uvicorn
 
 # Expose ports
 # 8501 for Streamlit
