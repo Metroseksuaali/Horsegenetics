@@ -8,6 +8,7 @@
     "probability": "📊 Todennäköisyys",
     "stable": "📚 Talli",
     "pedigree": "🌳 Sukupuu",
+    "compare": "⚖️ Vertailu",
     "about": "📖 Tietoja"
   },
 
@@ -110,6 +111,32 @@
     "rename": "Nimeä Uudelleen",
     "empty_stable": "Tallisi on tyhjä. Käy **Generaattorissa** luomassa hevosia!",
     "generate_random_name": "🎲 Luo Satunnainen Nimi"
+  },
+
+  "compare": {
+    "title": "Hevosten Vertailu",
+    "subtitle": "Vertaa kahden hevosen genetiikkaa rinnakkain",
+    "how_to_use": "Käyttöohjeet",
+    "instructions": "**Ohjeet:**\n1. Valitse kaksi hevosta alla olevista pudotusvalikoista\n2. Katso niiden fenotyypit, genotyypit ja geneettiset erot\n3. Näe mitkä geenit täsmäävät ja mitkä eroavat hevosten välillä\n\n**Mitä näet:**\n- **Fenotyypit** - Kummankin hevosen visuaalinen ulkonäkö\n- **Täydelliset Genotyypit** - Täydellinen geneettinen rakenne\n- **Geenivertailu** - Rinnakkainen näkymä jokaisesta geenistä\n- **Erot** - Korostetut geenit joissa hevoset eroavat\n\n**Vinkki:** Käytä tätä jalostuksen suunnitteluun tai geneettisen monimuotoisuuden ymmärtämiseen!",
+    "need_horses": "Tarvitset vähintään 2 hevosta vertailuun. Käy ensin **Generaattori**-sivulla!",
+    "select_horse1": "Valitse Ensimmäinen Hevonen",
+    "select_horse2": "Valitse Toinen Hevonen",
+    "choose_horse": "Valitse hevonen...",
+    "horse1_details": "Hevonen 1 Tiedot",
+    "horse2_details": "Hevonen 2 Tiedot",
+    "phenotype": "Fenotyyppi",
+    "full_genotype": "Täydellinen Genotyyppi",
+    "gene_comparison": "Geeni-geeniltä Vertailu",
+    "gene": "Geeni",
+    "matching": "Täsmäävä",
+    "different": "Eriävä",
+    "genes_match": "{count} geeniä täsmää",
+    "genes_differ": "{count} geeniä eroaa",
+    "identical_genotype": "Näillä hevosilla on identtiset genotyypit!",
+    "compatibility_score": "Geneettinen Samankaltaisuus",
+    "compatibility_high": "Korkea samankaltaisuus - {percent}% geeneistä täsmää",
+    "compatibility_medium": "Kohtalainen samankaltaisuus - {percent}% geeneistä täsmää",
+    "compatibility_low": "Matala samankaltaisuus - {percent}% geeneistä täsmää"
   },
 
   "pedigree": {

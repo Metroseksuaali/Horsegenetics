@@ -8,6 +8,7 @@
     "probability": "📊 Probability",
     "stable": "📚 My Stable",
     "pedigree": "🌳 Pedigree",
+    "compare": "⚖️ Compare",
     "about": "📖 About"
   },
 
@@ -110,6 +111,32 @@
     "rename": "Rename",
     "empty_stable": "Your stable is empty. Visit the **Generator** to create horses!",
     "generate_random_name": "🎲 Generate Random Name"
+  },
+
+  "compare": {
+    "title": "Horse Comparison",
+    "subtitle": "Compare two horses genetically side-by-side",
+    "how_to_use": "How to use",
+    "instructions": "**Instructions:**\n1. Select two horses from the dropdowns below\n2. View their phenotypes, genotypes, and genetic differences\n3. See which genes match and which differ between the horses\n\n**What you'll see:**\n- **Phenotypes** - Visual appearance of each horse\n- **Full Genotypes** - Complete genetic makeup\n- **Gene Comparison** - Side-by-side view of each gene\n- **Differences** - Highlighted genes where horses differ\n\n**Tip:** Use this to plan breeding or understand genetic diversity!",
+    "need_horses": "You need at least 2 horses to compare. Visit the **Generator** page first!",
+    "select_horse1": "Select First Horse",
+    "select_horse2": "Select Second Horse",
+    "choose_horse": "Choose a horse...",
+    "horse1_details": "Horse 1 Details",
+    "horse2_details": "Horse 2 Details",
+    "phenotype": "Phenotype",
+    "full_genotype": "Full Genotype",
+    "gene_comparison": "Gene-by-Gene Comparison",
+    "gene": "Gene",
+    "matching": "Matching",
+    "different": "Different",
+    "genes_match": "{count} genes match",
+    "genes_differ": "{count} genes differ",
+    "identical_genotype": "These horses have identical genotypes!",
+    "compatibility_score": "Genetic Similarity",
+    "compatibility_high": "High similarity - {percent}% genes match",
+    "compatibility_medium": "Moderate similarity - {percent}% genes match",
+    "compatibility_low": "Low similarity - {percent}% genes match"
   },
 
   "pedigree": {

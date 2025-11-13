@@ -402,7 +402,7 @@ with st.sidebar:
     page = st.radio(
         "**📍 Navigation**",
         [t('nav.generator', lang), t('nav.breeding', lang), t('nav.probability', lang),
-         t('nav.stable', lang), t('nav.pedigree', lang), t('nav.about', lang)],
+         t('nav.stable', lang), t('nav.pedigree', lang), t('nav.compare', lang), t('nav.about', lang)],
         label_visibility="collapsed"
     )
 
@@ -1016,6 +1016,157 @@ elif page == t('nav.pedigree', lang):
             st.markdown("---")
             with st.expander(f"🧬 {t('pedigree.view_genotype', lang)}"):
                 st.code(selected_horse.genotype_string, language="text")
+
+elif page == t('nav.compare', lang):
+    st.markdown(f'<p class="main-header">⚖️ {t("compare.title", lang)}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="subtitle">{t("compare.subtitle", lang)}</p>', unsafe_allow_html=True)
+
+    # Help/Instructions
+    with st.expander(f"ℹ️ {t('compare.how_to_use', lang)}", expanded=False):
+        st.markdown(t('compare.instructions', lang))
+
+    st.markdown("---")
+
+    if len(st.session_state.horses) < 2:
+        st.warning(f"⚠️ {t('compare.need_horses', lang)}")
+    else:
+        horse_names = [f"{item['name']} - {item['horse'].phenotype}"
+                       for item in st.session_state.horses]
+
+        # Horse selection
+        col1, col2 = st.columns(2)
+
+        with col1:
+            horse1_idx = st.selectbox(
+                f"🐴 {t('compare.select_horse1', lang)}",
+                range(len(horse_names)),
+                format_func=lambda x: horse_names[x],
+                key="compare_horse1"
+            )
+            horse1_item = st.session_state.horses[horse1_idx]
+            horse1 = horse1_item['horse']
+
+        with col2:
+            horse2_idx = st.selectbox(
+                f"🐴 {t('compare.select_horse2', lang)}",
+                range(len(horse_names)),
+                format_func=lambda x: horse_names[x],
+                key="compare_horse2"
+            )
+            horse2_item = st.session_state.horses[horse2_idx]
+            horse2 = horse2_item['horse']
+
+        st.markdown("---")
+
+        # Display horses side-by-side
+        col_h1, col_h2 = st.columns(2)
+
+        with col_h1:
+            st.markdown(f"### {t('compare.horse1_details', lang)}")
+            gradient1, text_color1 = get_phenotype_color(horse1.phenotype)
+            st.markdown(f"""
+            <div class="horse-card" style="background: {gradient1}; color: {text_color1};">
+                <h2>🐴 {horse1_item['name']}</h2>
+                <p style="font-size: 1.3rem; margin: 0.5rem 0;">{horse1.phenotype}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+            with st.expander(f"🧬 {t('compare.full_genotype', lang)}"):
+                st.code(horse1.genotype_string, language="text")
+
+        with col_h2:
+            st.markdown(f"### {t('compare.horse2_details', lang)}")
+            gradient2, text_color2 = get_phenotype_color(horse2.phenotype)
+            st.markdown(f"""
+            <div class="horse-card" style="background: {gradient2}; color: {text_color2};">
+                <h2>🐴 {horse2_item['name']}</h2>
+                <p style="font-size: 1.3rem; margin: 0.5rem 0;">{horse2.phenotype}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+            with st.expander(f"🧬 {t('compare.full_genotype', lang)}"):
+                st.code(horse2.genotype_string, language="text")
+
+        st.markdown("---")
+
+        # Gene-by-gene comparison
+        st.markdown(f"### 🔬 {t('compare.gene_comparison', lang)}")
+
+        # Calculate similarity
+        genes1 = horse1.genotype
+        genes2 = horse2.genotype
+
+        matching_genes = []
+        different_genes = []
+
+        for gene_name in genes1.keys():
+            alleles1 = set(genes1[gene_name])
+            alleles2 = set(genes2[gene_name])
+
+            if alleles1 == alleles2:
+                matching_genes.append(gene_name)
+            else:
+                different_genes.append(gene_name)
+
+        # Similarity score
+        total_genes = len(genes1)
+        matching_count = len(matching_genes)
+        similarity_percent = int((matching_count / total_genes) * 100)
+
+        col_sim1, col_sim2, col_sim3 = st.columns(3)
+
+        with col_sim1:
+            st.metric(f"✅ {t('compare.matching', lang)}", f"{matching_count}/{total_genes}")
+
+        with col_sim2:
+            st.metric(f"🔬 {t('compare.compatibility_score', lang)}", f"{similarity_percent}%")
+
+        with col_sim3:
+            st.metric(f"❌ {t('compare.different', lang)}", f"{len(different_genes)}/{total_genes}")
+
+        # Show compatibility message
+        if similarity_percent == 100:
+            st.success(f"🎉 {t('compare.identical_genotype', lang)}")
+        elif similarity_percent >= 70:
+            st.info(f"📊 {t('compare.compatibility_high', lang, percent=similarity_percent)}")
+        elif similarity_percent >= 40:
+            st.info(f"📊 {t('compare.compatibility_medium', lang, percent=similarity_percent)}")
+        else:
+            st.info(f"📊 {t('compare.compatibility_low', lang, percent=similarity_percent)}")
+
+        st.markdown("---")
+
+        # Detailed gene comparison table
+        st.markdown(f"### 📋 {t('compare.gene_comparison', lang)}")
+
+        for gene_name in genes1.keys():
+            alleles1_str = "/".join(genes1[gene_name])
+            alleles2_str = "/".join(genes2[gene_name])
+
+            is_match = gene_name in matching_genes
+
+            col_gene, col_a1, col_a2, col_status = st.columns([2, 2, 2, 1])
+
+            with col_gene:
+                st.markdown(f"**{gene_name}**")
+
+            with col_a1:
+                if is_match:
+                    st.success(alleles1_str)
+                else:
+                    st.warning(alleles1_str)
+
+            with col_a2:
+                if is_match:
+                    st.success(alleles2_str)
+                else:
+                    st.warning(alleles2_str)
+
+            with col_status:
+                if is_match:
+                    st.markdown("✅")
+                else:
+                    st.markdown("❌")
 
 else:  # About
     st.markdown(f'<p class="main-header">📖 {t("about.title", lang)}</p>', unsafe_allow_html=True)
