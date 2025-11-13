@@ -791,6 +791,178 @@ class TestGenotypeFormatting(unittest.TestCase):
             self.simulator.parse_genotype_input("E:E/e/e A:A/a Dil:N/Cr D:D/nd2 Z:Z/n Ch:Ch/n F:F/f STY:STY/sty")
 
 
+class TestHorseAPI(unittest.TestCase):
+    """
+    Test Horse fluent API for game integration.
+
+    Tests the new Horse class and its convenient methods.
+    """
+
+    def test_horse_random_generation(self):
+        """Test Horse.random() creates valid horse."""
+        from genetics.horse import Horse
+
+        horse = Horse.random()
+
+        # Should have phenotype
+        self.assertIsInstance(horse.phenotype, str)
+        self.assertTrue(len(horse.phenotype) > 0)
+
+        # Should have genotype
+        self.assertIsInstance(horse.genotype, dict)
+        self.assertEqual(len(horse.genotype), 9)  # 9 genes
+
+        # Should have genotype string
+        self.assertIsInstance(horse.genotype_string, str)
+        self.assertIn('E:', horse.genotype_string)
+
+    def test_horse_from_string(self):
+        """Test creating horse from genotype string."""
+        from genetics.horse import Horse
+
+        genotype_str = "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g"
+        horse = Horse.from_string(genotype_str)
+
+        self.assertEqual(horse.genotype['extension'], ('E', 'e'))
+        self.assertEqual(horse.genotype['dilution'], ('N', 'Cr'))
+        self.assertIn('Buckskin', horse.phenotype)
+
+    def test_horse_round_trip(self):
+        """Test creating horse from string and converting back."""
+        from genetics.horse import Horse
+
+        original = Horse.random()
+        string = original.genotype_string
+        recreated = Horse.from_string(string)
+
+        # Genotypes should match
+        self.assertEqual(original.genotype, recreated.genotype)
+        # Phenotypes should match
+        self.assertEqual(original.phenotype, recreated.phenotype)
+
+    def test_horse_breeding(self):
+        """Test breeding two horses with fluent API."""
+        from genetics.horse import Horse
+
+        # Create specific parents
+        mare_str = "E:E/e A:A/A Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g"
+        stallion_str = "E:e/e A:a/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:f/f STY:sty/sty G:g/g"
+
+        mare = Horse.from_string(mare_str)
+        stallion = Horse.from_string(stallion_str)
+
+        # Breed them
+        foal = Horse.breed(mare, stallion)
+
+        # Foal should exist with valid genotype
+        self.assertIsNotNone(foal)
+        self.assertEqual(len(foal.genotype), 9)
+
+        # Extension should be E/e (mare E/e × stallion e/e)
+        # Either E/e or e/e
+        self.assertIn(foal.genotype['extension'], [('E', 'e'), ('e', 'e')])
+
+    def test_horse_has_allele(self):
+        """Test checking if horse has specific allele."""
+        from genetics.horse import Horse
+
+        horse_str = "E:E/E A:A/a Dil:N/Cr D:D/nd2 Z:Z/n Ch:n/n F:F/f STY:STY/sty G:G/g"
+        horse = Horse.from_string(horse_str)
+
+        # Should have E
+        self.assertTrue(horse.has_allele('extension', 'E'))
+        # Should not have e
+        self.assertFalse(horse.has_allele('extension', 'e'))
+        # Should have both A and a
+        self.assertTrue(horse.has_allele('agouti', 'A'))
+        self.assertTrue(horse.has_allele('agouti', 'a'))
+        # Should have Gray
+        self.assertTrue(horse.has_allele('gray', 'G'))
+
+    def test_horse_is_homozygous(self):
+        """Test checking if horse is homozygous for gene."""
+        from genetics.horse import Horse
+
+        horse_str = "E:E/E A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g"
+        horse = Horse.from_string(horse_str)
+
+        # Extension is homozygous E/E
+        self.assertTrue(horse.is_homozygous('extension'))
+        # Agouti is heterozygous A/a
+        self.assertFalse(horse.is_homozygous('agouti'))
+        # Dilution is homozygous N/N
+        self.assertTrue(horse.is_homozygous('dilution'))
+
+    def test_horse_to_dict(self):
+        """Test converting horse to dictionary."""
+        from genetics.horse import Horse
+
+        horse = Horse.random()
+        data = horse.to_dict()
+
+        # Should have required keys
+        self.assertIn('genotype', data)
+        self.assertIn('phenotype', data)
+        self.assertIn('genotype_string', data)
+
+        # Should be serializable
+        import json
+        json_str = json.dumps(data)  # Should not raise
+        self.assertIsInstance(json_str, str)
+
+    def test_horse_from_dict(self):
+        """Test creating horse from dictionary."""
+        from genetics.horse import Horse
+
+        original = Horse.random()
+        data = original.to_dict()
+
+        # Create new horse from dict
+        recreated = Horse.from_dict(data)
+
+        self.assertEqual(original.genotype, recreated.genotype)
+        self.assertEqual(original.phenotype, recreated.phenotype)
+
+    def test_multiple_generation_breeding(self):
+        """Test breeding multiple generations."""
+        from genetics.horse import Horse
+
+        # Generation 1
+        mare1 = Horse.random()
+        stallion1 = Horse.random()
+
+        # Generation 2
+        foal1 = Horse.breed(mare1, stallion1)
+        foal2 = Horse.breed(mare1, stallion1)
+
+        # Siblings may have different genotypes
+        # (unless parents are homozygous for all genes)
+        self.assertEqual(len(foal1.genotype), 9)
+        self.assertEqual(len(foal2.genotype), 9)
+
+        # Generation 3 - breed siblings
+        foal3 = Horse.breed(foal1, foal2)
+        self.assertEqual(len(foal3.genotype), 9)
+
+    def test_convenience_functions(self):
+        """Test convenience functions for functional style."""
+        from genetics.horse import generate_random_horse, breed_horses, parse_horse
+
+        # generate_random_horse
+        horse1 = generate_random_horse()
+        self.assertIsNotNone(horse1.phenotype)
+
+        # breed_horses
+        horse2 = generate_random_horse()
+        foal = breed_horses(horse1, horse2)
+        self.assertIsNotNone(foal.phenotype)
+
+        # parse_horse
+        genotype_str = "E:E/e A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g"
+        horse3 = parse_horse(genotype_str)
+        self.assertEqual(horse3.genotype['extension'], ('E', 'e'))
+
+
 def run_tests():
     """Run all tests and print results."""
     # Create test suite
@@ -809,6 +981,7 @@ def run_tests():
     suite.addTests(loader.loadTestsFromTestCase(TestGrayGene))
     suite.addTests(loader.loadTestsFromTestCase(TestBreeding))
     suite.addTests(loader.loadTestsFromTestCase(TestGenotypeFormatting))
+    suite.addTests(loader.loadTestsFromTestCase(TestHorseAPI))
 
     # Run tests with verbose output
     runner = unittest.TextTestRunner(verbosity=2)

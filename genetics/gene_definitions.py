@@ -10,6 +10,7 @@ and phenotypic effects based on peer-reviewed equine genetics research.
 
 from typing import List, Dict, Any, Callable, Tuple
 from enum import Enum
+from functools import lru_cache
 
 
 class InheritancePattern(Enum):

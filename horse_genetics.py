@@ -95,8 +95,76 @@ def print_horse(generator, horse, title="HORSE"):
     print(f"  PHENOTYPE: {horse['phenotype']}")
 
 
+def batch_generate(count: int):
+    """Generate multiple random horses in batch mode."""
+    from genetics.horse import Horse
+
+    print(f"\nGenerating {count} random horses:\n")
+    print("=" * 80)
+
+    for i in range(1, count + 1):
+        horse = Horse.random()
+        print(f"{i:3d}. {horse.phenotype}")
+        print(f"     Genotype: {horse.genotype_string}")
+        print()
+
+
+def show_phenotype(genotype_str: str):
+    """Show phenotype for a given genotype string."""
+    from genetics.horse import Horse
+
+    try:
+        horse = Horse.from_string(genotype_str)
+        print(f"\nGenotype: {horse.genotype_string}")
+        print(f"Phenotype: {horse.phenotype}\n")
+    except ValueError as e:
+        print(f"\nError: {e}\n")
+        return 1
+
+    return 0
+
+
 def main():
-    """Main function for CLI interface."""
+    """Main function for CLI interface with argument support."""
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description='Horse Coat Color Genetics Simulator',
+        epilog='For interactive mode, run without arguments'
+    )
+
+    parser.add_argument(
+        '--batch', '-b',
+        type=int,
+        metavar='N',
+        help='Generate N random horses and exit'
+    )
+
+    parser.add_argument(
+        '--genotype', '-g',
+        type=str,
+        metavar='STR',
+        help='Show phenotype for given genotype string and exit'
+    )
+
+    parser.add_argument(
+        '--version', '-v',
+        action='version',
+        version='Horse Genetics Simulator v2.0.0'
+    )
+
+    args = parser.parse_args()
+
+    # Handle batch mode
+    if args.batch:
+        batch_generate(args.batch)
+        return
+
+    # Handle genotype mode
+    if args.genotype:
+        return show_phenotype(args.genotype)
+
+    # Interactive mode (original behavior)
     generator = HorseGeneticGenerator()
 
     print("=" * 60)

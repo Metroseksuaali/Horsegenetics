@@ -253,8 +253,8 @@ class GeneRegistry:
         for gene_name in self._gene_order:
             gene = self._genes[gene_name]
             alleles = '/'.join(genotype[gene_name])
-            parts.append(f"{gene.symbol}: {alleles}")
-        return "  ".join(parts)
+            parts.append(f"{gene.symbol}:{alleles}")
+        return " ".join(parts)
 
     def _format_genotype_detailed(
         self,
@@ -272,7 +272,7 @@ class GeneRegistry:
 
     def parse_genotype_string(self, genotype_str: str) -> Dict[str, Tuple[str, str]]:
         """
-        Parse user input genotype string.
+        Parse user input genotype string with helpful error messages.
 
         Expected format: E:E/e A:A/a Dil:N/Cr D:D/nd1 Z:n/n Ch:n/n F:F/f STY:STY/sty G:G/g
 
@@ -283,8 +283,41 @@ class GeneRegistry:
             dict: Parsed genotype dictionary
 
         Raises:
-            ValueError: If genotype string is invalid
+            ValueError: If genotype string is invalid (with helpful suggestions)
         """
+        # Use validation module for better error messages
+        from genetics.validation import validate_genotype_string, validate_allele_values
+
+        # First validate format
+        validation_result = validate_genotype_string(genotype_str)
+
+        if validation_result['errors']:
+            error_messages = validation_result['errors']
+            info_messages = validation_result['info']
+
+            error_text = "Invalid genotype format:\n"
+            for i, err in enumerate(error_messages, 1):
+                error_text += f"  {i}. {err}\n"
+
+            if info_messages:
+                error_text += "\nHelp:\n"
+                for info in info_messages:
+                    error_text += f"  • {info}\n"
+
+            error_text += "\nExpected format:\n"
+            error_text += "  E:E/e A:A/a Dil:N/Cr D:D/nd1 Z:n/n Ch:n/n F:F/f STY:STY/sty G:G/g"
+
+            raise ValueError(error_text)
+
+        # Then validate allele values
+        allele_validation = validate_allele_values(genotype_str)
+        if allele_validation['errors']:
+            error_text = "Invalid allele values:\n"
+            for i, err in enumerate(allele_validation['errors'], 1):
+                error_text += f"  {i}. {err}\n"
+            raise ValueError(error_text)
+
+        # If validation passed, parse the genotype
         genotype = {}
 
         try:
@@ -297,11 +330,6 @@ class GeneRegistry:
                 symbol, alleles_str = part.split(':', 1)
                 alleles = alleles_str.split('/')
 
-                if len(alleles) != 2:
-                    raise ValueError(
-                        f"Each gene must have exactly 2 alleles: {part}"
-                    )
-
                 # Find gene by symbol
                 gene = None
                 for g in self._genes.values():
@@ -309,30 +337,16 @@ class GeneRegistry:
                         gene = g
                         break
 
-                if gene is None:
-                    raise ValueError(f"Unknown gene symbol: {symbol}")
-
-                # Validate alleles
-                for allele in alleles:
-                    if allele not in gene.alleles:
-                        raise ValueError(
-                            f"Invalid allele '{allele}' for gene {gene.name}"
-                        )
-
-                genotype[gene.name] = gene.sort_alleles(alleles)
-
-            # Verify all required genes are present
-            for gene_name in self._gene_order:
-                if gene_name not in genotype:
-                    gene = self._genes[gene_name]
-                    raise ValueError(
-                        f"Missing gene: {gene.full_name} ({gene.symbol})"
-                    )
+                if gene is not None:
+                    genotype[gene.name] = gene.sort_alleles(alleles)
 
             return genotype
 
         except Exception as e:
-            raise ValueError(f"Error parsing genotype: {e}")
+            raise ValueError(
+                f"Unexpected error parsing genotype: {e}\n"
+                f"Please check format: E:E/e A:A/a Dil:N/Cr D:D/nd1 Z:n/n Ch:n/n F:F/f STY:STY/sty G:G/g"
+            )
 
 
 # Global default registry instance
