@@ -7,6 +7,8 @@ Colors and patterns are rendered according to the horse's genetic makeup.
 
 from typing import Dict, Tuple, Optional
 import re
+import os
+import xml.etree.ElementTree as ET
 
 
 class HorseVisualizer:
@@ -38,6 +40,9 @@ class HorseVisualizer:
         # Point colors (mane, tail, legs for bay)
         self.bay_points = (0, 0, 0)  # Black
         self.palomino_mane = (255, 255, 224)  # Light yellow
+
+        # Template path
+        self.template_path = os.path.join(os.path.dirname(__file__), 'horse_template.svg')
 
     def _rgb_to_hex(self, rgb: Tuple[int, int, int]) -> str:
         """Convert RGB tuple to hex color string."""
@@ -117,6 +122,254 @@ class HorseVisualizer:
         """Check if phenotype is roan."""
         return 'roan' in phenotype.lower()
 
+    def _darken_color(self, rgb: Tuple[int, int, int], amount: int = 40) -> Tuple[int, int, int]:
+        """Darken an RGB color by the specified amount."""
+        return tuple(max(0, c - amount) for c in rgb)
+
+    def _lighten_color(self, rgb: Tuple[int, int, int], amount: int = 40) -> Tuple[int, int, int]:
+        """Lighten an RGB color by the specified amount."""
+        return tuple(min(255, c + amount) for c in rgb)
+
+    def _load_and_color_template(self, phenotype: str) -> str:
+        """
+        Load the horse template SVG and apply colors based on phenotype.
+
+        Args:
+            phenotype: Phenotype string (e.g., "Bay Tobiano")
+
+        Returns:
+            Colored SVG string
+        """
+        # Check if template exists
+        if not os.path.exists(self.template_path):
+            # Fall back to pixel art if template is missing
+            return None
+
+        # Read template
+        with open(self.template_path, 'r', encoding='utf-8') as f:
+            svg_content = f.read()
+
+        # Parse SVG
+        ET.register_namespace('', 'http://www.w3.org/2000/svg')
+        root = ET.fromstring(svg_content)
+
+        # Get colors for this phenotype
+        base_color = self._get_base_color_from_phenotype(phenotype)
+        base_hex = self._rgb_to_hex(base_color)
+
+        # Determine if this is a bay (black points)
+        is_bay = 'bay' in phenotype.lower() and 'dun' not in phenotype.lower()
+
+        # Mane/tail color
+        if is_bay:
+            mane_color = self._rgb_to_hex(self.bay_points)
+        elif 'palomino' in phenotype.lower():
+            mane_color = self._rgb_to_hex(self.palomino_mane)
+        else:
+            mane_color = self._rgb_to_hex(self._darken_color(base_color, 60))
+
+        # Leg color
+        if is_bay:
+            leg_color = self._rgb_to_hex(self.bay_points)
+        else:
+            leg_color = base_hex
+
+        # Apply colors to template
+        ns = {'svg': 'http://www.w3.org/2000/svg'}
+
+        # Color body parts
+        for elem in root.findall('.//*[@id="body"]//*//', ns):
+            if 'fill' in elem.attrib:
+                elem.attrib['fill'] = base_hex
+        for elem in root.findall('.//*[@id="body"]//*', ns):
+            if 'fill' in elem.attrib:
+                elem.attrib['fill'] = base_hex
+        body_group = root.find('.//*[@id="body"]', ns)
+        if body_group is not None:
+            for elem in body_group:
+                if 'fill' in elem.attrib:
+                    elem.attrib['fill'] = base_hex
+
+        # Color head
+        for elem in root.findall('.//*[@id="head"]//*', ns):
+            if 'fill' in elem.attrib:
+                elem.attrib['fill'] = base_hex
+        head_group = root.find('.//*[@id="head"]', ns)
+        if head_group is not None:
+            for elem in head_group:
+                if 'fill' in elem.attrib:
+                    elem.attrib['fill'] = base_hex
+
+        # Color ears
+        for elem in root.findall('.//*[@id="ears"]//*', ns):
+            if 'fill' in elem.attrib:
+                elem.attrib['fill'] = base_hex
+        ears_group = root.find('.//*[@id="ears"]', ns)
+        if ears_group is not None:
+            for elem in ears_group:
+                if 'fill' in elem.attrib:
+                    elem.attrib['fill'] = base_hex
+
+        # Color mane
+        for elem in root.findall('.//*[@id="mane"]//*', ns):
+            if 'fill' in elem.attrib:
+                elem.attrib['fill'] = mane_color
+        mane_group = root.find('.//*[@id="mane"]', ns)
+        if mane_group is not None:
+            for elem in mane_group:
+                if 'fill' in elem.attrib:
+                    elem.attrib['fill'] = mane_color
+
+        # Color tail
+        for elem in root.findall('.//*[@id="tail"]//*', ns):
+            if 'fill' in elem.attrib:
+                elem.attrib['fill'] = mane_color
+        tail_group = root.find('.//*[@id="tail"]', ns)
+        if tail_group is not None:
+            for elem in tail_group:
+                if 'fill' in elem.attrib:
+                    elem.attrib['fill'] = mane_color
+
+        # Color legs
+        for leg_id in ['leg-front-left', 'leg-front-right', 'leg-back-left', 'leg-back-right']:
+            for elem in root.findall(f'.//*[@id="{leg_id}"]//*', ns):
+                if 'fill' in elem.attrib and elem.attrib['fill'] != '#2C1810':  # Don't recolor hooves
+                    elem.attrib['fill'] = leg_color
+            leg_group = root.find(f'.//*[@id="{leg_id}"]', ns)
+            if leg_group is not None:
+                for elem in leg_group:
+                    if 'fill' in elem.attrib and elem.attrib['fill'] != '#2C1810':  # Don't recolor hooves
+                        elem.attrib['fill'] = leg_color
+
+        # Add white patterns if present
+        if self._has_white_pattern(phenotype):
+            self._add_white_patterns(root, phenotype, ns)
+
+        # Add leopard spots if present
+        if self._has_leopard(phenotype):
+            self._add_leopard_spots(root, phenotype, ns)
+
+        # Add roan effect if present
+        if self._is_roan(phenotype):
+            self._add_roan_effect(root, phenotype, ns)
+
+        # Convert back to string
+        svg_string = ET.tostring(root, encoding='unicode')
+
+        # Add phenotype label
+        svg_string = svg_string.replace('</svg>', f'''
+  <text x="200" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#333">
+    {phenotype}
+  </text>
+</svg>''')
+
+        # Add XML declaration at the beginning
+        svg_string = '<?xml version="1.0" encoding="UTF-8"?>\n' + svg_string
+
+        return svg_string
+
+    def _add_white_patterns(self, root, phenotype: str, ns: dict):
+        """Add white pattern overlays to the horse."""
+        import random
+        random.seed(hash(phenotype))
+
+        # Create pattern group
+        pattern_group = ET.Element('g', {'id': 'white-patterns'})
+
+        phenotype_lower = phenotype.lower()
+
+        if 'tobiano' in phenotype_lower:
+            # Tobiano: large patches on back and sides
+            patches = [
+                ('M 180 160 Q 220 155 260 160 Q 270 170 275 185 Q 270 200 260 205 Q 220 210 180 205 Q 170 190 175 175 Z', 0.95),
+                ('M 140 175 Q 160 170 180 175 Q 185 185 180 195 Q 160 200 140 195 Q 135 185 140 175 Z', 0.9),
+                ('M 250 200 Q 270 195 285 200 Q 290 215 285 230 Q 270 235 250 230 Q 245 215 250 200 Z', 0.95),
+            ]
+            for path_d, opacity in patches:
+                if random.random() < 0.85:
+                    path = ET.Element('path', {'d': path_d, 'fill': 'white', 'opacity': str(opacity)})
+                    pattern_group.append(path)
+
+        elif 'frame' in phenotype_lower or 'overo' in phenotype_lower:
+            # Overo/Frame: scattered patches, avoiding legs and back
+            patches = [
+                ('M 160 180 Q 180 175 195 180 Q 200 190 195 200 Q 180 205 160 200 Q 155 190 160 180 Z', 0.9),
+                ('M 210 185 Q 230 180 245 185 Q 250 195 245 205 Q 230 210 210 205 Q 205 195 210 185 Z', 0.88),
+                ('M 120 70 Q 130 65 138 70 Q 140 80 135 88 Q 125 92 115 87 Q 112 77 120 70 Z', 0.92),  # Face
+            ]
+            for path_d, opacity in patches:
+                if random.random() < 0.7:
+                    path = ET.Element('path', {'d': path_d, 'fill': 'white', 'opacity': str(opacity)})
+                    pattern_group.append(path)
+
+        elif 'sabino' in phenotype_lower:
+            # Sabino: white on legs and belly
+            patches = [
+                ('M 150 220 Q 180 225 210 220 Q 215 230 210 240 Q 180 245 150 240 Q 145 230 150 220 Z', 0.85),  # Belly
+                ('M 155 240 L 173 240 L 173 290 L 155 290 Z', 0.9),  # Front leg white
+                ('M 248 245 L 265 245 L 265 290 L 248 290 Z', 0.9),  # Back leg white
+            ]
+            for path_d, opacity in patches:
+                path = ET.Element('path', {'d': path_d, 'fill': 'white', 'opacity': str(opacity)})
+                pattern_group.append(path)
+
+        if len(pattern_group) > 0:
+            root.insert(0, pattern_group)
+
+    def _add_leopard_spots(self, root, phenotype: str, ns: dict):
+        """Add leopard/appaloosa spots to the horse."""
+        import random
+        random.seed(hash(phenotype) + 1)
+
+        # Create spots group
+        spots_group = ET.Element('g', {'id': 'leopard-spots'})
+
+        # Add random spots on body
+        for _ in range(30):
+            x = random.randint(150, 280)
+            y = random.randint(170, 220)
+            rx = random.randint(4, 10)
+            ry = random.randint(4, 10)
+            opacity = random.uniform(0.6, 0.9)
+
+            spot = ET.Element('ellipse', {
+                'cx': str(x),
+                'cy': str(y),
+                'rx': str(rx),
+                'ry': str(ry),
+                'fill': '#2C1810',
+                'opacity': str(opacity)
+            })
+            spots_group.append(spot)
+
+        root.insert(0, spots_group)
+
+    def _add_roan_effect(self, root, phenotype: str, ns: dict):
+        """Add roan effect (white hairs mixed in) to the horse."""
+        import random
+        random.seed(hash(phenotype) + 2)
+
+        # Create roan group
+        roan_group = ET.Element('g', {'id': 'roan-effect'})
+
+        # Add small white circles scattered over body
+        for _ in range(150):
+            x = random.randint(140, 290)
+            y = random.randint(160, 230)
+            r = random.uniform(1, 2.5)
+            opacity = random.uniform(0.3, 0.6)
+
+            dot = ET.Element('circle', {
+                'cx': str(x),
+                'cy': str(y),
+                'r': str(r),
+                'fill': 'white',
+                'opacity': str(opacity)
+            })
+            roan_group.append(dot)
+
+        root.insert(0, roan_group)
+
     def _get_horse_pixel_map(self) -> list:
         """
         Get pixel art representation of a horse (side view).
@@ -168,7 +421,31 @@ class HorseVisualizer:
 
     def generate_svg(self, phenotype: str, genotype: Optional[Dict] = None) -> str:
         """
+        Generate SVG image of horse based on phenotype.
+
+        Uses high-quality template-based rendering if available,
+        falls back to pixel art if template is missing.
+
+        Args:
+            phenotype: Phenotype string (e.g., "Bay Tobiano")
+            genotype: Optional genotype dict for more detailed rendering
+
+        Returns:
+            SVG string
+        """
+        # Try template-based rendering first
+        template_svg = self._load_and_color_template(phenotype)
+        if template_svg is not None:
+            return template_svg
+
+        # Fall back to pixel art
+        return self._generate_pixel_art_svg(phenotype, genotype)
+
+    def _generate_pixel_art_svg(self, phenotype: str, genotype: Optional[Dict] = None) -> str:
+        """
         Generate pixel art SVG image of horse based on phenotype.
+
+        Legacy method kept as fallback.
 
         Args:
             phenotype: Phenotype string (e.g., "Bay Tobiano")
