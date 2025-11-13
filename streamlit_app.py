@@ -717,39 +717,39 @@ if page == t('nav.generator', lang):
                                      help="Default: 0.84 (→ 30% gray horses)")
 
             with col_common2:
-                sabino_prob = st.slider("Sabino", 0.0, 1.0, 0.73, 0.01, key="prob_sabino",
-                                       help="Default: 0.73 (→ 47% sabino horses)")
+                sabino_prob = st.slider("Sabino", 0.0, 1.0, 0.80, 0.01, key="prob_sabino",
+                                       help="Default: 0.80 (→ 26% sabino horses)")
 
             st.markdown("##### Moderate Genes (15-25%)")
             col_mod1, col_mod2 = st.columns(2)
 
             with col_mod1:
                 tobiano_prob = st.slider("Tobiano", 0.0, 1.0, 0.88, 0.01, key="prob_tobiano",
-                                        help="Default: 0.88 (→ 23% tobiano horses)")
+                                        help="Default: 0.88 (→ 24% tobiano horses)")
 
             with col_mod2:
-                leopard_prob = st.slider("Leopard", 0.0, 1.0, 0.90, 0.01, key="prob_leopard",
-                                        help="Default: 0.90 (→ 19% leopard horses)")
+                leopard_prob = st.slider("Leopard", 0.0, 1.0, 0.962, 0.01, key="prob_leopard",
+                                        help="Default: 0.962 (→ 7.8% leopard horses)")
 
             st.markdown("##### Uncommon Genes (5-10%)")
             col_unc1, col_unc2 = st.columns(2)
 
             with col_unc1:
-                roan_prob = st.slider("Roan", 0.0, 1.0, 0.93, 0.01, key="prob_roan",
-                                     help="Default: 0.93 (→ 13% roan horses)")
+                roan_prob = st.slider("Roan", 0.0, 1.0, 0.962, 0.01, key="prob_roan",
+                                     help="Default: 0.962 (→ 7.4% roan horses)")
 
             with col_unc2:
-                champagne_prob = st.slider("Champagne", 0.0, 1.0, 0.95, 0.01, key="prob_champ",
-                                          help="Default: 0.95 (→ 10% champagne horses)")
+                champagne_prob = st.slider("Champagne", 0.0, 1.0, 0.985, 0.01, key="prob_champ",
+                                          help="Default: 0.985 (→ 2.5% champagne horses)")
 
             st.markdown("##### Rare Genes (2-7%)")
             col_rare1, col_rare2 = st.columns(2)
 
             with col_rare1:
                 frame_prob = st.slider("Frame", 0.0, 1.0, 0.98, 0.01, key="prob_frame",
-                                      help="Default: 0.98 (→ 4% frame horses)")
-                splash_prob = st.slider("Splash", 0.0, 1.0, 0.96, 0.01, key="prob_splash",
-                                       help="Default: 0.96 (→ 8% splash horses)")
+                                      help="Default: 0.98 (→ 3.8% frame horses)")
+                splash_prob = st.slider("Splash", 0.0, 1.0, 0.975, 0.01, key="prob_splash",
+                                       help="Default: 0.975 (→ 4.2% splash horses)")
 
             with col_rare2:
                 dw_prob = st.slider("Dominant White", 0.0, 1.0, 0.99, 0.01, key="prob_dw",
@@ -759,19 +759,19 @@ if page == t('nav.generator', lang):
             custom_probs = {}
             if gray_prob != 0.84:
                 custom_probs['gray'] = gray_prob
-            if sabino_prob != 0.73:
+            if sabino_prob != 0.80:
                 custom_probs['sabino'] = sabino_prob
             if tobiano_prob != 0.88:
                 custom_probs['tobiano'] = tobiano_prob
-            if leopard_prob != 0.90:
+            if leopard_prob != 0.962:
                 custom_probs['leopard'] = leopard_prob
-            if roan_prob != 0.93:
+            if roan_prob != 0.962:
                 custom_probs['roan'] = roan_prob
-            if champagne_prob != 0.95:
+            if champagne_prob != 0.985:
                 custom_probs['champagne'] = champagne_prob
             if frame_prob != 0.98:
                 custom_probs['frame'] = frame_prob
-            if splash_prob != 0.96:
+            if splash_prob != 0.975:
                 custom_probs['splash'] = splash_prob
             if dw_prob != 0.99:
                 custom_probs['dominant_white'] = dw_prob
