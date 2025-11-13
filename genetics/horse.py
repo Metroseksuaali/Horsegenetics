@@ -160,7 +160,9 @@ class Horse:
     def random(
         cls,
         registry: Optional[GeneRegistry] = None,
-        calculator: Optional[PhenotypeCalculator] = None
+        calculator: Optional[PhenotypeCalculator] = None,
+        excluded_genes: Optional[set] = None,
+        custom_probabilities: Optional[dict] = None
     ) -> 'Horse':
         """
         Generate a random horse.
@@ -168,16 +170,26 @@ class Horse:
         Args:
             registry: Gene registry (uses default if None)
             calculator: Phenotype calculator (creates new if None)
+            excluded_genes: Set of gene names to exclude (force to wild-type)
+                           Example: {'gray', 'dominant_white'} prevents gray/white horses
+            custom_probabilities: Dict mapping gene names to custom probability of recessive allele
+                                 Example: {'gray': 0.5} makes 75% of horses gray
 
         Returns:
             Horse: New random horse
 
         Example:
+            # Normal random horse
             horse = Horse.random()
-            print(horse.phenotype)
+
+            # No gray horses
+            horse = Horse.random(excluded_genes={'gray'})
+
+            # 90% gray horses
+            horse = Horse.random(custom_probabilities={'gray': 0.1})
         """
         reg = registry or get_default_registry()
-        genotype = reg.generate_random_genotype()
+        genotype = reg.generate_random_genotype(excluded_genes, custom_probabilities)
         return cls(genotype, reg, calculator)
 
     @classmethod

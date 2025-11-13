@@ -662,11 +662,179 @@ if page == t('nav.generator', lang):
         with col2:
             auto_name = st.checkbox(t('generator.auto_generate_names', lang), value=True)
 
+        # Breed Presets
+        with st.expander("🏇 Breed Presets - Quick configurations", expanded=False):
+            from genetics.breed_presets import get_preset_manager
+
+            preset_manager = get_preset_manager()
+
+            st.markdown("**Realistic Breeds**")
+            realistic_breeds = preset_manager.get_realistic_breeds()
+            realistic_options = ["None (Custom)"] + [p.name for p in realistic_breeds.values()]
+            realistic_choice = st.selectbox(
+                "Select a realistic breed",
+                realistic_options,
+                key="realistic_breed"
+            )
+
+            st.markdown("**Fantasy Breeds**")
+            fantasy_breeds = preset_manager.get_fantasy_breeds()
+            fantasy_options = ["None (Custom)"] + [p.name for p in fantasy_breeds.values()]
+            fantasy_choice = st.selectbox(
+                "Select a fantasy breed",
+                fantasy_options,
+                key="fantasy_breed"
+            )
+
+            # Get selected preset
+            selected_preset = None
+            if realistic_choice != "None (Custom)":
+                for key, preset in realistic_breeds.items():
+                    if preset.name == realistic_choice:
+                        selected_preset = preset
+                        break
+            elif fantasy_choice != "None (Custom)":
+                for key, preset in fantasy_breeds.items():
+                    if preset.name == fantasy_choice:
+                        selected_preset = preset
+                        break
+
+            if selected_preset:
+                st.info(f"📝 {selected_preset.description}")
+                st.caption("This preset will override gene controls below")
+
+        # Advanced generation options
+        with st.expander("⚙️ Advanced Options (Gene Control)", expanded=False):
+            st.markdown("**🚫 Exclude Genes** - Prevent specific genes from appearing")
+            st.caption("Useful for breed-specific generation (e.g., no gray horses)")
+
+            col_ex1, col_ex2, col_ex3 = st.columns(3)
+
+            with col_ex1:
+                exclude_gray = st.checkbox("No Gray", value=False, key="ex_gray")
+                exclude_dw = st.checkbox("No Dominant White", value=False, key="ex_dw")
+                exclude_roan = st.checkbox("No Roan", value=False, key="ex_roan")
+
+            with col_ex2:
+                exclude_tobiano = st.checkbox("No Tobiano", value=False, key="ex_tobiano")
+                exclude_frame = st.checkbox("No Frame", value=False, key="ex_frame")
+                exclude_sabino = st.checkbox("No Sabino", value=False, key="ex_sabino")
+
+            with col_ex3:
+                exclude_leopard = st.checkbox("No Leopard", value=False, key="ex_leopard")
+                exclude_champagne = st.checkbox("No Champagne", value=False, key="ex_champ")
+                exclude_splash = st.checkbox("No Splash", value=False, key="ex_splash")
+
+            # Build exclusion set
+            excluded_genes = set()
+            if exclude_gray:
+                excluded_genes.add('gray')
+            if exclude_dw:
+                excluded_genes.add('dominant_white')
+            if exclude_roan:
+                excluded_genes.add('roan')
+            if exclude_tobiano:
+                excluded_genes.add('tobiano')
+            if exclude_frame:
+                excluded_genes.add('frame')
+            if exclude_sabino:
+                excluded_genes.add('sabino')
+            if exclude_leopard:
+                excluded_genes.add('leopard')
+            if exclude_champagne:
+                excluded_genes.add('champagne')
+            if exclude_splash:
+                excluded_genes.add('splash')
+
+            st.markdown("---")
+            st.markdown("**🎯 Custom Probabilities** - Adjust gene frequencies")
+            st.caption("0.0 = always present, 1.0 = never present. Default uses realistic frequencies.")
+
+            st.markdown("##### Common Genes (25-35%)")
+            col_common1, col_common2 = st.columns(2)
+
+            with col_common1:
+                gray_prob = st.slider("Gray", 0.0, 1.0, 0.84, 0.01, key="prob_gray",
+                                     help="Default: 0.84 (→ 30% gray horses)")
+
+            with col_common2:
+                sabino_prob = st.slider("Sabino", 0.0, 1.0, 0.80, 0.01, key="prob_sabino",
+                                       help="Default: 0.80 (→ 26% sabino horses)")
+
+            st.markdown("##### Moderate Genes (15-25%)")
+            col_mod1, col_mod2 = st.columns(2)
+
+            with col_mod1:
+                tobiano_prob = st.slider("Tobiano", 0.0, 1.0, 0.88, 0.01, key="prob_tobiano",
+                                        help="Default: 0.88 (→ 24% tobiano horses)")
+
+            with col_mod2:
+                leopard_prob = st.slider("Leopard", 0.0, 1.0, 0.962, 0.01, key="prob_leopard",
+                                        help="Default: 0.962 (→ 7.8% leopard horses)")
+
+            st.markdown("##### Uncommon Genes (5-10%)")
+            col_unc1, col_unc2 = st.columns(2)
+
+            with col_unc1:
+                roan_prob = st.slider("Roan", 0.0, 1.0, 0.962, 0.01, key="prob_roan",
+                                     help="Default: 0.962 (→ 7.4% roan horses)")
+
+            with col_unc2:
+                champagne_prob = st.slider("Champagne", 0.0, 1.0, 0.985, 0.01, key="prob_champ",
+                                          help="Default: 0.985 (→ 2.5% champagne horses)")
+
+            st.markdown("##### Rare Genes (2-7%)")
+            col_rare1, col_rare2 = st.columns(2)
+
+            with col_rare1:
+                frame_prob = st.slider("Frame", 0.0, 1.0, 0.98, 0.01, key="prob_frame",
+                                      help="Default: 0.98 (→ 3.8% frame horses)")
+                splash_prob = st.slider("Splash", 0.0, 1.0, 0.975, 0.01, key="prob_splash",
+                                       help="Default: 0.975 (→ 4.2% splash horses)")
+
+            with col_rare2:
+                dw_prob = st.slider("Dominant White", 0.0, 1.0, 0.99, 0.01, key="prob_dw",
+                                   help="Default: 0.99 (→ 2% dominant white horses)")
+
+            # Build custom probabilities dict (only include non-default values)
+            custom_probs = {}
+            if gray_prob != 0.84:
+                custom_probs['gray'] = gray_prob
+            if sabino_prob != 0.80:
+                custom_probs['sabino'] = sabino_prob
+            if tobiano_prob != 0.88:
+                custom_probs['tobiano'] = tobiano_prob
+            if leopard_prob != 0.962:
+                custom_probs['leopard'] = leopard_prob
+            if roan_prob != 0.962:
+                custom_probs['roan'] = roan_prob
+            if champagne_prob != 0.985:
+                custom_probs['champagne'] = champagne_prob
+            if frame_prob != 0.98:
+                custom_probs['frame'] = frame_prob
+            if splash_prob != 0.975:
+                custom_probs['splash'] = splash_prob
+            if dw_prob != 0.99:
+                custom_probs['dominant_white'] = dw_prob
+
         if st.button(t('generator.generate_button', lang), type="primary", use_container_width=True):
             with st.spinner(f"🔮 {t('generator.generating', lang)}"):
+                # Use preset values if a preset is selected, otherwise use manual values
+                final_excluded_genes = excluded_genes
+                final_custom_probs = custom_probs
+
+                if selected_preset:
+                    # Preset overrides manual settings
+                    final_excluded_genes = selected_preset.excluded_genes
+                    final_custom_probs = selected_preset.custom_probabilities
+                    st.info(f"🏇 Generating {selected_preset.name} horses...")
+
                 generated = []
                 for i in range(num_horses):
-                    horse = Horse.random()
+                    horse = Horse.random(
+                        excluded_genes=final_excluded_genes if final_excluded_genes else None,
+                        custom_probabilities=final_custom_probs if final_custom_probs else None
+                    )
                     generated.append(horse)
 
                     # Generate name based on auto_name setting
@@ -801,12 +969,77 @@ elif page == t('nav.breeding', lang):
 
         st.markdown("<br>", unsafe_allow_html=True)
 
+        # Optional: Influence offspring genetics (advanced)
+        with st.expander("🧬 Advanced: Influence Offspring Genetics", expanded=False):
+            st.caption("Note: These controls simulate selective breeding outcomes. In real genetics, you cannot control which alleles are inherited.")
+
+            st.markdown("**Force specific traits** (overrides natural inheritance)")
+            influence_col1, influence_col2 = st.columns(2)
+
+            with influence_col1:
+                force_no_gray = st.checkbox("Force no Gray", value=False, key="breed_no_gray")
+                force_no_leopard = st.checkbox("Force no Leopard", value=False, key="breed_no_leopard")
+                force_no_roan = st.checkbox("Force no Roan", value=False, key="breed_no_roan")
+
+            with influence_col2:
+                force_no_tobiano = st.checkbox("Force no Tobiano", value=False, key="breed_no_tobiano")
+                force_no_frame = st.checkbox("Force no Frame", value=False, key="breed_no_frame")
+                force_no_dw = st.checkbox("Force no Dominant White", value=False, key="breed_no_dw")
+
+            # Build forced exclusions
+            forced_exclusions = set()
+            if force_no_gray:
+                forced_exclusions.add('gray')
+            if force_no_leopard:
+                forced_exclusions.add('leopard')
+            if force_no_roan:
+                forced_exclusions.add('roan')
+            if force_no_tobiano:
+                forced_exclusions.add('tobiano')
+            if force_no_frame:
+                forced_exclusions.add('frame')
+            if force_no_dw:
+                forced_exclusions.add('dominant_white')
+
+            if forced_exclusions:
+                st.warning(f"⚠️ Forcing exclusion of: {', '.join(forced_exclusions)}")
+                st.caption("This simulates selective breeding where only foals without these traits are kept.")
+        else:
+            forced_exclusions = set()
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
         # Center the breed button
         col_a, col_b, col_c = st.columns([1, 2, 1])
         with col_b:
             if st.button(t('breeding.breed_button', lang), type="primary", use_container_width=True):
                 with st.spinner(f"🔬 {t('breeding.breeding', lang)}"):
-                    offspring = Horse.breed(parent1, parent2)
+                    # If forced exclusions, try breeding multiple times until we get a matching foal
+                    # This simulates selective breeding where only foals with desired traits are kept
+                    max_attempts = 50
+                    offspring = None
+
+                    if forced_exclusions:
+                        for attempt in range(max_attempts):
+                            candidate = Horse.breed(parent1, parent2)
+
+                            # Check if candidate has any forced exclusions
+                            pheno_lower = candidate.phenotype.lower()
+                            has_excluded = False
+                            for gene in forced_exclusions:
+                                if gene in pheno_lower:
+                                    has_excluded = True
+                                    break
+
+                            if not has_excluded:
+                                offspring = candidate
+                                break
+
+                        if offspring is None:
+                            st.error(f"❌ Could not produce a foal without the excluded traits after {max_attempts} attempts. Try different parents or relax constraints.")
+                            offspring = Horse.breed(parent1, parent2)  # Show last attempt anyway
+                    else:
+                        offspring = Horse.breed(parent1, parent2)
 
                     # Check if offspring is NONVIABLE
                     is_nonviable = 'NONVIABLE' in offspring.phenotype
@@ -1549,17 +1782,66 @@ elif page == t('nav.statistics', lang):
         # Sort by count (descending)
         sorted_phenotypes = sorted(phenotype_counts.items(), key=lambda x: x[1], reverse=True)
 
-        # Display top 10
-        for phenotype, count in sorted_phenotypes[:10]:
-            percentage = (count / total_horses) * 100
+        # Display mode selection
+        viz_col1, viz_col2 = st.columns([3, 1])
+        with viz_col2:
+            pheno_viz_mode = st.radio(
+                "View",
+                ["Chart", "List"],
+                key="pheno_viz_mode",
+                horizontal=True
+            )
 
-            col_name, col_bar = st.columns([1, 3])
+        if pheno_viz_mode == "Chart":
+            # Create pie chart for top 10 phenotypes
+            if len(sorted_phenotypes) > 0:
+                top_10 = sorted_phenotypes[:10]
+                other_count = sum(count for _, count in sorted_phenotypes[10:])
 
-            with col_name:
-                st.markdown(f"**{phenotype}**")
+                labels = [pheno[:30] + "..." if len(pheno) > 30 else pheno for pheno, _ in top_10]
+                sizes = [count for _, count in top_10]
 
-            with col_bar:
-                st.progress(count / total_horses, text=f"{count} ({percentage:.1f}%)")
+                if other_count > 0:
+                    labels.append("Other")
+                    sizes.append(other_count)
+
+                fig, ax = plt.subplots(figsize=(10, 6))
+                colors = plt.cm.Pastel1(range(len(labels)))
+
+                wedges, texts, autotexts = ax.pie(
+                    sizes,
+                    labels=labels,
+                    autopct='%1.1f%%',
+                    startangle=90,
+                    colors=colors
+                )
+
+                # Make percentage text more readable
+                for autotext in autotexts:
+                    autotext.set_color('black')
+                    autotext.set_fontsize(9)
+                    autotext.set_weight('bold')
+
+                # Make labels more readable
+                for text in texts:
+                    text.set_fontsize(8)
+
+                ax.axis('equal')
+                plt.title('Top 10 Phenotype Distribution', fontsize=14, weight='bold', pad=20)
+                st.pyplot(fig)
+                plt.close()
+        else:
+            # Original list view
+            for phenotype, count in sorted_phenotypes[:10]:
+                percentage = (count / total_horses) * 100
+
+                col_name, col_bar = st.columns([1, 3])
+
+                with col_name:
+                    st.markdown(f"**{phenotype}**")
+
+                with col_bar:
+                    st.progress(count / total_horses, text=f"{count} ({percentage:.1f}%)")
 
         st.markdown("---")
 
@@ -1578,25 +1860,176 @@ elif page == t('nav.statistics', lang):
                 for allele in alleles:
                     gene_alleles[gene_name][allele] = gene_alleles[gene_name].get(allele, 0) + 1
 
+        # Pattern Gene Prevalence Chart
+        st.markdown("#### 🎨 Pattern Gene Prevalence")
+        st.caption("Shows percentage of horses carrying at least one copy of each pattern gene")
+
+        # Calculate prevalence for pattern genes
+        pattern_genes = ['gray', 'dominant_white', 'roan', 'tobiano', 'frame', 'sabino',
+                        'splash', 'leopard', 'champagne']
+        pattern_prevalence = {}
+
+        for gene_name in pattern_genes:
+            if gene_name not in all_genes:
+                continue
+
+            # Count horses with at least one dominant allele
+            horses_with_pattern = 0
+            for item in st.session_state.horses:
+                alleles = item['horse'].genotype[gene_name]
+                # Check if horse has dominant allele (not wild-type)
+                has_dominant = False
+
+                if gene_name == 'gray':
+                    has_dominant = 'G' in alleles
+                elif gene_name == 'dominant_white':
+                    has_dominant = 'W' in alleles or any('W' in a for a in alleles)
+                elif gene_name == 'roan':
+                    has_dominant = 'Rn' in alleles
+                elif gene_name == 'tobiano':
+                    has_dominant = 'TO' in alleles
+                elif gene_name == 'frame':
+                    has_dominant = 'O' in alleles
+                elif gene_name == 'sabino':
+                    has_dominant = 'Sb1' in alleles
+                elif gene_name == 'splash':
+                    has_dominant = 'Spl' in alleles or any('Spl' in a for a in alleles)
+                elif gene_name == 'leopard':
+                    has_dominant = 'Lp' in alleles
+                elif gene_name == 'champagne':
+                    has_dominant = 'Ch' in alleles
+
+                if has_dominant:
+                    horses_with_pattern += 1
+
+            percentage = (horses_with_pattern / total_horses) * 100
+            pattern_prevalence[gene_name] = percentage
+
+        # Create bar chart
+        if pattern_prevalence:
+            gene_viz_mode = st.radio(
+                "Pattern Gene View",
+                ["Chart", "List"],
+                key="gene_viz_mode",
+                horizontal=True
+            )
+
+            if gene_viz_mode == "Chart":
+                fig, ax = plt.subplots(figsize=(12, 6))
+
+                genes = list(pattern_prevalence.keys())
+                percentages = list(pattern_prevalence.values())
+
+                # Create color mapping based on percentage
+                colors = []
+                for pct in percentages:
+                    if pct >= 25:
+                        colors.append('#2E7D32')  # Dark green - common
+                    elif pct >= 10:
+                        colors.append('#1976D2')  # Blue - moderate
+                    elif pct >= 5:
+                        colors.append('#F57C00')  # Orange - uncommon
+                    else:
+                        colors.append('#C62828')  # Red - rare
+
+                bars = ax.bar(genes, percentages, color=colors, alpha=0.8, edgecolor='black', linewidth=1.5)
+
+                # Add value labels on bars
+                for bar, pct in zip(bars, percentages):
+                    height = bar.get_height()
+                    ax.text(bar.get_x() + bar.get_width()/2., height,
+                           f'{pct:.1f}%',
+                           ha='center', va='bottom', fontsize=10, weight='bold')
+
+                ax.set_ylabel('Prevalence (%)', fontsize=12, weight='bold')
+                ax.set_xlabel('Pattern Gene', fontsize=12, weight='bold')
+                ax.set_title('Pattern Gene Prevalence in Population', fontsize=14, weight='bold', pad=20)
+                ax.set_ylim(0, max(percentages) * 1.15 if percentages else 100)
+                ax.grid(axis='y', alpha=0.3, linestyle='--')
+
+                # Rotate x-axis labels
+                plt.xticks(rotation=45, ha='right')
+
+                # Add legend
+                from matplotlib.patches import Patch
+                legend_elements = [
+                    Patch(facecolor='#2E7D32', label='Common (≥25%)'),
+                    Patch(facecolor='#1976D2', label='Moderate (10-25%)'),
+                    Patch(facecolor='#F57C00', label='Uncommon (5-10%)'),
+                    Patch(facecolor='#C62828', label='Rare (<5%)')
+                ]
+                ax.legend(handles=legend_elements, loc='upper right')
+
+                plt.tight_layout()
+                st.pyplot(fig)
+                plt.close()
+
+                # Show realistic comparison
+                st.caption("💡 **Realistic frequencies:** Gray ~30%, Sabino ~26%, Tobiano ~24%, Leopard ~8%, Roan ~7%")
+            else:
+                # List view
+                for gene_name in pattern_genes:
+                    if gene_name in pattern_prevalence:
+                        pct = pattern_prevalence[gene_name]
+                        col_name, col_bar = st.columns([1, 3])
+
+                        with col_name:
+                            st.markdown(f"**{gene_name.replace('_', ' ').title()}**")
+
+                        with col_bar:
+                            st.progress(pct / 100, text=f"{pct:.1f}%")
+
+        st.markdown("---")
+
+        # Individual gene frequency details (in expanders)
+        st.markdown("#### 🔬 Detailed Allele Frequencies")
+
         # Display gene frequency for each gene
         for gene_name in all_genes:
-            with st.expander(f"📊 {t('statistics.gene_diversity', lang, gene=gene_name)}"):
+            with st.expander(f"📊 {gene_name.replace('_', ' ').title()} - Allele Distribution"):
                 allele_counts = gene_alleles[gene_name]
                 total_alleles = sum(allele_counts.values())
 
                 # Sort by frequency
                 sorted_alleles = sorted(allele_counts.items(), key=lambda x: x[1], reverse=True)
 
-                for allele, count in sorted_alleles:
-                    frequency = (count / total_alleles) * 100
+                # Create horizontal bar chart for alleles
+                if len(sorted_alleles) > 1:
+                    alleles = [a for a, _ in sorted_alleles]
+                    counts = [c for _, c in sorted_alleles]
+                    percentages = [(c / total_alleles) * 100 for c in counts]
 
-                    col_allele, col_freq = st.columns([1, 3])
+                    fig, ax = plt.subplots(figsize=(8, max(3, len(alleles) * 0.5)))
 
-                    with col_allele:
-                        st.markdown(f"**{allele}**")
+                    bars = ax.barh(alleles, percentages, color='steelblue', alpha=0.8, edgecolor='black')
 
-                    with col_freq:
-                        st.progress(count / total_alleles, text=f"{count} ({frequency:.1f}%)")
+                    # Add value labels
+                    for bar, pct, count in zip(bars, percentages, counts):
+                        width = bar.get_width()
+                        ax.text(width, bar.get_y() + bar.get_height()/2.,
+                               f' {pct:.1f}% ({count})',
+                               ha='left', va='center', fontsize=10, weight='bold')
+
+                    ax.set_xlabel('Frequency (%)', fontsize=11, weight='bold')
+                    ax.set_title(f'{gene_name.replace("_", " ").title()} Allele Distribution',
+                                fontsize=12, weight='bold')
+                    ax.set_xlim(0, max(percentages) * 1.2)
+                    ax.grid(axis='x', alpha=0.3, linestyle='--')
+
+                    plt.tight_layout()
+                    st.pyplot(fig)
+                    plt.close()
+                else:
+                    # Just show list if only one allele
+                    for allele, count in sorted_alleles:
+                        frequency = (count / total_alleles) * 100
+                        col_allele, col_freq = st.columns([1, 3])
+
+                        with col_allele:
+                            st.markdown(f"**{allele}**")
+
+                        with col_freq:
+                            st.progress(count / total_alleles, text=f"{count} ({frequency:.1f}%)")
 
         st.markdown("---")
 

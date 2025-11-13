@@ -8,7 +8,7 @@ Useful for game projects that might want to add custom genes or traits.
 """
 
 import random
-from typing import Dict, List, Tuple, Optional, Callable
+from typing import Dict, List, Tuple, Optional, Callable, Set
 from genetics.gene_definitions import (
     GeneDefinition,
     ALL_GENES,
@@ -77,21 +77,42 @@ class GeneRegistry:
         """Get ordered list of all registered gene names."""
         return self._gene_order.copy()
 
-    def generate_random_genotype(self) -> Dict[str, Tuple[str, str]]:
+    def generate_random_genotype(
+        self,
+        excluded_genes: Optional[Set[str]] = None,
+        custom_probabilities: Optional[Dict[str, float]] = None
+    ) -> Dict[str, Tuple[str, str]]:
         """
         Generate a random complete genotype for all registered genes.
+
+        Args:
+            excluded_genes: Set of gene names to exclude (force to wild-type/recessive)
+                           Example: {'gray', 'dominant_white'} will prevent gray and white horses
+            custom_probabilities: Dict mapping gene names to custom probability of recessive allele
+                                 Example: {'gray': 0.5} will make 75% of horses gray
+                                 Value should be between 0.0 and 1.0
 
         Returns:
             dict: Complete genotype with all genes
                   Format: {'gene_name': ('allele1', 'allele2'), ...}
         """
+        excluded_genes = excluded_genes or set()
+        custom_probabilities = custom_probabilities or {}
+
         genotype = {}
         for gene_name in self._gene_order:
             gene = self._genes[gene_name]
-            genotype[gene_name] = self._random_allele_pair(gene)
+            excluded = gene_name in excluded_genes
+            custom_prob = custom_probabilities.get(gene_name)
+            genotype[gene_name] = self._random_allele_pair(gene, excluded, custom_prob)
         return genotype
 
-    def _random_allele_pair(self, gene: GeneDefinition) -> Tuple[str, str]:
+    def _random_allele_pair(
+        self,
+        gene: GeneDefinition,
+        excluded: bool = False,
+        custom_probability: Optional[float] = None
+    ) -> Tuple[str, str]:
         """
         Generate a random pair of alleles for a gene.
 
@@ -99,16 +120,163 @@ class GeneRegistry:
         - Frame Overo O/O (LWOS)
         - Dominant White lethal homozygous (W1/W1, W5/W5, W10/W10, W13/W13, W22/W22)
 
+        Uses weighted probabilities for rare genes:
+        - Dominant White: ~2-5% (rare in real horses)
+        - Frame Overo: ~10% (uncommon)
+
         Args:
             gene: GeneDefinition to generate alleles for
+            excluded: If True, force gene to wild-type/recessive (gene excluded from generation)
+            custom_probability: Custom probability of recessive allele (0.0-1.0)
+                               Overrides default probabilities if provided
 
         Returns:
             tuple: Sorted pair of alleles (guaranteed viable)
         """
+        # Handle excluded genes - force to wild-type/recessive
+        if excluded:
+            # Find the recessive/wild-type allele (usually 'n', 'g', 'lp', etc.)
+            wildtype = self._get_wildtype_allele(gene)
+            return (wildtype, wildtype)
         max_attempts = 100
         for _ in range(max_attempts):
-            allele1 = random.choice(gene.alleles)
-            allele2 = random.choice(gene.alleles)
+            # Handle custom probability if provided
+            if custom_probability is not None:
+                allele1, allele2 = self._generate_with_custom_probability(
+                    gene, custom_probability
+                )
+            # Special handling for genes with realistic frequency-based weighted probabilities
+            # Based on research: Sabino/Gray common (25-35%), Tobiano moderate (15-25%),
+            # Roan/Leopard uncommon (5-10%), Frame rare (3-7%), Splash/Champagne very rare (2-5%),
+            # Dominant White extremely rare (1-3%)
+
+            elif gene.name == 'dominant_white':
+                # Dominant White: extremely rare (~1-3% population)
+                # "Quite rare, only handful of families" - research
+                if random.random() < 0.99:  # 99% chance of 'n' per allele → ~2% DW
+                    allele1 = 'n'
+                else:
+                    w_alleles = [a for a in gene.alleles if a != 'n']
+                    allele1 = random.choice(w_alleles)
+
+                if random.random() < 0.99:
+                    allele2 = 'n'
+                else:
+                    w_alleles = [a for a in gene.alleles if a != 'n']
+                    allele2 = random.choice(w_alleles)
+
+            elif gene.name == 'frame':
+                # Frame Overo: rare (~3-7% population pure Frame, additional Tovero combinations)
+                # "Rare in most breeds except Paint" - research
+                # Note: Tovero (Tobiano + Frame) will add to total Frame count
+                if random.random() < 0.98:  # 98% chance of 'n' → ~4% pure Frame
+                    allele1 = 'n'
+                else:
+                    allele1 = 'O'
+
+                if random.random() < 0.98:
+                    allele2 = 'n'
+                else:
+                    allele2 = 'O'
+
+            elif gene.name == 'tobiano':
+                # Tobiano: moderately common (~15-25% population)
+                # Common in Paint, moderate elsewhere
+                if random.random() < 0.88:  # 88% chance of 'n' → ~23% Tobiano
+                    allele1 = 'n'
+                else:
+                    allele1 = 'To'
+
+                if random.random() < 0.88:
+                    allele2 = 'n'
+                else:
+                    allele2 = 'To'
+
+            elif gene.name == 'sabino':
+                # Sabino: common (~25-35% population)
+                # "Extremely widespread, found in virtually all breeds" - research
+                if random.random() < 0.80:  # 80% chance of 'n' → ~36% Sabino
+                    allele1 = 'n'
+                else:
+                    allele1 = 'Sb1'
+
+                if random.random() < 0.80:
+                    allele2 = 'n'
+                else:
+                    allele2 = 'Sb1'
+
+            elif gene.name == 'splash':
+                # Splash White: very rare (~2-5% population)
+                # "Least common overo pattern, very rare" - research
+                if random.random() < 0.975:  # 97.5% chance of 'n' → ~5% Splash
+                    allele1 = 'n'
+                else:
+                    splash_alleles = [a for a in gene.alleles if a != 'n']
+                    allele1 = random.choice(splash_alleles)
+
+                if random.random() < 0.975:
+                    allele2 = 'n'
+                else:
+                    splash_alleles = [a for a in gene.alleles if a != 'n']
+                    allele2 = random.choice(splash_alleles)
+
+            elif gene.name == 'roan':
+                # Roan: uncommon (~5-10% population)
+                # "Rare in Icelandic horse population" - research
+                if random.random() < 0.962:  # 96.2% chance of 'n' → ~7.5% Roan
+                    allele1 = 'n'
+                else:
+                    allele1 = 'Rn'
+
+                if random.random() < 0.962:
+                    allele2 = 'n'
+                else:
+                    allele2 = 'Rn'
+
+            elif gene.name == 'leopard':
+                # Leopard/Appaloosa: uncommon (~5-10% general population)
+                # "Lower frequency in most breeds" - research
+                if random.random() < 0.962:  # 96.2% chance of 'lp' → ~7.5% Leopard
+                    allele1 = 'lp'
+                else:
+                    allele1 = 'Lp'
+
+                if random.random() < 0.962:
+                    allele2 = 'lp'
+                else:
+                    allele2 = 'Lp'
+
+            elif gene.name == 'gray':
+                # Gray: common (~25-35% population)
+                # Very common dominant gene across breeds
+                if random.random() < 0.84:  # 84% chance of 'g' → ~30% Gray
+                    allele1 = 'g'
+                else:
+                    allele1 = 'G'
+
+                if random.random() < 0.84:
+                    allele2 = 'g'
+                else:
+                    allele2 = 'G'
+
+            elif gene.name == 'champagne':
+                # Champagne: very rare (~2-4% population)
+                # "Fairly rare gene, less common dilution" - research
+                if random.random() < 0.985:  # 98.5% chance of 'n' → ~3% Champagne
+                    allele1 = 'n'
+                else:
+                    allele1 = 'Ch'
+
+                if random.random() < 0.985:
+                    allele2 = 'n'
+                else:
+                    allele2 = 'Ch'
+
+            else:
+                # Normal random selection for common genes
+                allele1 = random.choice(gene.alleles)
+                allele2 = random.choice(gene.alleles)
+
             pair = gene.sort_alleles([allele1, allele2])
 
             # Check for lethal combinations
@@ -129,9 +297,69 @@ class GeneRegistry:
         if gene.name == 'frame':
             return ('n', 'n')  # Safe: no Frame Overo
         elif gene.name == 'dominant_white':
-            return ('W20', 'n')  # Safe: W20 is non-lethal when heterozygous
+            return ('n', 'n')  # Safe: no Dominant White
         else:
-            return gene.sort_alleles([allele1, allele2])
+            return gene.sort_alleles([gene.alleles[0], gene.alleles[0]])
+
+    def _get_wildtype_allele(self, gene: GeneDefinition) -> str:
+        """
+        Get the wild-type/recessive allele for a gene.
+
+        Args:
+            gene: GeneDefinition to get wildtype for
+
+        Returns:
+            str: Wild-type allele (usually 'n', 'g', 'lp', 'e', 'a', etc.)
+        """
+        # Map gene names to their wild-type alleles
+        wildtype_map = {
+            'extension': 'e',
+            'agouti': 'a',
+            'dilution': 'N',
+            'dun': 'nd2',
+            'dominant_white': 'n',
+            'frame': 'n',
+            'tobiano': 'n',
+            'sabino': 'n',
+            'splash': 'n',
+            'roan': 'n',
+            'leopard': 'lp',
+            'gray': 'g',
+            'champagne': 'n',
+            'flaxen': 'f',
+            'sooty': 'sty'
+        }
+        return wildtype_map.get(gene.name, gene.alleles[0])
+
+    def _generate_with_custom_probability(
+        self, gene: GeneDefinition, probability: float
+    ) -> Tuple[str, str]:
+        """
+        Generate alleles using custom probability for recessive allele.
+
+        Args:
+            gene: GeneDefinition to generate alleles for
+            probability: Probability of getting recessive allele per draw (0.0-1.0)
+
+        Returns:
+            tuple: Pair of alleles
+        """
+        wildtype = self._get_wildtype_allele(gene)
+        other_alleles = [a for a in gene.alleles if a != wildtype]
+
+        # Generate first allele
+        if random.random() < probability:
+            allele1 = wildtype
+        else:
+            allele1 = random.choice(other_alleles) if other_alleles else wildtype
+
+        # Generate second allele
+        if random.random() < probability:
+            allele2 = wildtype
+        else:
+            allele2 = random.choice(other_alleles) if other_alleles else wildtype
+
+        return allele1, allele2
 
     def count_alleles(self, genotype: Tuple[str, str], allele: str) -> int:
         """
