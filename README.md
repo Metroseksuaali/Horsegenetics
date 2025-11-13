@@ -5,6 +5,7 @@ A scientifically accurate horse color genetics simulator that generates random h
 [![Python 3.6+](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+
 ## ✨ Features
 
 ### Core Genetics
