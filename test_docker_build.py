@@ -14,7 +14,6 @@ def test_imports():
         from genetics.horse import Horse
         from genetics.gene_registry import get_default_registry
         from genetics.gene_interaction import PhenotypeCalculator
-        from genetics.visualizer import HorseVisualizer
         from genetics.breed_presets import get_preset_manager
         from genetics.breeding_stats import calculate_offspring_probabilities
         from genetics.pedigree import PedigreeTree
@@ -72,38 +71,6 @@ def test_breeding():
         return True
     except Exception as e:
         print(f"  ❌ Breeding failed: {e}")
-        traceback.print_exc()
-        return False
-
-def test_visualization():
-    """Test SVG visualization."""
-    print("\n🎨 Testing visualization...")
-    try:
-        from genetics.horse import Horse
-        import os
-
-        horse = Horse.random()
-        test_file = "/tmp/test_horse.svg"
-
-        # Test visualization
-        result = horse.visualize(test_file)
-        assert os.path.exists(test_file), "SVG file should be created"
-
-        # Check file content
-        with open(test_file, 'r') as f:
-            content = f.read()
-            assert '<svg' in content, "SVG should contain svg tag"
-            assert horse.phenotype in content, "SVG should contain phenotype label"
-
-        print(f"  ✅ Visualization created: {test_file}")
-        print(f"     Phenotype: {horse.phenotype}")
-
-        # Cleanup
-        os.remove(test_file)
-
-        return True
-    except Exception as e:
-        print(f"  ❌ Visualization failed: {e}")
         traceback.print_exc()
         return False
 
@@ -245,7 +212,6 @@ def main():
         ("Imports", test_imports),
         ("Random Generation", test_random_generation),
         ("Breeding", test_breeding),
-        ("Visualization", test_visualization),
         ("Breed Presets", test_breed_presets),
         ("Streamlit Syntax", test_streamlit_syntax),
         ("Genotype Parsing", test_genotype_parsing),

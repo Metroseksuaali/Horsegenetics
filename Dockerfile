@@ -23,7 +23,6 @@ COPY api/ ./api/
 COPY locales/ ./locales/
 COPY .streamlit/ ./.streamlit/
 COPY streamlit_app.py ./
-COPY visualize_horse.py ./
 COPY horse_genetics.py ./
 COPY horse_genetics_gui.py ./
 
