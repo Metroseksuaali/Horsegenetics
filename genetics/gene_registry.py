@@ -166,9 +166,10 @@ class GeneRegistry:
                     allele2 = random.choice(w_alleles)
 
             elif gene.name == 'frame':
-                # Frame Overo: rare (~3-7% population)
+                # Frame Overo: rare (~3-7% population pure Frame, additional Tovero combinations)
                 # "Rare in most breeds except Paint" - research
-                if random.random() < 0.98:  # 98% chance of 'n' → ~4% Frame
+                # Note: Tovero (Tobiano + Frame) will add to total Frame count
+                if random.random() < 0.98:  # 98% chance of 'n' → ~4% pure Frame
                     allele1 = 'n'
                 else:
                     allele1 = 'O'
@@ -194,12 +195,12 @@ class GeneRegistry:
             elif gene.name == 'sabino':
                 # Sabino: common (~25-35% population)
                 # "Extremely widespread, found in virtually all breeds" - research
-                if random.random() < 0.73:  # 73% chance of 'n' → ~47% Sabino
+                if random.random() < 0.80:  # 80% chance of 'n' → ~36% Sabino
                     allele1 = 'n'
                 else:
                     allele1 = 'Sb1'
 
-                if random.random() < 0.73:
+                if random.random() < 0.80:
                     allele2 = 'n'
                 else:
                     allele2 = 'Sb1'
@@ -207,13 +208,13 @@ class GeneRegistry:
             elif gene.name == 'splash':
                 # Splash White: very rare (~2-5% population)
                 # "Least common overo pattern, very rare" - research
-                if random.random() < 0.96:  # 96% chance of 'n' → ~8% Splash
+                if random.random() < 0.975:  # 97.5% chance of 'n' → ~5% Splash
                     allele1 = 'n'
                 else:
                     splash_alleles = [a for a in gene.alleles if a != 'n']
                     allele1 = random.choice(splash_alleles)
 
-                if random.random() < 0.96:
+                if random.random() < 0.975:
                     allele2 = 'n'
                 else:
                     splash_alleles = [a for a in gene.alleles if a != 'n']
@@ -222,12 +223,12 @@ class GeneRegistry:
             elif gene.name == 'roan':
                 # Roan: uncommon (~5-10% population)
                 # "Rare in Icelandic horse population" - research
-                if random.random() < 0.93:  # 93% chance of 'n' → ~13% Roan
+                if random.random() < 0.962:  # 96.2% chance of 'n' → ~7.5% Roan
                     allele1 = 'n'
                 else:
                     allele1 = 'Rn'
 
-                if random.random() < 0.93:
+                if random.random() < 0.962:
                     allele2 = 'n'
                 else:
                     allele2 = 'Rn'
@@ -235,12 +236,12 @@ class GeneRegistry:
             elif gene.name == 'leopard':
                 # Leopard/Appaloosa: uncommon (~5-10% general population)
                 # "Lower frequency in most breeds" - research
-                if random.random() < 0.90:  # 90% chance of 'lp' → ~19% Leopard
+                if random.random() < 0.962:  # 96.2% chance of 'lp' → ~7.5% Leopard
                     allele1 = 'lp'
                 else:
                     allele1 = 'Lp'
 
-                if random.random() < 0.90:
+                if random.random() < 0.962:
                     allele2 = 'lp'
                 else:
                     allele2 = 'Lp'
@@ -261,12 +262,12 @@ class GeneRegistry:
             elif gene.name == 'champagne':
                 # Champagne: very rare (~2-4% population)
                 # "Fairly rare gene, less common dilution" - research
-                if random.random() < 0.95:  # 95% chance of 'n' → ~10% Champagne
+                if random.random() < 0.985:  # 98.5% chance of 'n' → ~3% Champagne
                     allele1 = 'n'
                 else:
                     allele1 = 'Ch'
 
-                if random.random() < 0.95:
+                if random.random() < 0.985:
                     allele2 = 'n'
                 else:
                     allele2 = 'Ch'
