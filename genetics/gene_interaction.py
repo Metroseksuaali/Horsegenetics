@@ -360,6 +360,114 @@ def apply_gray(ctx: PhenotypeContext) -> None:
         ctx.phenotype = f"{ctx.phenotype} (Gray - will lighten with age)"
 
 
+def apply_roan(ctx: PhenotypeContext) -> None:
+    """
+    Apply roan pattern to phenotype.
+
+    Roan (KIT gene) adds white hairs evenly distributed through coat.
+    Pattern does not change with age (unlike Gray).
+
+    NOTE: Historically thought to be lethal when homozygous, but recent
+    research (2020) on Icelandic horses shows Rn/Rn is viable.
+
+    Modifies ctx.phenotype
+    """
+    if ctx.has_allele('roan', 'Rn'):
+        ctx.phenotype = f"{ctx.phenotype} Roan"
+
+
+def apply_white_patterns(ctx: PhenotypeContext) -> None:
+    """
+    Apply white spotting patterns (Tobiano, Overo, Sabino, Splash).
+
+    Handles special cases:
+    - Tovero: Combination of Tobiano + any Overo pattern
+    - Frame Overo O/O is LETHAL (Lethal White Overo Syndrome)
+
+    Uses industry-standard terminology.
+
+    Modifies ctx.phenotype
+    """
+    # Check for lethal Frame Overo homozygous
+    frame_genotype = ctx.get_genotype('frame')
+    if frame_genotype == ('O', 'O'):
+        ctx.phenotype = "NONVIABLE - Homozygous Frame Overo (O/O) - Lethal White Overo Syndrome (LWOS)"
+        return
+
+    # Collect which patterns are present
+    has_tobiano = ctx.has_allele('tobiano', 'To')
+    has_frame = ctx.has_allele('frame', 'O')
+    has_sabino = ctx.has_allele('sabino', 'Sb1')
+    has_splash = ctx.has_allele('splash', 'Sw1') or ctx.has_allele('splash', 'Sw2') or ctx.has_allele('splash', 'Sw3')
+
+    # Count overo-type patterns (Frame, Sabino, Splash)
+    overo_patterns = []
+    if has_frame:
+        overo_patterns.append('Frame')
+    if has_sabino:
+        sabino_genotype = ctx.get_genotype('sabino')
+        if sabino_genotype == ('Sb1', 'Sb1'):
+            overo_patterns.append('Maximum Sabino')
+        else:
+            overo_patterns.append('Sabino')
+    if has_splash:
+        overo_patterns.append('Splash White')
+
+    # Tovero: Tobiano + any Overo pattern
+    if has_tobiano and len(overo_patterns) > 0:
+        ctx.phenotype = f"{ctx.phenotype} Tovero"
+        return
+
+    # Just Tobiano
+    if has_tobiano:
+        ctx.phenotype = f"{ctx.phenotype} Tobiano"
+        return
+
+    # Overo patterns (without Tobiano)
+    if len(overo_patterns) > 0:
+        # If multiple overo patterns, list them
+        if len(overo_patterns) == 1:
+            ctx.phenotype = f"{ctx.phenotype} {overo_patterns[0]}"
+        else:
+            overo_str = ' + '.join(overo_patterns)
+            ctx.phenotype = f"{ctx.phenotype} {overo_str}"
+
+
+def apply_leopard_complex(ctx: PhenotypeContext) -> None:
+    """
+    Apply Leopard Complex (Appaloosa) patterns.
+
+    Patterns depend on Lp and PATN1 genes:
+    - Lp/Lp + PATN1 = Leopard (white with colored spots all over)
+    - Lp/Lp without PATN1 = Fewspot/Snowcap (mostly white)
+    - Lp/lp + PATN1 = Leopard pattern (fewer spots)
+    - Lp/lp without PATN1 = Blanket/Snowflake
+
+    Uses industry-standard Appaloosa terminology.
+
+    Modifies ctx.phenotype
+    """
+    if not ctx.has_allele('leopard', 'Lp'):
+        return
+
+    lp_count = ctx.count_alleles('leopard', 'Lp')
+    has_patn1 = ctx.has_allele('patn1', 'PATN1')
+
+    # Homozygous Lp/Lp
+    if lp_count == 2:
+        if has_patn1:
+            ctx.phenotype = f"{ctx.phenotype} Leopard"
+        else:
+            ctx.phenotype = f"{ctx.phenotype} Fewspot"
+
+    # Heterozygous Lp/lp
+    else:
+        if has_patn1:
+            ctx.phenotype = f"{ctx.phenotype} Leopard"
+        else:
+            ctx.phenotype = f"{ctx.phenotype} Blanket"
+
+
 # ============================================================================
 # PHENOTYPE CALCULATOR - Main class using modifier pipeline
 # ============================================================================
@@ -391,6 +499,9 @@ class PhenotypeCalculator:
             apply_dun,
             apply_flaxen,
             apply_sooty,
+            apply_roan,  # Apply before white patterns
+            apply_white_patterns,  # Tobiano, Overo, Sabino, Splash, Tovero
+            apply_leopard_complex,  # Appaloosa patterns
             apply_gray,  # Usually last (epistatic)
         ]
 
