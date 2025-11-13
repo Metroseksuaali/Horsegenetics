@@ -124,6 +124,161 @@ def show_phenotype(genotype_str: str):
     return 0
 
 
+def show_probabilities(parent1_str: str, parent2_str: str):
+    """Show breeding probability distribution."""
+    from genetics.breeding_stats import calculate_offspring_probabilities, format_probability_report
+
+    try:
+        print("\n" + "=" * 80)
+        print("BREEDING PROBABILITY CALCULATOR")
+        print("=" * 80)
+        print(f"\nParent 1: {parent1_str}")
+        print(f"Parent 2: {parent2_str}")
+        print("\nCalculating probabilities...")
+
+        probabilities = calculate_offspring_probabilities(parent1_str, parent2_str)
+
+        print("\n" + format_probability_report(probabilities))
+
+    except ValueError as e:
+        print(f"\nError: {e}\n")
+        return 1
+    except Exception as e:
+        print(f"\nUnexpected error: {e}\n")
+        return 1
+
+    return 0
+
+
+def simulate_breeding(count: int, parent1_str: str, parent2_str: str):
+    """Simulate breeding multiple times and show statistics."""
+    from genetics.horse import Horse
+    from genetics.gene_registry import get_default_registry
+    from genetics.gene_interaction import PhenotypeCalculator
+    from collections import Counter
+
+    registry = get_default_registry()
+    calculator = PhenotypeCalculator(registry)
+
+    try:
+        # Parse parents
+        parent1_geno = registry.parse_genotype_string(parent1_str)
+        parent2_geno = registry.parse_genotype_string(parent2_str)
+
+        parent1 = Horse(parent1_geno, registry, calculator)
+        parent2 = Horse(parent2_geno, registry, calculator)
+
+        print("\n" + "=" * 80)
+        print(f"BREEDING SIMULATION - {count} offspring")
+        print("=" * 80)
+        print(f"\nParent 1: {parent1.phenotype}")
+        print(f"  Genotype: {parent1.genotype_string}")
+        print(f"\nParent 2: {parent2.phenotype}")
+        print(f"  Genotype: {parent2.genotype_string}")
+        print(f"\nSimulating {count} breedings...")
+
+        # Simulate breedings
+        phenotypes = []
+        for _ in range(count):
+            offspring = Horse.breed(parent1, parent2, registry, calculator)
+            phenotypes.append(offspring.phenotype)
+
+        # Count occurrences
+        phenotype_counts = Counter(phenotypes)
+
+        # Display results
+        print("\n" + "=" * 80)
+        print("SIMULATION RESULTS")
+        print("=" * 80)
+        print()
+
+        # Sort by count (most common first)
+        sorted_phenotypes = sorted(
+            phenotype_counts.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )
+
+        # Find longest phenotype name for alignment
+        max_name_length = max(len(name) for name, _ in sorted_phenotypes)
+
+        for phenotype, count_value in sorted_phenotypes:
+            percentage = (count_value / count) * 100
+            bar_length = int(percentage / 2.5)  # Scale to fit 40 chars max
+            bar = "█" * bar_length
+
+            name_padded = phenotype.ljust(max_name_length)
+            print(f"{name_padded} : {count_value:4d} ({percentage:5.1f}%)  {bar}")
+
+        print()
+        print(f"Total offspring: {count}")
+        print(f"Unique phenotypes: {len(phenotype_counts)}")
+        print("=" * 80)
+
+    except ValueError as e:
+        print(f"\nError: {e}\n")
+        return 1
+    except Exception as e:
+        print(f"\nUnexpected error: {e}\n")
+        return 1
+
+    return 0
+
+
+def find_genotypes_for_phenotype(target_phenotype: str, max_results: int = 10):
+    """Find genotypes that produce a specific phenotype."""
+    from genetics.horse import Horse
+    from genetics.gene_registry import get_default_registry
+    from genetics.gene_interaction import PhenotypeCalculator
+
+    registry = get_default_registry()
+    calculator = PhenotypeCalculator(registry)
+
+    print("\n" + "=" * 80)
+    print(f"GENOTYPE FINDER - Searching for: {target_phenotype}")
+    print("=" * 80)
+    print("\nSearching for genotypes that produce this phenotype...")
+    print("(This may take a moment...)\n")
+
+    found_genotypes = []
+    attempts = 0
+    max_attempts = 10000  # Try up to 10,000 random genotypes
+
+    while len(found_genotypes) < max_results and attempts < max_attempts:
+        genotype = registry.generate_random_genotype()
+        phenotype = calculator.determine_phenotype(genotype)
+
+        if phenotype == target_phenotype:
+            genotype_str = registry.format_genotype(genotype, compact=True)
+            if genotype_str not in [g[0] for g in found_genotypes]:
+                found_genotypes.append((genotype_str, genotype))
+
+        attempts += 1
+
+    if found_genotypes:
+        print(f"Found {len(found_genotypes)} unique genotype(s) after {attempts} attempts:\n")
+        print("=" * 80)
+
+        for i, (genotype_str, genotype) in enumerate(found_genotypes, 1):
+            print(f"\n{i}. {genotype_str}")
+
+            # Show detailed breakdown
+            print("   Breakdown:")
+            for gene_name in registry.get_all_gene_names():
+                gene_def = registry.get_gene(gene_name)
+                alleles = '/'.join(genotype[gene_name])
+                print(f"     {gene_def.full_name} ({gene_def.symbol}): {alleles}")
+
+        print("\n" + "=" * 80)
+        print(f"\nYou can use any of these genotypes to create a {target_phenotype} horse!")
+    else:
+        print(f"No genotypes found for '{target_phenotype}' after {attempts} attempts.")
+        print("This phenotype might be very rare or not exist.")
+        print("\nTip: Check spelling and capitalization (e.g., 'Buckskin' not 'buckskin')")
+
+    return 0 if found_genotypes else 1
+
+
 def main():
     """Main function for CLI interface with argument support."""
     import argparse
@@ -148,6 +303,27 @@ def main():
     )
 
     parser.add_argument(
+        '--probabilities', '-p',
+        nargs=2,
+        metavar=('PARENT1', 'PARENT2'),
+        help='Calculate breeding probabilities for two parents'
+    )
+
+    parser.add_argument(
+        '--simulate', '-s',
+        nargs=3,
+        metavar=('N', 'PARENT1', 'PARENT2'),
+        help='Simulate N breedings and show statistics'
+    )
+
+    parser.add_argument(
+        '--find-genotypes', '-f',
+        type=str,
+        metavar='PHENOTYPE',
+        help='Find genotypes that produce a specific phenotype'
+    )
+
+    parser.add_argument(
         '--version', '-v',
         action='version',
         version='Horse Genetics Simulator v2.0.0'
@@ -163,6 +339,26 @@ def main():
     # Handle genotype mode
     if args.genotype:
         return show_phenotype(args.genotype)
+
+    # Handle probability calculation
+    if args.probabilities:
+        parent1, parent2 = args.probabilities
+        return show_probabilities(parent1, parent2)
+
+    # Handle simulation
+    if args.simulate:
+        try:
+            count = int(args.simulate[0])
+            parent1 = args.simulate[1]
+            parent2 = args.simulate[2]
+            return simulate_breeding(count, parent1, parent2)
+        except ValueError:
+            print("Error: First argument to --simulate must be a number")
+            return 1
+
+    # Handle genotype finder
+    if args.find_genotypes:
+        return find_genotypes_for_phenotype(args.find_genotypes)
 
     # Interactive mode (original behavior)
     generator = HorseGeneticGenerator()
