@@ -662,6 +662,47 @@ if page == t('nav.generator', lang):
         with col2:
             auto_name = st.checkbox(t('generator.auto_generate_names', lang), value=True)
 
+        # Breed Presets
+        with st.expander("🏇 Breed Presets - Quick configurations", expanded=False):
+            from genetics.breed_presets import get_preset_manager
+
+            preset_manager = get_preset_manager()
+
+            st.markdown("**Realistic Breeds**")
+            realistic_breeds = preset_manager.get_realistic_breeds()
+            realistic_options = ["None (Custom)"] + [p.name for p in realistic_breeds.values()]
+            realistic_choice = st.selectbox(
+                "Select a realistic breed",
+                realistic_options,
+                key="realistic_breed"
+            )
+
+            st.markdown("**Fantasy Breeds**")
+            fantasy_breeds = preset_manager.get_fantasy_breeds()
+            fantasy_options = ["None (Custom)"] + [p.name for p in fantasy_breeds.values()]
+            fantasy_choice = st.selectbox(
+                "Select a fantasy breed",
+                fantasy_options,
+                key="fantasy_breed"
+            )
+
+            # Get selected preset
+            selected_preset = None
+            if realistic_choice != "None (Custom)":
+                for key, preset in realistic_breeds.items():
+                    if preset.name == realistic_choice:
+                        selected_preset = preset
+                        break
+            elif fantasy_choice != "None (Custom)":
+                for key, preset in fantasy_breeds.items():
+                    if preset.name == fantasy_choice:
+                        selected_preset = preset
+                        break
+
+            if selected_preset:
+                st.info(f"📝 {selected_preset.description}")
+                st.caption("This preset will override gene controls below")
+
         # Advanced generation options
         with st.expander("⚙️ Advanced Options (Gene Control)", expanded=False):
             st.markdown("**🚫 Exclude Genes** - Prevent specific genes from appearing")
@@ -778,11 +819,21 @@ if page == t('nav.generator', lang):
 
         if st.button(t('generator.generate_button', lang), type="primary", use_container_width=True):
             with st.spinner(f"🔮 {t('generator.generating', lang)}"):
+                # Use preset values if a preset is selected, otherwise use manual values
+                final_excluded_genes = excluded_genes
+                final_custom_probs = custom_probs
+
+                if selected_preset:
+                    # Preset overrides manual settings
+                    final_excluded_genes = selected_preset.excluded_genes
+                    final_custom_probs = selected_preset.custom_probabilities
+                    st.info(f"🏇 Generating {selected_preset.name} horses...")
+
                 generated = []
                 for i in range(num_horses):
                     horse = Horse.random(
-                        excluded_genes=excluded_genes if excluded_genes else None,
-                        custom_probabilities=custom_probs if custom_probs else None
+                        excluded_genes=final_excluded_genes if final_excluded_genes else None,
+                        custom_probabilities=final_custom_probs if final_custom_probs else None
                     )
                     generated.append(horse)
 
@@ -918,12 +969,77 @@ elif page == t('nav.breeding', lang):
 
         st.markdown("<br>", unsafe_allow_html=True)
 
+        # Optional: Influence offspring genetics (advanced)
+        with st.expander("🧬 Advanced: Influence Offspring Genetics", expanded=False):
+            st.caption("Note: These controls simulate selective breeding outcomes. In real genetics, you cannot control which alleles are inherited.")
+
+            st.markdown("**Force specific traits** (overrides natural inheritance)")
+            influence_col1, influence_col2 = st.columns(2)
+
+            with influence_col1:
+                force_no_gray = st.checkbox("Force no Gray", value=False, key="breed_no_gray")
+                force_no_leopard = st.checkbox("Force no Leopard", value=False, key="breed_no_leopard")
+                force_no_roan = st.checkbox("Force no Roan", value=False, key="breed_no_roan")
+
+            with influence_col2:
+                force_no_tobiano = st.checkbox("Force no Tobiano", value=False, key="breed_no_tobiano")
+                force_no_frame = st.checkbox("Force no Frame", value=False, key="breed_no_frame")
+                force_no_dw = st.checkbox("Force no Dominant White", value=False, key="breed_no_dw")
+
+            # Build forced exclusions
+            forced_exclusions = set()
+            if force_no_gray:
+                forced_exclusions.add('gray')
+            if force_no_leopard:
+                forced_exclusions.add('leopard')
+            if force_no_roan:
+                forced_exclusions.add('roan')
+            if force_no_tobiano:
+                forced_exclusions.add('tobiano')
+            if force_no_frame:
+                forced_exclusions.add('frame')
+            if force_no_dw:
+                forced_exclusions.add('dominant_white')
+
+            if forced_exclusions:
+                st.warning(f"⚠️ Forcing exclusion of: {', '.join(forced_exclusions)}")
+                st.caption("This simulates selective breeding where only foals without these traits are kept.")
+        else:
+            forced_exclusions = set()
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
         # Center the breed button
         col_a, col_b, col_c = st.columns([1, 2, 1])
         with col_b:
             if st.button(t('breeding.breed_button', lang), type="primary", use_container_width=True):
                 with st.spinner(f"🔬 {t('breeding.breeding', lang)}"):
-                    offspring = Horse.breed(parent1, parent2)
+                    # If forced exclusions, try breeding multiple times until we get a matching foal
+                    # This simulates selective breeding where only foals with desired traits are kept
+                    max_attempts = 50
+                    offspring = None
+
+                    if forced_exclusions:
+                        for attempt in range(max_attempts):
+                            candidate = Horse.breed(parent1, parent2)
+
+                            # Check if candidate has any forced exclusions
+                            pheno_lower = candidate.phenotype.lower()
+                            has_excluded = False
+                            for gene in forced_exclusions:
+                                if gene in pheno_lower:
+                                    has_excluded = True
+                                    break
+
+                            if not has_excluded:
+                                offspring = candidate
+                                break
+
+                        if offspring is None:
+                            st.error(f"❌ Could not produce a foal without the excluded traits after {max_attempts} attempts. Try different parents or relax constraints.")
+                            offspring = Horse.breed(parent1, parent2)  # Show last attempt anyway
+                    else:
+                        offspring = Horse.breed(parent1, parent2)
 
                     # Check if offspring is NONVIABLE
                     is_nonviable = 'NONVIABLE' in offspring.phenotype
