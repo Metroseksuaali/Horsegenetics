@@ -47,22 +47,22 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Test docker-compose build
+    - name: Test docker compose build
       run: |
-        docker-compose build web
+        docker compose build web || docker-compose build web
 
-    - name: Test docker-compose up
+    - name: Test docker compose up
       run: |
-        docker-compose up -d web
+        docker compose up -d web || docker-compose up -d web
         sleep 15
         # Check if service is running
-        if [ "$(docker-compose ps -q web)" ]; then
+        if [ "$(docker compose ps -q web 2>/dev/null || docker-compose ps -q web)" ]; then
           echo "✅ Docker Compose service started successfully"
-          docker-compose logs web
-          docker-compose down
+          docker compose logs web 2>/dev/null || docker-compose logs web
+          docker compose down 2>/dev/null || docker-compose down
         else
           echo "❌ Docker Compose service failed to start"
-          docker-compose logs web
-          docker-compose down
+          docker compose logs web 2>/dev/null || docker-compose logs web
+          docker compose down 2>/dev/null || docker-compose down
           exit 1
         fi
