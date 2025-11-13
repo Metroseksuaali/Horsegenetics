@@ -129,19 +129,28 @@ python3 api/main.py
 - **Black** - Black coat
 
 ### Dilutions
-- **Palomino** - Golden chestnut
-- **Buckskin** - Light brown with black points
-- **Cremello** - Very light, almost white
+- **Palomino** - Golden chestnut (single cream on chestnut)
+- **Buckskin** - Light brown with black points (single cream on bay)
+- **Cremello** - Very light, almost white (double cream on chestnut)
+- **Perlino** - Cream with darker points (double cream on bay)
+
+### Dun Colors (Industry Names)
+- **Grullo (Black Dun)** - Mouse gray with primitive markings
+- **Red Dun (Chestnut Dun)** - Red/tan with primitive markings
+- **Dunalino (Palomino Dun)** - Gold dun with primitive markings
+- **Dunskin (Buckskin Dun)** - Buckskin with primitive markings
+- **Bay Dun** - Bay with primitive markings
 
 ### Champagne Colors
-- **Gold Champagne** - Golden with amber eyes
-- **Amber Champagne** - Amber colored
-- **Classic Champagne** - Dark champagne
+- **Gold Champagne** - Golden with amber eyes (chestnut + champagne)
+- **Amber Champagne** - Amber colored (bay + champagne)
+- **Classic Champagne** - Dark champagne (black + champagne)
 
 ### Special Combinations
-- **Flaxen Chestnut** - Chestnut with light mane/tail
+- **Chestnut with Flaxen** - Chestnut with light mane/tail
 - **Silver Bay** - Bay with silver mane and tail
-- **Sooty Dun** - Dark dun with primitive markings
+- **Silver Grullo (Silver Black Dun)** - Gray with silver and dun
+- **Sooty Red Dun (Sooty Chestnut Dun)** - Dark red dun
 
 ## 📁 Project Structure
 
@@ -390,11 +399,14 @@ MIT License - see [LICENSE](LICENSE) file
 
 This program simulates realistic horse coat color genetics using Mendelian inheritance patterns. All color combinations are based on real equine genetics research.
 
+**Color Naming:** The simulator uses industry-standard equestrian names (like "Grullo", "Red Dun", "Dunalino") alongside genetic descriptions in parentheses. This makes it familiar for horse enthusiasts while remaining scientifically accurate. For example, a black horse with dun dilution displays as "Grullo (Black Dun)" - the industry name with genetic explanation.
+
 **Version History:**
 
 **v2.1** (Latest) - Production-Ready Release:
 - ✅ **Streamlit web UI** - Modern browser-based interface
 - ✅ **Docker support** - One-command deployment
+- ✅ **Industry-standard color names** - Grullo, Red Dun, Dunalino, etc. with genetic descriptions
 - ✅ Breeding probability calculator
 - ✅ REST API for game integration
 - ✅ Statistics simulation tools
