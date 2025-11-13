@@ -1,0 +1,12 @@
+[client]
+# Hide the "Deploy" button in the upper right corner
+showDeployButton = false
+
+[server]
+# Enable CORS for Docker
+enableCORS = false
+enableXsrfProtection = false
+
+[browser]
+# Gather usage stats
+gatherUsageStats = false
