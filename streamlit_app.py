@@ -29,6 +29,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.patches import FancyBboxPatch
 import io
+import csv
 
 # Load translations
 def load_translations(lang='en'):
@@ -300,6 +301,97 @@ def generate_pedigree_tree_image(pedigree_tree, horse_id, depth=3):
     buf.seek(0)
 
     return buf
+
+def export_horses_to_csv(horses_list):
+    """
+    Export horses to CSV format.
+
+    Args:
+        horses_list: List of horse items from session state
+
+    Returns:
+        CSV string
+    """
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Write header
+    header = ['Name', 'Phenotype', 'Extension', 'Agouti', 'Cream', 'Dun', 'Silver',
+              'Champagne', 'Flaxen', 'Sooty', 'Gray', 'Has_Parents', 'Generated_At']
+    writer.writerow(header)
+
+    # Write horse data
+    for item in horses_list:
+        horse = item['horse']
+        name = item['name']
+        generated_at = item.get('generated_at', '')
+        has_parents = 'Yes' if 'parents' in item else 'No'
+
+        row = [
+            name,
+            horse.phenotype,
+            '/'.join(horse.genotype.get('Extension', [''])),
+            '/'.join(horse.genotype.get('Agouti', [''])),
+            '/'.join(horse.genotype.get('Cream', [''])),
+            '/'.join(horse.genotype.get('Dun', [''])),
+            '/'.join(horse.genotype.get('Silver', [''])),
+            '/'.join(horse.genotype.get('Champagne', [''])),
+            '/'.join(horse.genotype.get('Flaxen', [''])),
+            '/'.join(horse.genotype.get('Sooty', [''])),
+            '/'.join(horse.genotype.get('Gray', [''])),
+            has_parents,
+            generated_at
+        ]
+        writer.writerow(row)
+
+    return output.getvalue()
+
+def import_horses_from_csv(csv_content):
+    """
+    Import horses from CSV format.
+
+    Args:
+        csv_content: CSV file content as string
+
+    Returns:
+        List of horse items for session state
+    """
+    registry = get_default_registry()
+    calculator = PhenotypeCalculator(registry)
+
+    horses_list = []
+    reader = csv.DictReader(io.StringIO(csv_content.decode('utf-8')))
+
+    for row in reader:
+        # Build genotype dict from CSV columns
+        genotype = {
+            'Extension': row['Extension'].split('/') if row['Extension'] else ['E', 'E'],
+            'Agouti': row['Agouti'].split('/') if row['Agouti'] else ['A', 'A'],
+            'Cream': row['Cream'].split('/') if row['Cream'] else ['N', 'N'],
+            'Dun': row['Dun'].split('/') if row['Dun'] else ['nd1', 'nd1'],
+            'Silver': row['Silver'].split('/') if row['Silver'] else ['n', 'n'],
+            'Champagne': row['Champagne'].split('/') if row['Champagne'] else ['n', 'n'],
+            'Flaxen': row['Flaxen'].split('/') if row['Flaxen'] else ['F', 'F'],
+            'Sooty': row['Sooty'].split('/') if row['Sooty'] else ['sty', 'sty'],
+            'Gray': row['Gray'].split('/') if row['Gray'] else ['g', 'g']
+        }
+
+        # Calculate phenotype
+        phenotype = calculator.calculate_phenotype(genotype)
+
+        # Create horse
+        horse = Horse(genotype, phenotype)
+
+        # Create item
+        item = {
+            'horse': horse,
+            'name': row['Name'],
+            'generated_at': row.get('Generated_At', datetime.now().isoformat())
+        }
+
+        horses_list.append(item)
+
+    return horses_list
 
 # Page configuration
 st.set_page_config(
@@ -773,8 +865,8 @@ elif page == t('nav.stable', lang):
 
     st.markdown("---")
 
-    # Action buttons
-    col_act1, col_act2, col_act3 = st.columns(3)
+    # Action buttons - Row 1: JSON and CSV Export
+    col_act1, col_act2 = st.columns(2)
 
     with col_act1:
         if st.session_state.horses:
@@ -789,10 +881,24 @@ elif page == t('nav.stable', lang):
             )
 
     with col_act2:
-        uploaded_file = st.file_uploader(t('stable.load_button', lang), type=['json'], label_visibility="collapsed")
-        if uploaded_file is not None:
+        if st.session_state.horses:
+            csv_str = export_horses_to_csv(st.session_state.horses)
+            st.download_button(
+                t('stable.save_csv_button', lang),
+                csv_str,
+                file_name=f"stable_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+
+    # Action buttons - Row 2: JSON and CSV Import, Clear
+    col_act3, col_act4, col_act5 = st.columns(3)
+
+    with col_act3:
+        uploaded_json = st.file_uploader(t('stable.load_button', lang), type=['json'], label_visibility="collapsed", key="json_upload")
+        if uploaded_json is not None:
             try:
-                horses_data = json.load(uploaded_file)
+                horses_data = json.load(uploaded_json)
                 registry = get_default_registry()
                 calculator = PhenotypeCalculator(registry)
 
@@ -809,7 +915,22 @@ elif page == t('nav.stable', lang):
             except Exception as e:
                 st.error(f"❌ {t('stable.error_loading', lang, error=str(e))}")
 
-    with col_act3:
+    with col_act4:
+        uploaded_csv = st.file_uploader(t('stable.load_csv_button', lang), type=['csv'], label_visibility="collapsed", key="csv_upload")
+        if uploaded_csv is not None:
+            try:
+                csv_content = uploaded_csv.read()
+                imported_horses = import_horses_from_csv(csv_content)
+
+                for item in imported_horses:
+                    st.session_state.horses.append(item)
+
+                st.success(f"✅ {t('stable.loaded', lang, count=len(imported_horses))}")
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ {t('stable.error_loading', lang, error=str(e))}")
+
+    with col_act5:
         if st.button(t('stable.clear_button', lang), use_container_width=True):
             st.session_state.horses = []
             st.session_state.pedigree = PedigreeTree()
