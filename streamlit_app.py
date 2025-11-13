@@ -48,7 +48,7 @@ with st.sidebar:
     page = st.radio(
         "Navigation",
         ["🎲 Random Generator", "🧬 Breeding", "📊 Probability Calculator",
-         "📚 My Stable", "📖 About"]
+         "📚 My Stable", "🌳 Pedigree Tree", "📖 About"]
     )
 
     st.markdown("---")
@@ -351,6 +351,216 @@ elif page == "📚 My Stable":
 
     else:
         st.info("Your stable is empty. Generate some horses to get started!")
+
+elif page == "🌳 Pedigree Tree":
+    st.title("🌳 Pedigree Tree")
+    st.markdown("View family relationships and breeding history")
+
+    if len(st.session_state.pedigree.horses) == 0:
+        st.warning("⚠️ No horses in pedigree yet. Breed some horses to build a family tree!")
+    else:
+        # Statistics
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Total Horses", len(st.session_state.pedigree.horses))
+        with col2:
+            st.metric("Breedings", len(st.session_state.pedigree.breedings))
+        with col3:
+            # Count generations
+            max_gen = max(h.generation for h in st.session_state.pedigree.horses.values())
+            st.metric("Generations", max_gen + 1)
+        with col4:
+            # Count foundation horses (no parents)
+            foundation = sum(1 for h in st.session_state.pedigree.horses.values()
+                           if h.sire_id is None and h.dam_id is None)
+            st.metric("Foundation Horses", foundation)
+
+        st.markdown("---")
+
+        # View options
+        view_mode = st.radio("View Mode", ["Breeding Records", "Horse Details", "Family Tree"], horizontal=True)
+
+        if view_mode == "Breeding Records":
+            st.subheader("📋 Breeding Records")
+
+            if st.session_state.pedigree.breedings:
+                for idx, (sire_id, dam_id, foal_id) in enumerate(st.session_state.pedigree.breedings):
+                    sire = st.session_state.pedigree.horses[sire_id]
+                    dam = st.session_state.pedigree.horses[dam_id]
+                    foal = st.session_state.pedigree.horses[foal_id]
+
+                    with st.expander(f"🐴 Breeding #{idx + 1}: {foal.name} ({foal.phenotype})"):
+                        col_sire, col_dam, col_foal = st.columns(3)
+
+                        with col_sire:
+                            st.markdown("**👨 Sire (Father)**")
+                            st.markdown(f"**{sire.name}**")
+                            st.markdown(f"*{sire.phenotype}*")
+                            st.caption(f"Generation: {sire.generation}")
+
+                        with col_dam:
+                            st.markdown("**👩 Dam (Mother)**")
+                            st.markdown(f"**{dam.name}**")
+                            st.markdown(f"*{dam.phenotype}*")
+                            st.caption(f"Generation: {dam.generation}")
+
+                        with col_foal:
+                            st.markdown("**🐴 Offspring**")
+                            st.markdown(f"**{foal.name}**")
+                            st.markdown(f"*{foal.phenotype}*")
+                            st.caption(f"Generation: {foal.generation}")
+
+                        st.code(foal.genotype_string, language="text")
+            else:
+                st.info("No breeding records yet.")
+
+        elif view_mode == "Horse Details":
+            st.subheader("📖 All Horses in Pedigree")
+
+            # Group by generation
+            by_generation = {}
+            for horse in st.session_state.pedigree.horses.values():
+                gen = horse.generation
+                if gen not in by_generation:
+                    by_generation[gen] = []
+                by_generation[gen].append(horse)
+
+            for gen in sorted(by_generation.keys()):
+                st.markdown(f"### Generation {gen}")
+
+                for horse in by_generation[gen]:
+                    with st.expander(f"🐴 {horse.name} - {horse.phenotype}"):
+                        col1, col2 = st.columns([2, 1])
+
+                        with col1:
+                            st.markdown(f"**Phenotype:** {horse.phenotype}")
+                            st.code(horse.genotype_string, language="text")
+
+                        with col2:
+                            if horse.sire_id or horse.dam_id:
+                                st.markdown("**Parents:**")
+                                if horse.sire_id:
+                                    sire = st.session_state.pedigree.horses[horse.sire_id]
+                                    st.markdown(f"- Sire: {sire.name}")
+                                if horse.dam_id:
+                                    dam = st.session_state.pedigree.horses[horse.dam_id]
+                                    st.markdown(f"- Dam: {dam.name}")
+                            else:
+                                st.info("Foundation horse")
+
+                            # Show offspring
+                            descendants = st.session_state.pedigree.get_descendants(horse.horse_id)
+                            if descendants:
+                                st.markdown(f"**Offspring:** {len(descendants)}")
+
+        else:  # Family Tree
+            st.subheader("🌳 Family Tree Visualization")
+
+            st.info("Select a horse to view its ancestors:")
+
+            # Select horse
+            horse_options = {h.name: h.horse_id for h in st.session_state.pedigree.horses.values()}
+            selected_name = st.selectbox("Select horse", list(horse_options.keys()))
+
+            if selected_name:
+                selected_id = horse_options[selected_name]
+                selected_horse = st.session_state.pedigree.horses[selected_id]
+
+                st.markdown(f"### Pedigree of {selected_name}")
+                st.markdown(f"**Phenotype:** {selected_horse.phenotype}")
+
+                # Get ancestors
+                depth = st.slider("Generations to show", 1, 5, 3)
+                ancestors = st.session_state.pedigree.get_ancestors(selected_id, depth)
+
+                if ancestors:
+                    st.markdown(f"**Found {len(ancestors)} ancestor(s)**")
+
+                    # Show tree structure
+                    st.markdown("#### Ancestors:")
+
+                    # Group by generation distance
+                    by_distance = {}
+                    for ancestor in ancestors:
+                        gen_dist = ancestor.generation - selected_horse.generation
+                        if gen_dist not in by_distance:
+                            by_distance[gen_dist] = []
+                        by_distance[gen_dist].append(ancestor)
+
+                    for dist in sorted(by_distance.keys(), reverse=True):
+                        if dist == -1:
+                            st.markdown("**👥 Parents:**")
+                        elif dist == -2:
+                            st.markdown("**👴👵 Grandparents:**")
+                        elif dist == -3:
+                            st.markdown("**🧓 Great-Grandparents:**")
+                        else:
+                            st.markdown(f"**Generation -{abs(dist)}:**")
+
+                        for ancestor in by_distance[dist]:
+                            st.markdown(f"- {ancestor.name} ({ancestor.phenotype})")
+
+                    # Check for inbreeding
+                    inbreeding = st.session_state.pedigree.detect_inbreeding(selected_id, depth)
+                    if inbreeding:
+                        st.warning(f"⚠️ Inbreeding detected! {len(inbreeding)} ancestor(s) appear multiple times in the pedigree.")
+                        for horse_id, count in inbreeding.items():
+                            horse = st.session_state.pedigree.horses[horse_id]
+                            st.markdown(f"- {horse.name} appears {count} times")
+                    else:
+                        st.success("✅ No inbreeding detected in this lineage")
+                else:
+                    st.info("This is a foundation horse with no recorded ancestors.")
+
+        st.markdown("---")
+
+        # Export options
+        st.subheader("💾 Export Pedigree")
+
+        col_exp1, col_exp2 = st.columns(2)
+
+        with col_exp1:
+            if st.button("📄 Export to Text", use_container_width=True):
+                # Export to text
+                import tempfile
+                import os
+
+                with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as f:
+                    st.session_state.pedigree.export_text(f.name)
+                    f.seek(0)
+
+                with open(f.name, 'r') as f:
+                    text_content = f.read()
+
+                st.download_button(
+                    "⬇️ Download Text File",
+                    text_content,
+                    file_name=f"pedigree_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                    mime="text/plain"
+                )
+
+                os.unlink(f.name)
+
+        with col_exp2:
+            if st.button("📋 Export to JSON", use_container_width=True):
+                # Export to JSON
+                import tempfile
+                import os
+
+                with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
+                    st.session_state.pedigree.export_json(f.name)
+
+                with open(f.name, 'r') as f:
+                    json_content = f.read()
+
+                st.download_button(
+                    "⬇️ Download JSON File",
+                    json_content,
+                    file_name=f"pedigree_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                    mime="application/json"
+                )
+
+                os.unlink(f.name)
 
 else:  # About
     st.title("📖 About Horse Genetics Simulator")
