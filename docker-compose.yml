@@ -5,8 +5,6 @@
 #   - Web UI only: docker-compose up web
 #   - API only: docker-compose up api
 
-version: '3.8'
-
 services:
   # Streamlit Web UI
   web:
