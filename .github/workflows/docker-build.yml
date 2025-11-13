@@ -32,14 +32,22 @@ jobs:
 
     - name: Test Docker container starts
       run: |
+        echo "🐳 Starting container..."
         docker run --rm -d --name horse-genetics-test -p 8501:8501 horse-genetics:test
-        sleep 10
+
+        echo "⏳ Waiting for container to initialize..."
+        sleep 20
+
+        echo "📋 Container logs:"
+        docker logs horse-genetics-test
+
         # Check if container is still running
         if [ "$(docker ps -q -f name=horse-genetics-test)" ]; then
           echo "✅ Container started successfully"
           docker stop horse-genetics-test
         else
-          echo "❌ Container failed to start"
+          echo "❌ Container failed to start or crashed"
+          echo "📋 Full logs:"
           docker logs horse-genetics-test
           exit 1
         fi
@@ -56,15 +64,22 @@ jobs:
 
     - name: Test docker compose up
       run: |
+        echo "🐳 Starting docker compose..."
         docker compose up -d web || docker-compose up -d web
-        sleep 15
+
+        echo "⏳ Waiting for service to initialize..."
+        sleep 25
+
+        echo "📋 Service logs:"
+        docker compose logs web 2>/dev/null || docker-compose logs web
+
         # Check if service is running
         if [ "$(docker compose ps -q web 2>/dev/null || docker-compose ps -q web)" ]; then
           echo "✅ Docker Compose service started successfully"
-          docker compose logs web 2>/dev/null || docker-compose logs web
           docker compose down 2>/dev/null || docker-compose down
         else
           echo "❌ Docker Compose service failed to start"
+          echo "📋 Full logs:"
           docker compose logs web 2>/dev/null || docker-compose logs web
           docker compose down 2>/dev/null || docker-compose down
           exit 1
