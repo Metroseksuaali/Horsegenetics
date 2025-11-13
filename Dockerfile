@@ -19,6 +19,7 @@ COPY README.md ./
 # Copy application code
 COPY genetics/ ./genetics/
 COPY api/ ./api/
+COPY .streamlit/ ./.streamlit/
 COPY streamlit_app.py ./
 COPY horse_genetics.py ./
 COPY horse_genetics_gui.py ./
@@ -33,4 +34,4 @@ RUN pip install --no-cache-dir streamlit fastapi uvicorn
 EXPOSE 8501 8000
 
 # Default command (Streamlit web UI)
-CMD ["streamlit", "run", "streamlit_app.py", "--server.address", "0.0.0.0"]
+CMD ["streamlit", "run", "streamlit_app.py", "--server.address", "0.0.0.0", "--client.showDeployButton", "false"]
