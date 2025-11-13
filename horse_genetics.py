@@ -4,13 +4,17 @@ Horse Coat Color Genetics Generator - CLI Version
 
 Generates random horse genotypes and determines phenotypes based on
 Extension, Agouti, Dilution (Cream/Pearl), Dun, Silver, Champagne,
-Flaxen, and Sooty genes.
+Flaxen, Sooty, and Gray genes.
 
-This is the command-line interface. The genetics logic is in the
-'genetics' module for better organization and scalability.
+This is the command-line interface using the new modular Horse API.
 """
 
-from genetics import BreedingSimulator, PhenotypeCalculator
+from genetics.horse import Horse
+from genetics.gene_registry import get_default_registry
+from genetics.gene_interaction import PhenotypeCalculator
+
+# For backwards compatibility with old code
+from genetics import BreedingSimulator, PhenotypeCalculator as OldPhenotypeCalculator
 
 
 class HorseGeneticGenerator:
@@ -18,21 +22,25 @@ class HorseGeneticGenerator:
     Wrapper class for backwards compatibility.
 
     This class maintains the same interface as before but delegates
-    to the new modular genetics system.
+    to the new Horse API.
     """
 
     def __init__(self):
-        """Initialize with breeding simulator and phenotype calculator."""
+        """Initialize with new API components."""
+        self.registry = get_default_registry()
+        self.calculator = PhenotypeCalculator(self.registry)
+
+        # Old API for backwards compatibility
         self.breeding_sim = BreedingSimulator()
-        self.phenotype_calc = PhenotypeCalculator()
+        self.phenotype_calc = OldPhenotypeCalculator()
 
     def generate_genotype(self):
-        """Generate random genotype for all eight genes."""
-        return self.breeding_sim.gene_pool.generate_random_genotype()
+        """Generate random genotype for all genes."""
+        return self.registry.generate_random_genotype()
 
     def determine_phenotype(self, genotype):
         """Determine the phenotype (coat color name) from genotype."""
-        return self.phenotype_calc.determine_phenotype(genotype)
+        return self.calculator.determine_phenotype(genotype)
 
     def determine_base_color(self, extension, agouti):
         """Determine base coat color from Extension and Agouti genes."""
@@ -40,33 +48,34 @@ class HorseGeneticGenerator:
 
     def count_alleles(self, genotype, allele):
         """Count copies of a specific allele in a genotype."""
-        return self.breeding_sim.gene_pool.count_alleles(genotype, allele)
+        return self.registry.count_alleles(genotype, allele)
 
     def format_genotype(self, genotype):
         """Format genotype for display."""
-        return self.phenotype_calc.format_genotype(genotype)
+        return self.registry.format_genotype(genotype, compact=True)
 
     def format_genotype_detailed(self, genotype):
         """Format genotype with detailed gene names for display."""
-        return self.phenotype_calc.format_genotype_detailed(genotype)
+        return self.registry.format_genotype(genotype, compact=False)
 
     def generate_horse(self):
         """Generate a complete random horse with genotype and phenotype."""
-        return self.breeding_sim.generate_random_horse()
+        horse = Horse.random(self.registry, self.calculator)
+        return horse.to_dict()
 
     def breed_horses(self, parent1_genotype, parent2_genotype):
         """
         Breed two horses and return the offspring genotype.
         Follows Mendelian inheritance.
         """
-        return self.breeding_sim.breed_horses(parent1_genotype, parent2_genotype)
+        return self.registry.breed(parent1_genotype, parent2_genotype)
 
     def parse_genotype_input(self, genotype_str):
         """
         Parse user input genotype string.
-        Expected format: E:E/e A:A/a Dil:N/Cr D:D/nd1 Z:n/n Ch:n/n F:F/f STY:STY/sty
+        Expected format: E:E/e A:A/a Dil:N/Cr D:D/nd1 Z:n/n Ch:n/n F:F/f STY:STY/sty G:G/g
         """
-        return self.breeding_sim.parse_genotype_input(genotype_str)
+        return self.registry.parse_genotype_string(genotype_str)
 
     def _sort_alleles(self, alleles):
         """
@@ -74,7 +83,9 @@ class HorseGeneticGenerator:
 
         This is a wrapper for backwards compatibility with GUI.
         """
-        return self.breeding_sim.gene_pool._sort_alleles(alleles)
+        # Use first gene for sorting (they all work the same way)
+        gene = self.registry.get_gene('extension')
+        return gene.sort_alleles(alleles)
 
 
 def print_horse(generator, horse, title="HORSE"):
@@ -91,7 +102,7 @@ def main():
     print("=" * 60)
     print("HORSE COAT COLOR GENETICS SIMULATOR")
     print("=" * 60)
-    print("\nThis simulator models 8 genetic traits:")
+    print("\nThis simulator models 9 genetic traits:")
     print("  1. Extension (E/e) - Black or red pigment")
     print("  2. Agouti (A/a) - Bay or black distribution")
     print("  3. Dilution (N/Cr/Prl) - Cream and Pearl dilutions")
@@ -100,6 +111,7 @@ def main():
     print("  6. Champagne (Ch/n) - Lightens both red and black pigment")
     print("  7. Flaxen (F/f) - Lightens mane/tail on chestnuts only")
     print("  8. Sooty (STY/sty) - Adds darker hairs")
+    print("  9. Gray (G/g) - Progressive graying with age")
 
     while True:
         print("\n" + "=" * 60)
@@ -120,8 +132,8 @@ def main():
             print("BREEDING SIMULATOR")
             print("-" * 60)
             print("\nEnter genotypes for two parent horses.")
-            print("Format: E:E/e A:A/a Dil:N/Cr D:D/nd1 Z:n/n Ch:n/n F:F/f STY:STY/sty")
-            print("\nExample: E:E/e A:A/a Dil:N/Cr D:nd1/nd2 Z:n/n Ch:n/n F:F/f STY:STY/sty")
+            print("Format: E:E/e A:A/a Dil:N/Cr D:D/nd1 Z:n/n Ch:n/n F:F/f STY:STY/sty G:G/g")
+            print("\nExample: E:E/e A:A/a Dil:N/Cr D:nd1/nd2 Z:n/n Ch:n/n F:F/f STY:STY/sty G:g/g")
 
             try:
                 print("\n--- PARENT 1 (Sire) ---")

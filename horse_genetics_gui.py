@@ -6,7 +6,9 @@ Uses tkinter for compatibility across Windows, macOS, and Linux
 
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
-from horse_genetics import HorseGeneticGenerator
+from genetics.horse import Horse
+from genetics.gene_registry import get_default_registry
+from genetics.gene_interaction import PhenotypeCalculator
 
 
 class HorseGeneticsGUI:
@@ -30,7 +32,9 @@ class HorseGeneticsGUI:
         self.root.geometry("1200x850")
         self.root.minsize(1000, 700)
 
-        self.generator = HorseGeneticGenerator()
+        # Use new API
+        self.registry = get_default_registry()
+        self.calculator = PhenotypeCalculator(self.registry)
 
         self.colors = {
             'primary': '#0066CC',      # WCAG AA compliant (4.5:1 contrast ratio)
@@ -496,14 +500,14 @@ Example:
 
     def generate_random_horse(self):
         try:
-            horse = self.generator.generate_horse()
+            horse = Horse.random(self.registry, self.calculator)
 
-            self.random_phenotype_label.config(text=horse['phenotype'], foreground=self.colors['primary'])
+            self.random_phenotype_label.config(text=horse.phenotype, foreground=self.colors['primary'])
 
             self.random_genotype_text.config(state=tk.NORMAL)
             self.random_genotype_text.delete('1.0', tk.END)
 
-            genotype_text = self.format_genotype_detailed(horse['genotype'])
+            genotype_text = self.format_genotype_detailed(horse.genotype)
             self.random_genotype_text.insert('1.0', genotype_text)
             self.random_genotype_text.config(state=tk.DISABLED)
 
@@ -534,7 +538,7 @@ Example:
 
     def copy_random_genotype(self):
         if hasattr(self, 'current_random_horse'):
-            genotype_str = self.generator.format_genotype(self.current_random_horse['genotype'])
+            genotype_str = self.current_random_horse.genotype_string
             self.root.clipboard_clear()
             self.root.clipboard_append(genotype_str)
             messagebox.showinfo("Copied", "Genotype copied to clipboard!")
@@ -548,7 +552,8 @@ Example:
 
         for gene_label, gene_name in self.GENE_MAP.items():
             var1, var2 = dropdowns[gene_label]
-            alleles = self.generator._sort_alleles([var1.get(), var2.get()])
+            gene_def = self.registry.get_gene(gene_name)
+            alleles = gene_def.sort_alleles([var1.get(), var2.get()])
             genotype[gene_name] = alleles
 
         return genotype
@@ -556,7 +561,7 @@ Example:
     def update_parent_phenotype(self, parent_num):
         try:
             genotype = self.get_parent_genotype(parent_num)
-            phenotype = self.generator.determine_phenotype(genotype)
+            phenotype = self.calculator.determine_phenotype(genotype)
 
             if parent_num == 1:
                 self.parent1_phenotype_label.config(text=phenotype, foreground=self.colors['primary'])
@@ -574,7 +579,7 @@ Example:
     def randomize_parent(self, parent_num):
         dropdowns = self.parent1_dropdowns if parent_num == 1 else self.parent2_dropdowns
 
-        random_genotype = self.generator.generate_genotype()
+        random_genotype = self.registry.generate_random_genotype()
 
         for gene_label, gene_name in self.GENE_MAP.items():
             var1, var2 = dropdowns[gene_label]
@@ -589,19 +594,23 @@ Example:
             parent1_geno = self.get_parent_genotype(1)
             parent2_geno = self.get_parent_genotype(2)
 
-            offspring_geno = self.generator.breed_horses(parent1_geno, parent2_geno)
-            offspring_pheno = self.generator.determine_phenotype(offspring_geno)
+            # Create Horse objects from genotypes
+            parent1 = Horse(parent1_geno, self.registry, self.calculator)
+            parent2 = Horse(parent2_geno, self.registry, self.calculator)
+
+            # Breed horses using fluent API
+            offspring = Horse.breed(parent1, parent2, self.registry, self.calculator)
 
             # Update phenotype with correct color
             self.offspring_phenotype_label.config(
-                text=offspring_pheno,
+                text=offspring.phenotype,
                 foreground=self.colors['primary']
             )
 
             # Update genotype text
             self.offspring_genotype_text.config(state=tk.NORMAL)
             self.offspring_genotype_text.delete('1.0', tk.END)
-            genotype_text = self.format_genotype_detailed(offspring_geno)
+            genotype_text = self.format_genotype_detailed(offspring.genotype)
             self.offspring_genotype_text.insert('1.0', genotype_text)
             self.offspring_genotype_text.config(state=tk.DISABLED)
 
