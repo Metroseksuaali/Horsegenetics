@@ -38,6 +38,7 @@ class PhenotypeCalculator:
         champagne = genotype['champagne']
         flaxen = genotype['flaxen']
         sooty = genotype['sooty']
+        gray = genotype['gray']
 
         # Determine base color (chestnut, bay, or black)
         base_color = self.gene_pool.determine_base_color(extension, agouti)
@@ -53,6 +54,7 @@ class PhenotypeCalculator:
         has_nd1 = 'nd1' in dun and 'D' not in dun
         has_flaxen = (extension == ('e', 'e') and flaxen == ('f', 'f'))
         has_sooty = 'STY' in sooty
+        has_gray = 'G' in gray
 
         # Apply dilutions in order
         phenotype = self._apply_dilution(base_color, cr_count, prl_count)
@@ -79,6 +81,12 @@ class PhenotypeCalculator:
             # Check if sooty is applicable to this phenotype
             if self._is_sooty_visible(phenotype, base_color):
                 phenotype = f"Sooty {phenotype}"
+
+        # Add gray notation (STX17 gene - progressive graying with age)
+        # Gray is epistatic over all other colors - horse will eventually become gray/white
+        # Note: Horse is born with its base color and progressively lightens
+        if has_gray:
+            phenotype = f"{phenotype} (Gray - will lighten with age)"
 
         return phenotype
 
@@ -291,8 +299,9 @@ class PhenotypeCalculator:
         ch = '/'.join(genotype['champagne'])
         fl = '/'.join(genotype['flaxen'])
         sty = '/'.join(genotype['sooty'])
+        gr = '/'.join(genotype['gray'])
 
-        return f"E: {ext}  A: {ag}  Dil: {dil}  D: {dn}  Z: {slv}  Ch: {ch}  F: {fl}  STY: {sty}"
+        return f"E: {ext}  A: {ag}  Dil: {dil}  D: {dn}  Z: {slv}  Ch: {ch}  F: {fl}  STY: {sty}  G: {gr}"
 
     def format_genotype_detailed(self, genotype):
         """
@@ -313,4 +322,5 @@ class PhenotypeCalculator:
         lines.append(f"Champagne (Ch):   {'/'.join(genotype['champagne'])}")
         lines.append(f"Flaxen (F):       {'/'.join(genotype['flaxen'])}")
         lines.append(f"Sooty (STY):      {'/'.join(genotype['sooty'])}")
+        lines.append(f"Gray (G):         {'/'.join(genotype['gray'])}")
         return '\n'.join(lines)

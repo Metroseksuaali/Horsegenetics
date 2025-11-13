@@ -6,7 +6,7 @@ A scientifically accurate horse color genetics simulator that generates random h
 
 ## Features
 
-### 8 Genetic Traits
+### 9 Genetic Traits
 1. **Extension (E/e)** - Black or red pigment
 2. **Agouti (A/a)** - Bay or black distribution
 3. **Dilution (N/Cr/Prl)** - Cream and Pearl dilutions
@@ -15,6 +15,7 @@ A scientifically accurate horse color genetics simulator that generates random h
 6. **Champagne (Ch/n)** - Lightens both red and black pigment
 7. **Flaxen (F/f)** - Lightens mane/tail on chestnuts only
 8. **Sooty (STY/sty)** - Adds darker hairs
+9. **Gray (G/g)** - Progressive graying with age (dominant)
 
 ## How to Use
 
@@ -69,13 +70,18 @@ Interactive menu:
 
 ```
 genetics/
-├── __init__.py          # Module initialization
-├── core.py              # Gene pools and allele definitions
-├── phenotype.py         # Phenotype calculation and color nomenclature
-└── breeding.py          # Breeding simulation (Mendelian inheritance)
+├── __init__.py              # Module initialization
+├── gene_definitions.py      # Centralized gene data (NEW)
+├── gene_registry.py         # Registry pattern for gene management (NEW)
+├── gene_interaction.py      # Modular phenotype system (NEW)
+├── horse.py                 # Fluent API for easy integration (NEW)
+├── core.py                  # Legacy gene pools (maintained for compatibility)
+├── phenotype.py             # Legacy phenotype calculator (maintained for compatibility)
+└── breeding.py              # Legacy breeding simulator (maintained for compatibility)
 
-horse_genetics.py        # Command-line interface
-horse_genetics_gui.py    # Graphical user interface
+horse_genetics.py            # Command-line interface
+horse_genetics_gui.py        # Graphical user interface
+test_genetics.py             # Comprehensive unit tests (55 tests)
 ```
 
 **Why Modular?** The new structure separates genetics logic from UI, making it easier to:
@@ -83,6 +89,72 @@ horse_genetics_gui.py    # Graphical user interface
 - Fix genetic inaccuracies
 - Scale to thousands of genetic combinations
 - Test individual components
+- **Integrate into game projects and other applications**
+
+## API for Game Projects
+
+**Version 2.0** includes a clean, fluent API perfect for game integration:
+
+### Quick Start
+
+```python
+from genetics.horse import Horse
+
+# Generate a random horse
+horse = Horse.random()
+print(horse.phenotype)        # "Silver Bay Dun"
+print(horse.genotype_string)  # "E: E/e  A: A/A  Dil: N/N..."
+
+# Breed two horses
+mare = Horse.random()
+stallion = Horse.random()
+foal = Horse.breed(mare, stallion)
+print(f"Foal: {foal.phenotype}")
+
+# Check specific genes
+if horse.has_allele('gray', 'G'):
+    print("This horse will gray with age!")
+
+# Create from genotype string
+custom_horse = Horse.from_string(
+    "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g"
+)
+```
+
+### Game Integration Example
+
+```python
+# In your game's horse generator
+class GameHorse:
+    def __init__(self):
+        self.genetics = Horse.random()
+        self.name = generate_name()
+        self.color = self.genetics.phenotype
+
+    def breed_with(self, other_horse):
+        foal_genetics = Horse.breed(self.genetics, other_horse.genetics)
+        return GameHorse.from_genetics(foal_genetics)
+```
+
+### Registry Pattern (Advanced)
+
+For games that want to add custom genes or modifiers:
+
+```python
+from genetics.gene_registry import get_default_registry
+from genetics.gene_interaction import PhenotypeCalculator
+
+# Get registry
+registry = get_default_registry()
+
+# Add custom modifier to phenotype pipeline
+def apply_custom_gene(ctx):
+    if ctx.has_allele('custom_gene', 'X'):
+        ctx.phenotype = f"Mystical {ctx.phenotype}"
+
+calculator = PhenotypeCalculator(registry)
+calculator.add_modifier(apply_custom_gene)
+```
 
 ## About
 
@@ -93,7 +165,10 @@ This program simulates realistic horse coat color genetics using Mendelian inher
 - ✓ Corrected double Pearl on black: "Smoky Pearl" (not "Pearl Black")
 - ✓ Fixed Champagne naming on double dilutes (e.g., "Perlino Champagne")
 - ✓ Silver correctly shows on double cream dilutes (Perlino, Smoky Cream)
-- ✓ Modular architecture for future expansion
+- ✓ Added Gray gene (STX17) - progressive graying with age
+- ✓ Modular architecture with Registry pattern and fluent API
+- ✓ Clean API for game integration and external applications
+- ✓ 55 comprehensive unit tests ensuring genetic accuracy
 
 **Note:** The Sooty and Flaxen genes are simplified in this simulator. In real horses, these traits are controlled by multiple genes.
 
