@@ -69,6 +69,20 @@ st.markdown("""
         border-left: 4px solid #28a745;
         color: #155724;
     }
+    .pedigree-box {
+        padding: 1rem;
+        border-radius: 8px;
+        background: #f8f9fa;
+        border: 2px solid #667eea;
+        margin: 0.5rem 0;
+    }
+    .ancestor-box {
+        padding: 0.8rem;
+        border-radius: 6px;
+        background: #e9ecef;
+        margin: 0.3rem 0;
+        border-left: 3px solid #6c757d;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -111,6 +125,20 @@ if page == "🎲 Generator":
     st.markdown('<p class="main-header">🎲 Random Horse Generator</p>', unsafe_allow_html=True)
     st.markdown('<p class="subtitle">Generate horses with scientifically accurate genetics</p>', unsafe_allow_html=True)
 
+    # Help/Instructions
+    with st.expander("ℹ️ How to use", expanded=False):
+        st.markdown("""
+        **Instructions:**
+        1. Choose how many horses you want to generate (1-10)
+        2. Click **Generate Horses** button
+        3. View your new horses below
+        4. All generated horses are automatically saved to **My Stable**
+
+        **Tip:** Generate multiple horses at once to quickly build your breeding stock!
+        """)
+
+    st.markdown("---")
+
     # Controls in a nice box
     with st.container():
         col1, col2, col3 = st.columns([2, 2, 1])
@@ -132,7 +160,6 @@ if page == "🎲 Generator":
                         })
 
                     st.success(f"🎉 Successfully generated {num_horses} horse(s)!")
-                    st.balloons()
 
                     # Display generated horses in a nice grid
                     st.markdown("### 🐴 Your New Horses")
@@ -178,6 +205,21 @@ if page == "🎲 Generator":
 elif page == "🧬 Breeding":
     st.markdown('<p class="main-header">🧬 Breeding Simulator</p>', unsafe_allow_html=True)
     st.markdown('<p class="subtitle">Breed two horses and discover their offspring</p>', unsafe_allow_html=True)
+
+    # Help/Instructions
+    with st.expander("ℹ️ How to use", expanded=False):
+        st.markdown("""
+        **Instructions:**
+        1. Select a **Sire** (father) from the left dropdown
+        2. Select a **Dam** (mother) from the right dropdown
+        3. Click **Breed Horses** to create offspring
+        4. The foal will be added to **My Stable** and **Pedigree Tree**
+
+        **Genetics:** Each parent contributes one random allele from each gene to the offspring.
+        Results follow real Mendelian inheritance patterns!
+        """)
+
+    st.markdown("---")
 
     if len(st.session_state.horses) < 2:
         st.warning("⚠️ You need at least 2 horses to breed. Visit the **Generator** page first!")
@@ -234,7 +276,6 @@ elif page == "🧬 Breeding":
                     )
 
                     st.success("🎊 Congratulations! A new foal has been born!")
-                    st.balloons()
 
                     # Display offspring beautifully
                     st.markdown("### 🐴 Meet Your New Foal!")
@@ -261,6 +302,22 @@ elif page == "🧬 Breeding":
 elif page == "📊 Probability":
     st.markdown('<p class="main-header">📊 Probability Calculator</p>', unsafe_allow_html=True)
     st.markdown('<p class="subtitle">Calculate breeding outcome chances before you breed</p>', unsafe_allow_html=True)
+
+    # Help/Instructions
+    with st.expander("ℹ️ How to use", expanded=False):
+        st.markdown("""
+        **Instructions:**
+        1. Select two horses from the dropdowns
+        2. Click **Calculate Probabilities**
+        3. View the probability distribution of all possible offspring colors
+
+        **What does this show?** This calculates ALL possible genetic combinations from breeding
+        these two horses and shows you the exact probability of each color outcome.
+
+        **Tip:** Use this before breeding to see what colors are possible!
+        """)
+
+    st.markdown("---")
 
     if len(st.session_state.horses) < 2:
         st.warning("⚠️ You need at least 2 horses. Visit the **Generator** page first!")
@@ -319,6 +376,20 @@ elif page == "📊 Probability":
 elif page == "📚 My Stable":
     st.markdown('<p class="main-header">📚 My Stable</p>', unsafe_allow_html=True)
     st.markdown('<p class="subtitle">Manage your horse collection</p>', unsafe_allow_html=True)
+
+    # Help/Instructions
+    with st.expander("ℹ️ How to use", expanded=False):
+        st.markdown("""
+        **Instructions:**
+        - **Save Stable:** Download all horses as a JSON file
+        - **Load Stable:** Upload a previously saved JSON file
+        - **Clear Stable:** Remove all horses (cannot be undone!)
+        - **Rename Horses:** Click on any horse and edit its name at the bottom
+
+        **Tip:** Regularly save your stable to keep backups of your breeding work!
+        """)
+
+    st.markdown("---")
 
     # Stats
     col1, col2, col3, col4 = st.columns(4)
@@ -416,8 +487,34 @@ elif page == "🌳 Pedigree":
     st.markdown('<p class="main-header">🌳 Pedigree Tree</p>', unsafe_allow_html=True)
     st.markdown('<p class="subtitle">Explore family relationships and breeding history</p>', unsafe_allow_html=True)
 
+    # Help/Instructions
+    with st.expander("ℹ️ How to use", expanded=False):
+        st.markdown("""
+        **Instructions:**
+        1. Select a horse from the dropdown menu
+        2. Choose how many generations back to display (1-5)
+        3. View the visual family tree showing all ancestors
+
+        **What you'll see:**
+        - **Parents** (1 generation back)
+        - **Grandparents** (2 generations back)
+        - **Great-Grandparents** (3 generations back)
+        - **Inbreeding warnings** if the same ancestor appears multiple times
+
+        **Note:** Only horses bred using the Breeding page appear in the pedigree tree.
+        Foundation horses (randomly generated) have no ancestors.
+        """)
+
+    st.markdown("---")
+
     if len(st.session_state.pedigree.horses) == 0:
-        st.warning("⚠️ No pedigree data yet. Breed some horses first!")
+        st.warning("⚠️ No pedigree data yet. Breed some horses first using the **Breeding** page!")
+        st.info("""
+        💡 **How to build a pedigree:**
+        1. Go to **Generator** and create some foundation horses
+        2. Go to **Breeding** and breed two horses together
+        3. The offspring will appear here with full pedigree information
+        """)
     else:
         # Statistics
         col1, col2, col3, col4 = st.columns(4)
@@ -435,107 +532,98 @@ elif page == "🌳 Pedigree":
 
         st.markdown("---")
 
-        # View tabs
-        tab1, tab2, tab3 = st.tabs(["📋 Breeding Records", "📖 Horse Details", "🌳 Family Tree"])
+        # Simplified pedigree view
+        st.markdown("### 🐴 Select a Horse")
 
-        with tab1:
-            if st.session_state.pedigree.breedings:
-                for idx, (sire_id, dam_id, foal_id) in enumerate(st.session_state.pedigree.breedings):
-                    sire = st.session_state.pedigree.horses[sire_id]
-                    dam = st.session_state.pedigree.horses[dam_id]
-                    foal = st.session_state.pedigree.horses[foal_id]
+        horse_options = {h.name: h.horse_id for h in st.session_state.pedigree.horses.values()}
+        horse_list = list(horse_options.keys())
 
-                    with st.expander(f"🐴 Breeding #{idx + 1}: {foal.name} ({foal.phenotype})"):
-                        col_s, col_d, col_f = st.columns(3)
+        col_select, col_depth = st.columns([3, 1])
 
-                        with col_s:
-                            st.markdown("**👨 Sire**")
-                            st.info(f"{sire.name}")
-                            st.caption(sire.phenotype)
+        with col_select:
+            selected_name = st.selectbox("Choose a horse to view its pedigree", horse_list, label_visibility="collapsed")
 
-                        with col_d:
-                            st.markdown("**👩 Dam**")
-                            st.info(f"{dam.name}")
-                            st.caption(dam.phenotype)
+        with col_depth:
+            depth = st.selectbox("Generations", [1, 2, 3, 4, 5], index=2)
 
-                        with col_f:
-                            st.markdown("**🐴 Offspring**")
-                            st.success(f"{foal.name}")
-                            st.caption(foal.phenotype)
+        if selected_name:
+            selected_id = horse_options[selected_name]
+            selected_horse = st.session_state.pedigree.horses[selected_id]
 
-                        st.code(foal.genotype_string, language="text")
+            st.markdown("---")
 
-        with tab2:
-            # Group by generation
-            by_generation = {}
-            for horse in st.session_state.pedigree.horses.values():
-                gen = horse.generation
-                if gen not in by_generation:
-                    by_generation[gen] = []
-                by_generation[gen].append(horse)
+            # Display selected horse
+            st.markdown(f"""
+            <div class="pedigree-box">
+                <h2>🐴 {selected_name}</h2>
+                <p style="font-size: 1.3rem; margin: 0.5rem 0;">🎨 {selected_horse.phenotype}</p>
+                <p style="color: #6c757d; margin: 0;">📊 Generation {selected_horse.generation}</p>
+            </div>
+            """, unsafe_allow_html=True)
 
-            for gen in sorted(by_generation.keys()):
-                st.markdown(f"### Generation {gen}")
+            st.markdown("<br>", unsafe_allow_html=True)
 
-                cols = st.columns(2)
-                for idx, horse in enumerate(by_generation[gen]):
-                    with cols[idx % 2]:
-                        with st.container():
-                            st.markdown(f"**🐴 {horse.name}**")
-                            st.caption(f"🎨 {horse.phenotype}")
+            # Get ancestors
+            ancestors = st.session_state.pedigree.get_ancestors(selected_id, depth)
 
-                            if horse.sire_id or horse.dam_id:
-                                sire = st.session_state.pedigree.horses.get(horse.sire_id)
-                                dam = st.session_state.pedigree.horses.get(horse.dam_id)
-                                if sire:
-                                    st.caption(f"👨 Sire: {sire.name}")
-                                if dam:
-                                    st.caption(f"👩 Dam: {dam.name}")
+            if ancestors:
+                st.markdown(f"### 🌳 Family Tree ({len(ancestors)} ancestor(s))")
 
-        with tab3:
-            horse_options = {h.name: h.horse_id for h in st.session_state.pedigree.horses.values()}
-            selected_name = st.selectbox("🔍 Select a horse", list(horse_options.keys()))
+                # Organize ancestors by generation distance
+                by_distance = {}
+                for ancestor in ancestors:
+                    gen_dist = selected_horse.generation - ancestor.generation
+                    if gen_dist not in by_distance:
+                        by_distance[gen_dist] = []
+                    by_distance[gen_dist].append(ancestor)
 
-            if selected_name:
-                selected_id = horse_options[selected_name]
-                selected_horse = st.session_state.pedigree.horses[selected_id]
-
-                st.markdown(f"### 🐴 {selected_name}")
-                st.info(f"🎨 {selected_horse.phenotype}")
-
-                depth = st.slider("📊 Generations to show", 1, 5, 3)
-                ancestors = st.session_state.pedigree.get_ancestors(selected_id, depth)
-
-                if ancestors:
-                    st.markdown(f"**Found {len(ancestors)} ancestor(s)**")
-
-                    # Show ancestors
-                    by_distance = {}
-                    for ancestor in ancestors:
-                        gen_dist = ancestor.generation - selected_horse.generation
-                        if gen_dist not in by_distance:
-                            by_distance[gen_dist] = []
-                        by_distance[gen_dist].append(ancestor)
-
-                    for dist in sorted(by_distance.keys(), reverse=True):
-                        if dist == -1:
-                            st.markdown("**👥 Parents:**")
-                        elif dist == -2:
-                            st.markdown("**👴👵 Grandparents:**")
-                        elif dist == -3:
-                            st.markdown("**🧓 Great-Grandparents:**")
-                        else:
-                            st.markdown(f"**Generation -{abs(dist)}:**")
-
-                        for ancestor in by_distance[dist]:
-                            st.caption(f"• {ancestor.name} ({ancestor.phenotype})")
-
-                    # Inbreeding check
-                    inbreeding = st.session_state.pedigree.detect_inbreeding(selected_id, depth)
-                    if inbreeding:
-                        st.warning(f"⚠️ Inbreeding detected! {len(inbreeding)} ancestor(s) appear multiple times.")
+                # Display each generation
+                for dist in sorted(by_distance.keys()):
+                    if dist == 1:
+                        st.markdown("### 👥 Parents")
+                        icon = "👤"
+                    elif dist == 2:
+                        st.markdown("### 👴👵 Grandparents")
+                        icon = "👴"
+                    elif dist == 3:
+                        st.markdown("### 🧓 Great-Grandparents")
+                        icon = "🧓"
                     else:
-                        st.success("✅ No inbreeding detected")
+                        st.markdown(f"### 🧬 Generation -{dist}")
+                        icon = "🧬"
+
+                    # Display in columns
+                    cols = st.columns(min(len(by_distance[dist]), 4))
+                    for idx, ancestor in enumerate(by_distance[dist]):
+                        with cols[idx % len(cols)]:
+                            st.markdown(f"""
+                            <div class="ancestor-box">
+                                <p style="font-size: 1.1rem; font-weight: bold; margin: 0;">{icon} {ancestor.name}</p>
+                                <p style="color: #495057; margin: 0.3rem 0 0 0;">{ancestor.phenotype}</p>
+                            </div>
+                            """, unsafe_allow_html=True)
+
+                    st.markdown("<br>", unsafe_allow_html=True)
+
+                # Inbreeding check
+                st.markdown("### 🔍 Inbreeding Analysis")
+                inbreeding = st.session_state.pedigree.detect_inbreeding(selected_id, depth)
+                if inbreeding:
+                    st.warning(f"⚠️ **Inbreeding detected!** {len(inbreeding)} ancestor(s) appear multiple times in the pedigree.")
+                    with st.expander("View repeated ancestors"):
+                        for anc_id in inbreeding:
+                            anc = st.session_state.pedigree.horses[anc_id]
+                            st.caption(f"• {anc.name} ({anc.phenotype})")
+                else:
+                    st.success("✅ **No inbreeding detected** - This is a diverse pedigree!")
+
+            else:
+                st.info("🌱 **Foundation Horse** - This horse was randomly generated and has no ancestors in the pedigree.")
+
+            # Show genotype details
+            st.markdown("---")
+            with st.expander("🧬 View Full Genotype"):
+                st.code(selected_horse.genotype_string, language="text")
 
 else:  # About
     st.markdown('<p class="main-header">📖 About</p>', unsafe_allow_html=True)
