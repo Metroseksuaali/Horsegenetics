@@ -6,7 +6,8 @@ A scientifically accurate horse color genetics simulator that generates random h
 
 [![Python 3.6+](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-103%20passing-success.svg)](test_genetics.py)
+[![CI Tests](https://github.com/Metroseksuaali/Horsegenetics/actions/workflows/ci.yml/badge.svg)](https://github.com/Metroseksuaali/Horsegenetics/actions/workflows/ci.yml)
+[![Docker Build](https://github.com/Metroseksuaali/Horsegenetics/actions/workflows/docker-build.yml/badge.svg)](https://github.com/Metroseksuaali/Horsegenetics/actions/workflows/docker-build.yml)
 
 ## ✨ Features
 
