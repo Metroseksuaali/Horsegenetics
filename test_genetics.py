@@ -6,10 +6,13 @@ determination based on peer-reviewed equine genetics research.
 """
 
 import unittest
+import os
 from genetics.core import GenePool
 from genetics.phenotype import PhenotypeCalculator as LegacyPhenotypeCalculator
 from genetics.gene_interaction import PhenotypeCalculator
 from genetics.breeding import BreedingSimulator
+from genetics.visualizer import HorseVisualizer
+from genetics.horse import Horse
 
 
 class TestGenePool(unittest.TestCase):
@@ -1374,6 +1377,92 @@ class TestDominantWhite(unittest.TestCase):
         self.assertIn('NONVIABLE', phenotype)
 
 
+class TestVisualizer(unittest.TestCase):
+    """Test horse visualization functionality."""
+
+    def setUp(self):
+        """Initialize visualizer for each test."""
+        self.visualizer = HorseVisualizer()
+
+    def test_generate_svg_returns_string(self):
+        """Test that generate_svg returns a string."""
+        svg = self.visualizer.generate_svg("Bay")
+        self.assertIsInstance(svg, str)
+        self.assertIn('<?xml', svg)
+        self.assertIn('svg', svg)
+
+    def test_svg_contains_phenotype_label(self):
+        """Test that SVG contains the phenotype label."""
+        svg = self.visualizer.generate_svg("Chestnut Roan")
+        self.assertIn('Chestnut Roan', svg)
+
+    def test_base_color_bay(self):
+        """Test Bay color is correctly mapped."""
+        svg = self.visualizer.generate_svg("Bay")
+        self.assertIn('#654321', svg)  # Bay brown color
+
+    def test_base_color_chestnut(self):
+        """Test Chestnut color is correctly mapped."""
+        svg = self.visualizer.generate_svg("Chestnut")
+        self.assertIn('#8b4513', svg)  # Chestnut brown color
+
+    def test_white_pattern_detection(self):
+        """Test white patterns are detected and rendered."""
+        svg = self.visualizer.generate_svg("Bay Tobiano")
+        self.assertIn('White patches', svg)
+
+    def test_leopard_pattern_detection(self):
+        """Test leopard patterns are detected and rendered."""
+        svg = self.visualizer.generate_svg("Bay Leopard")
+        self.assertIn('Leopard/Appaloosa spots', svg)
+
+    def test_roan_pattern_detection(self):
+        """Test roan patterns are detected and rendered."""
+        svg = self.visualizer.generate_svg("Bay Roan")
+        # Roan should have scattered white dots
+        self.assertIn('circle', svg)
+
+    def test_dominant_white_renders_white(self):
+        """Test Dominant White renders as pure white."""
+        svg = self.visualizer.generate_svg("Dominant White (W20)")
+        self.assertIn('#ffffff', svg)  # Pure white color
+
+    def test_save_svg_creates_file(self):
+        """Test that save_svg creates a file."""
+        test_file = "test_output.svg"
+        try:
+            self.visualizer.save_svg("Bay", test_file)
+            self.assertTrue(os.path.exists(test_file))
+
+            # Verify file contents
+            with open(test_file, 'r') as f:
+                content = f.read()
+                self.assertIn('<?xml', content)
+                self.assertIn('Bay', content)
+        finally:
+            # Clean up
+            if os.path.exists(test_file):
+                os.remove(test_file)
+
+    def test_horse_visualize_method(self):
+        """Test Horse.visualize() method works."""
+        horse = Horse.random()
+        test_file = "test_horse_viz.svg"
+        try:
+            result = horse.visualize(test_file)
+            self.assertEqual(result, test_file)
+            self.assertTrue(os.path.exists(test_file))
+
+            # Verify file contains horse phenotype
+            with open(test_file, 'r') as f:
+                content = f.read()
+                self.assertIn(horse.phenotype, content)
+        finally:
+            # Clean up
+            if os.path.exists(test_file):
+                os.remove(test_file)
+
+
 def run_tests():
     """Run all tests and print results."""
     # Create test suite
@@ -1397,6 +1486,7 @@ def run_tests():
     suite.addTests(loader.loadTestsFromTestCase(TestBreeding))
     suite.addTests(loader.loadTestsFromTestCase(TestGenotypeFormatting))
     suite.addTests(loader.loadTestsFromTestCase(TestHorseAPI))
+    suite.addTests(loader.loadTestsFromTestCase(TestVisualizer))
 
     # Run tests with verbose output
     runner = unittest.TextTestRunner(verbosity=2)
