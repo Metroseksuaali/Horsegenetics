@@ -9,10 +9,7 @@ import unittest
 import os
 import csv
 import tempfile
-from genetics.core import GenePool
-from genetics.phenotype import PhenotypeCalculator as LegacyPhenotypeCalculator
 from genetics.gene_interaction import PhenotypeCalculator
-from genetics.breeding import BreedingSimulator
 from genetics.horse import Horse
 from genetics.breeding_stats import (
     calculate_gene_probabilities,
@@ -21,58 +18,6 @@ from genetics.breeding_stats import (
 )
 from genetics.gene_registry import get_default_registry
 from genetics.io import horses_to_csv
-
-
-class TestGenePool(unittest.TestCase):
-    """Test core genetic operations and allele management."""
-
-    def setUp(self):
-        """Initialize gene pool for each test."""
-        self.gene_pool = GenePool()
-
-    def test_allele_definitions(self):
-        """Test that all alleles are correctly defined."""
-        self.assertEqual(self.gene_pool.extension_alleles, ['E', 'e'])
-        self.assertEqual(self.gene_pool.agouti_alleles, ['A', 'a'])
-        self.assertEqual(self.gene_pool.dilution_alleles, ['N', 'Cr', 'Prl'])
-        self.assertEqual(self.gene_pool.dun_alleles, ['D', 'nd1', 'nd2'])
-        self.assertEqual(self.gene_pool.silver_alleles, ['Z', 'n'])
-        self.assertEqual(self.gene_pool.champagne_alleles, ['Ch', 'n'])
-        self.assertEqual(self.gene_pool.flaxen_alleles, ['F', 'f'])
-        self.assertEqual(self.gene_pool.sooty_alleles, ['STY', 'sty'])
-
-    def test_allele_sorting_extension(self):
-        """Test alleles are sorted by dominance (Extension gene)."""
-        sorted_pair = self.gene_pool._sort_alleles(['e', 'E'])
-        self.assertEqual(sorted_pair, ('E', 'e'))
-
-    def test_allele_sorting_dilution(self):
-        """Test dilution alleles sort correctly: N > Cr > Prl."""
-        self.assertEqual(self.gene_pool._sort_alleles(['Prl', 'N']), ('N', 'Prl'))
-        self.assertEqual(self.gene_pool._sort_alleles(['Prl', 'Cr']), ('Cr', 'Prl'))
-        self.assertEqual(self.gene_pool._sort_alleles(['Cr', 'N']), ('N', 'Cr'))
-
-    def test_allele_sorting_dun(self):
-        """Test dun alleles sort correctly: D > nd1 > nd2."""
-        self.assertEqual(self.gene_pool._sort_alleles(['nd2', 'D']), ('D', 'nd2'))
-        self.assertEqual(self.gene_pool._sort_alleles(['nd2', 'nd1']), ('nd1', 'nd2'))
-        self.assertEqual(self.gene_pool._sort_alleles(['nd1', 'D']), ('D', 'nd1'))
-
-    def test_count_alleles(self):
-        """Test allele counting in genotypes."""
-        self.assertEqual(self.gene_pool.count_alleles(('E', 'e'), 'E'), 1)
-        self.assertEqual(self.gene_pool.count_alleles(('e', 'e'), 'E'), 0)
-        self.assertEqual(self.gene_pool.count_alleles(('Cr', 'Cr'), 'Cr'), 2)
-
-    def test_random_genotype_structure(self):
-        """Test random genotype contains all required genes (legacy system)."""
-        genotype = self.gene_pool.generate_random_genotype()
-        # Legacy GenePool only has the original 9 genes
-        required_genes = ['extension', 'agouti', 'dilution', 'dun',
-                         'silver', 'champagne', 'flaxen', 'sooty', 'gray']
-        for gene in required_genes:
-            self.assertIn(gene, genotype)
-            self.assertEqual(len(genotype[gene]), 2)
 
 
 class TestBasicColors(unittest.TestCase):
@@ -85,7 +30,6 @@ class TestBasicColors(unittest.TestCase):
     def setUp(self):
         """Initialize calculator for each test."""
         self.calc = PhenotypeCalculator()
-        self.gene_pool = GenePool()
 
     def _create_genotype(self, extension, agouti, dilution=('N', 'N'),
                         dun=('nd2', 'nd2'), silver=('n', 'n'),
@@ -684,44 +628,19 @@ class TestBreeding(unittest.TestCase):
     Scientific basis: Each parent contributes one random allele per gene.
     """
 
-    def setUp(self):
-        """Initialize breeding simulator."""
-        self.simulator = BreedingSimulator()
+    # Neutral base genotype string (no special patterns or dilutions)
+    _NEUTRAL = "E:{ext} A:{ag} Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:{fl} STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
 
     def test_homozygous_cross_produces_heterozygous(self):
         """Test E/E × e/e produces all E/e offspring."""
-        parent1 = {
-            'extension': ('E', 'E'),
-            'agouti': ('A', 'A'),
-            'dilution': ('N', 'N'),
-            'dun': ('nd2', 'nd2'),
-            'silver': ('n', 'n'),
-            'champagne': ('n', 'n'),
-            'flaxen': ('F', 'F'),
-            'sooty': ('sty', 'sty'),
-            'gray': ('g', 'g')
-        }
-        parent2 = {
-            'extension': ('e', 'e'),
-            'agouti': ('a', 'a'),
-            'dilution': ('N', 'N'),
-            'dun': ('nd2', 'nd2'),
-            'silver': ('n', 'n'),
-            'champagne': ('n', 'n'),
-            'flaxen': ('f', 'f'),
-            'sooty': ('sty', 'sty'),
-            'gray': ('g', 'g')
-        }
+        parent1 = Horse.from_string(self._NEUTRAL.format(ext='E/E', ag='A/A', fl='F/F'))
+        parent2 = Horse.from_string(self._NEUTRAL.format(ext='e/e', ag='a/a', fl='f/f'))
 
-        # Test 100 offspring - all should be heterozygous
         for _ in range(100):
-            offspring = self.simulator.breed_horses(parent1, parent2)
-            # Extension: all E/e
-            self.assertEqual(offspring['extension'], ('E', 'e'))
-            # Agouti: all A/a
-            self.assertEqual(offspring['agouti'], ('A', 'a'))
-            # Flaxen: all F/f
-            self.assertEqual(offspring['flaxen'], ('F', 'f'))
+            offspring = Horse.breed(parent1, parent2)
+            self.assertEqual(offspring.get_gene('extension'), ('E', 'e'))
+            self.assertEqual(offspring.get_gene('agouti'), ('A', 'a'))
+            self.assertEqual(offspring.get_gene('flaxen'), ('F', 'f'))
 
     def test_heterozygous_cross_ratios(self):
         """
@@ -729,34 +648,13 @@ class TestBreeding(unittest.TestCase):
 
         Uses 1000 offspring to test statistical distribution.
         """
-        parent1 = {
-            'extension': ('E', 'e'),
-            'agouti': ('A', 'A'),
-            'dilution': ('N', 'N'),
-            'dun': ('nd2', 'nd2'),
-            'silver': ('n', 'n'),
-            'champagne': ('n', 'n'),
-            'flaxen': ('F', 'F'),
-            'sooty': ('sty', 'sty'),
-            'gray': ('g', 'g')
-        }
-        parent2 = {
-            'extension': ('E', 'e'),
-            'agouti': ('A', 'A'),
-            'dilution': ('N', 'N'),
-            'dun': ('nd2', 'nd2'),
-            'silver': ('n', 'n'),
-            'champagne': ('n', 'n'),
-            'flaxen': ('F', 'F'),
-            'sooty': ('sty', 'sty'),
-            'gray': ('g', 'g')
-        }
+        parent1 = Horse.from_string(self._NEUTRAL.format(ext='E/e', ag='A/A', fl='F/F'))
+        parent2 = Horse.from_string(self._NEUTRAL.format(ext='E/e', ag='A/A', fl='F/F'))
 
-        # Count genotypes in 1000 offspring
         counts = {'E/E': 0, 'E/e': 0, 'e/e': 0}
         for _ in range(1000):
-            offspring = self.simulator.breed_horses(parent1, parent2)
-            ext = offspring['extension']
+            offspring = Horse.breed(parent1, parent2)
+            ext = offspring.get_gene('extension')
             if ext == ('E', 'E'):
                 counts['E/E'] += 1
             elif ext == ('E', 'e'):
@@ -776,39 +674,22 @@ class TestBreeding(unittest.TestCase):
         self.assertLess(counts['e/e'], 350)
 
     def test_cream_inheritance(self):
-        """Test cream inheritance: Cr/N × Cr/N produces Cr/Cr offspring."""
-        parent1 = {
-            'extension': ('e', 'e'),
-            'agouti': ('A', 'A'),
-            'dilution': ('N', 'Cr'),
-            'dun': ('nd2', 'nd2'),
-            'silver': ('n', 'n'),
-            'champagne': ('n', 'n'),
-            'flaxen': ('F', 'F'),
-            'sooty': ('sty', 'sty'),
-            'gray': ('g', 'g')
-        }
-        parent2 = {
-            'extension': ('e', 'e'),
-            'agouti': ('A', 'A'),
-            'dilution': ('N', 'Cr'),
-            'dun': ('nd2', 'nd2'),
-            'silver': ('n', 'n'),
-            'champagne': ('n', 'n'),
-            'flaxen': ('F', 'F'),
-            'sooty': ('sty', 'sty'),
-            'gray': ('g', 'g')
-        }
+        """Test cream inheritance: N/Cr × N/Cr produces Cr/Cr (Cremello) offspring."""
+        parent1 = Horse.from_string(
+            "E:e/e A:A/A Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g "
+            "Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+        )
+        parent2 = Horse.from_string(
+            "E:e/e A:A/A Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g "
+            "Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+        )
 
-        # Test 100 breedings - should get some Cr/Cr offspring
         got_double = False
         for _ in range(100):
-            offspring = self.simulator.breed_horses(parent1, parent2)
-            if offspring['dilution'] == ('Cr', 'Cr'):
+            offspring = Horse.breed(parent1, parent2)
+            if offspring.get_gene('dilution') == ('Cr', 'Cr'):
                 got_double = True
-                # Verify phenotype is cremello
-                phenotype = self.simulator.phenotype_calculator.determine_phenotype(offspring)
-                self.assertEqual(phenotype, 'Cremello')
+                self.assertEqual(offspring.phenotype, 'Cremello')
 
         self.assertTrue(got_double, "Should produce some Cr/Cr offspring in 100 breedings")
 
@@ -817,10 +698,9 @@ class TestGenotypeFormatting(unittest.TestCase):
     """Test genotype formatting and parsing."""
 
     def setUp(self):
-        """Initialize calculator and simulator."""
+        """Initialize calculator and registry."""
         from genetics.gene_registry import get_default_registry
         self.calc = PhenotypeCalculator()
-        self.simulator = BreedingSimulator()
         self.registry = get_default_registry()
 
     def test_format_genotype(self):
@@ -866,29 +746,38 @@ class TestGenotypeFormatting(unittest.TestCase):
         self.assertIn('PATN1:PATN1/n', formatted)
 
     def test_parse_genotype_valid(self):
-        """Test parsing valid genotype strings."""
-        genotype_str = "E:E/e A:A/a Dil:N/Cr D:D/nd2 Z:Z/n Ch:Ch/n F:F/f STY:STY/sty G:G/g"
-        genotype = self.simulator.parse_genotype_input(genotype_str)
+        """Test parsing valid genotype strings via Horse.from_string."""
+        full_str = (
+            "E:E/e A:A/a Dil:N/Cr D:D/nd2 Z:Z/n Ch:Ch/n F:F/f STY:STY/sty G:G/g "
+            "Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+        )
+        horse = Horse.from_string(full_str)
 
-        self.assertEqual(genotype['extension'], ('E', 'e'))
-        self.assertEqual(genotype['agouti'], ('A', 'a'))
-        self.assertEqual(genotype['dilution'], ('N', 'Cr'))
-        self.assertEqual(genotype['dun'], ('D', 'nd2'))
-        self.assertEqual(genotype['silver'], ('Z', 'n'))
-        self.assertEqual(genotype['champagne'], ('Ch', 'n'))
-        self.assertEqual(genotype['flaxen'], ('F', 'f'))
-        self.assertEqual(genotype['sooty'], ('STY', 'sty'))
-        self.assertEqual(genotype['gray'], ('G', 'g'))
+        self.assertEqual(horse.get_gene('extension'), ('E', 'e'))
+        self.assertEqual(horse.get_gene('agouti'), ('A', 'a'))
+        self.assertEqual(horse.get_gene('dilution'), ('N', 'Cr'))
+        self.assertEqual(horse.get_gene('dun'), ('D', 'nd2'))
+        self.assertEqual(horse.get_gene('silver'), ('Z', 'n'))
+        self.assertEqual(horse.get_gene('champagne'), ('Ch', 'n'))
+        self.assertEqual(horse.get_gene('flaxen'), ('F', 'f'))
+        self.assertEqual(horse.get_gene('sooty'), ('STY', 'sty'))
+        self.assertEqual(horse.get_gene('gray'), ('G', 'g'))
 
     def test_parse_genotype_invalid(self):
         """Test parsing invalid genotype strings raises ValueError."""
-        # Missing gene
+        # Invalid allele count (three alleles)
         with self.assertRaises(ValueError):
-            self.simulator.parse_genotype_input("E:E/e A:A/a")
+            Horse.from_string(
+                "E:E/e/e A:A/a Dil:N/Cr D:D/nd2 Z:Z/n Ch:Ch/n F:F/f STY:STY/sty G:G/g "
+                "Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+            )
 
-        # Invalid allele count
+        # Invalid allele value
         with self.assertRaises(ValueError):
-            self.simulator.parse_genotype_input("E:E/e/e A:A/a Dil:N/Cr D:D/nd2 Z:Z/n Ch:Ch/n F:F/f STY:STY/sty")
+            Horse.from_string(
+                "E:X/Y A:A/a Dil:N/Cr D:D/nd2 Z:Z/n Ch:Ch/n F:F/f STY:STY/sty G:G/g "
+                "Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+            )
 
 
 class TestHorseAPI(unittest.TestCase):
@@ -2027,7 +1916,6 @@ def run_tests():
     suite = unittest.TestSuite()
 
     # Add all test classes
-    suite.addTests(loader.loadTestsFromTestCase(TestGenePool))
     suite.addTests(loader.loadTestsFromTestCase(TestBasicColors))
     suite.addTests(loader.loadTestsFromTestCase(TestCreamDilution))
     suite.addTests(loader.loadTestsFromTestCase(TestPearlDilution))
