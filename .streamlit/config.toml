@@ -1,0 +1,12 @@
+[client]
+# Use minimal toolbar mode to hide Deploy button
+toolbarMode = "minimal"
+
+[server]
+# Enable CORS for Docker
+enableCORS = false
+enableXsrfProtection = false
+
+[browser]
+# Gather usage stats
+gatherUsageStats = false

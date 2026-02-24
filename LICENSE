@@ -1,0 +1,64 @@
+Horse Genetics License 1.0
+
+Copyright (c) 2024 Metroseksuaali (https://github.com/Metroseksuaali)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to use,
+copy, modify, merge, and distribute the Software, subject to the following
+conditions:
+
+1. ATTRIBUTION IN PUBLISHED PRODUCTS
+
+   If you use this Software (or a modified version of it) in any publicly
+   released project — including but not limited to games, applications,
+   websites, or tools — you must include a visible credit in at least one
+   of the following locations:
+
+     - In-game or in-app credits / about screen
+     - Project website or landing page
+     - End credits, splash screen, or documentation
+
+   The credit must reference the original project. Acceptable forms:
+
+     "Horse genetics: Horse Genetics by Metroseksuaali
+      https://github.com/Metroseksuaali/Horsegenetics"
+
+   or shorter:
+
+     "Horse genetics by Metroseksuaali (github.com/Metroseksuaali/Horsegenetics)"
+
+2. SOURCE CODE DISTRIBUTION
+
+   If you distribute the Software's source code in any form (standalone,
+   embedded, or modified), you must retain this copyright notice and license
+   text in all copies.
+
+3. NO MANDATORY SOURCE DISCLOSURE
+
+   You are NOT required to make the source code of your project publicly
+   available, even if it uses or incorporates this Software. This is not a
+   copyleft license.
+
+4. CONTRIBUTIONS WELCOME
+
+   Bug fixes, improvements, and new features contributed back to the original
+   repository at https://github.com/Metroseksuaali/Horsegenetics are warmly
+   welcomed. See CONTRIBUTING.md for details.
+
+5. USAGE NOTIFICATION (ENCOURAGED, NOT REQUIRED)
+
+   If you use this Software in a published project, you are warmly encouraged
+   to notify the author by opening a "Show and Tell" issue at:
+
+     https://github.com/Metroseksuaali/Horsegenetics/issues
+
+   This allows the author to maintain a list of projects that use this
+   Software. It is not a legal requirement, but it is appreciated.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

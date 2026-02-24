@@ -1,0 +1,5 @@
+*.pyc
+__pycache__/
+.claude/
+CLAUDE.md
+GENETICS_AUDIT_REPORT.md
