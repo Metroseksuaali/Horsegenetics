@@ -93,6 +93,166 @@ class TestBasicColors(unittest.TestCase):
         self.assertEqual(self.calc.determine_phenotype(genotype), 'Black')
 
 
+class TestSealBrown(unittest.TestCase):
+    """
+    Tests for Seal Brown (At allele at ASIP/Agouti locus).
+
+    Scientific basis:
+    - ASIP gene has three alleles: A (bay) > At (seal brown) > a (black)
+    - At/At or At/a = seal brown: near-black body with tan muzzle, flanks, armpits
+    - A/At = bay (A is dominant over At)
+    - Chestnut (e/e) masks all Agouti expression including At
+    - Cream, silver, champagne and other modifiers interact with seal brown
+    """
+
+    def setUp(self):
+        self.calc = PhenotypeCalculator()
+
+    def _g(self, extension, agouti, **kwargs):
+        """Create minimal genotype with seal-brown-relevant defaults."""
+        defaults = {
+            'dilution': ('N', 'N'),
+            'dun': ('nd2', 'nd2'),
+            'silver': ('n', 'n'),
+            'champagne': ('n', 'n'),
+            'flaxen': ('F', 'F'),
+            'sooty': ('sty', 'sty'),
+            'gray': ('g', 'g'),
+            'roan': ('n', 'n'),
+            'tobiano': ('n', 'n'),
+            'frame': ('n', 'n'),
+            'sabino': ('n', 'n'),
+            'dominant_white': ('n', 'n'),
+            'splash': ('n', 'n'),
+            'leopard': ('lp', 'lp'),
+            'patn1': ('n', 'n'),
+        }
+        defaults.update(kwargs)
+        return {'extension': extension, 'agouti': agouti, **defaults}
+
+    # ------------------------------------------------------------------
+    # Perusdominanssijärjestys: A > At > a
+    # ------------------------------------------------------------------
+
+    def test_seal_brown_homozygous(self):
+        """At/At on mustanruskea hevonen (seal brown)."""
+        g = self._g(('E', 'E'), ('At', 'At'))
+        self.assertEqual(self.calc.determine_phenotype(g), 'Seal Brown')
+
+    def test_seal_brown_heterozygous_with_recessive_black(self):
+        """At/a on seal brown - At on dominantti suhteessa a-alleeliin."""
+        g = self._g(('E', 'e'), ('At', 'a'))
+        self.assertEqual(self.calc.determine_phenotype(g), 'Seal Brown')
+
+    def test_bay_dominates_seal_brown(self):
+        """A/At on bay - A on dominantti suhteessa At-alleeliin."""
+        g = self._g(('E', 'E'), ('A', 'At'))
+        self.assertEqual(self.calc.determine_phenotype(g), 'Bay')
+
+    def test_chestnut_masks_seal_brown(self):
+        """e/e At/At on chestnut - Extension peittää Agouti-ekspression."""
+        g = self._g(('e', 'e'), ('At', 'At'))
+        self.assertEqual(self.calc.determine_phenotype(g), 'Chestnut')
+
+        g = self._g(('e', 'e'), ('At', 'a'))
+        self.assertEqual(self.calc.determine_phenotype(g), 'Chestnut')
+
+    # ------------------------------------------------------------------
+    # Cream-dilutio + seal brown
+    # ------------------------------------------------------------------
+
+    def test_seal_buckskin_single_cream(self):
+        """Seal Brown + N/Cr = Seal Buckskin."""
+        g = self._g(('E', 'E'), ('At', 'At'), dilution=('N', 'Cr'))
+        self.assertEqual(self.calc.determine_phenotype(g), 'Seal Buckskin')
+
+    def test_seal_perlino_double_cream(self):
+        """Seal Brown + Cr/Cr = Seal Perlino."""
+        g = self._g(('E', 'E'), ('At', 'At'), dilution=('Cr', 'Cr'))
+        self.assertEqual(self.calc.determine_phenotype(g), 'Seal Perlino')
+
+    def test_seal_pearl_double_pearl(self):
+        """Seal Brown + Prl/Prl = Seal Pearl."""
+        g = self._g(('E', 'E'), ('At', 'At'), dilution=('Prl', 'Prl'))
+        self.assertEqual(self.calc.determine_phenotype(g), 'Seal Pearl')
+
+    def test_seal_buckskin_pearl_compound(self):
+        """Seal Brown + Cr/Prl = Seal Buckskin Pearl."""
+        g = self._g(('E', 'E'), ('At', 'At'), dilution=('Cr', 'Prl'))
+        self.assertEqual(self.calc.determine_phenotype(g), 'Seal Buckskin Pearl')
+
+    # ------------------------------------------------------------------
+    # Silver + seal brown (silver vaikuttaa eumelaniiniin = tumma runko)
+    # ------------------------------------------------------------------
+
+    def test_silver_seal_brown(self):
+        """Seal Brown + Z/n = Silver Seal Brown."""
+        g = self._g(('E', 'E'), ('At', 'At'), silver=('Z', 'n'))
+        self.assertEqual(self.calc.determine_phenotype(g), 'Silver Seal Brown')
+
+    def test_silver_seal_buckskin(self):
+        """Seal Brown + cream + silver = Silver Seal Buckskin."""
+        g = self._g(('E', 'E'), ('At', 'At'), dilution=('N', 'Cr'), silver=('Z', 'n'))
+        self.assertEqual(self.calc.determine_phenotype(g), 'Silver Seal Buckskin')
+
+    def test_silver_does_not_affect_chestnut_masked_seal_brown(self):
+        """e/e (chestnut) + At + silver = Chestnut - silver ei vaikuta punaisen pigmentin hevoseen."""
+        g = self._g(('e', 'e'), ('At', 'At'), silver=('Z', 'n'))
+        self.assertEqual(self.calc.determine_phenotype(g), 'Chestnut')
+
+    # ------------------------------------------------------------------
+    # Champagne + seal brown
+    # ------------------------------------------------------------------
+
+    def test_seal_brown_champagne(self):
+        """Seal Brown + Ch = Amber Champagne (bay-suvun väri)."""
+        g = self._g(('E', 'E'), ('At', 'At'), champagne=('Ch', 'n'))
+        self.assertEqual(self.calc.determine_phenotype(g), 'Amber Champagne')
+
+    def test_seal_buckskin_champagne(self):
+        """Seal Buckskin + Ch = Amber Cream Champagne."""
+        g = self._g(('E', 'E'), ('At', 'At'), dilution=('N', 'Cr'), champagne=('Ch', 'n'))
+        self.assertEqual(self.calc.determine_phenotype(g), 'Amber Cream Champagne')
+
+    # ------------------------------------------------------------------
+    # Dun + seal brown
+    # ------------------------------------------------------------------
+
+    def test_seal_brown_dun(self):
+        """Seal Brown + D = Seal Brown Dun (ei erillistermiä, käytetään geneettistä kuvausta)."""
+        g = self._g(('E', 'E'), ('At', 'At'), dun=('D', 'nd2'))
+        self.assertEqual(self.calc.determine_phenotype(g), 'Seal Brown Dun')
+
+    # ------------------------------------------------------------------
+    # Sooty + seal brown
+    # ------------------------------------------------------------------
+
+    def test_sooty_seal_brown(self):
+        """Sooty näkyy seal brownissa - hevosella on punainen pigmentti tan-alueilla."""
+        g = self._g(('E', 'E'), ('At', 'At'), sooty=('STY', 'sty'))
+        self.assertEqual(self.calc.determine_phenotype(g), 'Sooty Seal Brown')
+
+    def test_sooty_not_visible_on_seal_perlino(self):
+        """Sooty ei näy Seal Perlinossa - liian laimennettu pigmentti."""
+        g = self._g(('E', 'E'), ('At', 'At'), dilution=('Cr', 'Cr'), sooty=('STY', 'sty'))
+        self.assertEqual(self.calc.determine_phenotype(g), 'Seal Perlino')
+
+    # ------------------------------------------------------------------
+    # Roan ja Gray + seal brown (kuviogeenit toimivat normaalisti)
+    # ------------------------------------------------------------------
+
+    def test_seal_brown_roan(self):
+        """Seal Brown + Rn = Seal Brown Roan."""
+        g = self._g(('E', 'E'), ('At', 'At'), roan=('Rn', 'n'))
+        self.assertEqual(self.calc.determine_phenotype(g), 'Seal Brown Roan')
+
+    def test_seal_brown_gray(self):
+        """Seal Brown + G = Seal Brown (Gray - will lighten with age)."""
+        g = self._g(('E', 'E'), ('At', 'At'), gray=('G', 'g'))
+        self.assertIn('Seal Brown', self.calc.determine_phenotype(g))
+        self.assertIn('Gray', self.calc.determine_phenotype(g))
+
+
 class TestCreamDilution(unittest.TestCase):
     """
     Test Cream dilution (SLC45A2 gene).
@@ -227,19 +387,19 @@ class TestPearlDilution(unittest.TestCase):
         self.assertEqual(self.calc.determine_phenotype(genotype), 'Smoky Pearl')
 
     def test_compound_heterozygote_chestnut(self):
-        """Test Cr/Prl on chestnut = pseudo-cremello."""
+        """Test Cr/Prl on chestnut = Palomino Pearl."""
         genotype = self._create_genotype(('e', 'e'), ('A', 'A'), ('Cr', 'Prl'))
-        self.assertEqual(self.calc.determine_phenotype(genotype), 'Pseudo-Cremello')
+        self.assertEqual(self.calc.determine_phenotype(genotype), 'Palomino Pearl')
 
     def test_compound_heterozygote_bay(self):
-        """Test Cr/Prl on bay = pseudo-perlino."""
+        """Test Cr/Prl on bay = Buckskin Pearl."""
         genotype = self._create_genotype(('E', 'E'), ('A', 'A'), ('Cr', 'Prl'))
-        self.assertEqual(self.calc.determine_phenotype(genotype), 'Pseudo-Perlino')
+        self.assertEqual(self.calc.determine_phenotype(genotype), 'Buckskin Pearl')
 
     def test_compound_heterozygote_black(self):
-        """Test Cr/Prl on black = pseudo-smoky cream."""
+        """Test Cr/Prl on black = Smoky Black Pearl."""
         genotype = self._create_genotype(('E', 'E'), ('a', 'a'), ('Cr', 'Prl'))
-        self.assertEqual(self.calc.determine_phenotype(genotype), 'Pseudo-Smoky Cream')
+        self.assertEqual(self.calc.determine_phenotype(genotype), 'Smoky Black Pearl')
 
 
 class TestChampagneDilution(unittest.TestCase):

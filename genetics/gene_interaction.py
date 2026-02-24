@@ -67,12 +67,17 @@ def determine_base_color(ctx: PhenotypeContext) -> None:
     if extension == ('e', 'e'):
         ctx.base_color = 'chestnut'
         ctx.phenotype = 'Chestnut'
-    # At least one E allele = black pigment
-    # Agouti determines distribution
+    # At least one E allele = black pigment; Agouti determines distribution
     elif ctx.has_allele('agouti', 'A'):
+        # A is dominant over At and a → bay
         ctx.base_color = 'bay'
         ctx.phenotype = 'Bay'
+    elif ctx.has_allele('agouti', 'At'):
+        # At/At or At/a → seal brown (near-black with tan points)
+        ctx.base_color = 'seal_brown'
+        ctx.phenotype = 'Seal Brown'
     else:
+        # a/a → uniform black
         ctx.base_color = 'black'
         ctx.phenotype = 'Black'
 
@@ -102,7 +107,8 @@ def apply_dilution(ctx: PhenotypeContext) -> None:
         dilution_map = {
             'chestnut': 'Cremello',
             'bay': 'Perlino',
-            'black': 'Smoky Cream'
+            'black': 'Smoky Cream',
+            'seal_brown': 'Seal Perlino',
         }
         ctx.phenotype = dilution_map[base]
 
@@ -111,16 +117,18 @@ def apply_dilution(ctx: PhenotypeContext) -> None:
         dilution_map = {
             'chestnut': 'Apricot',
             'bay': 'Pearl Bay',
-            'black': 'Smoky Pearl'
+            'black': 'Smoky Pearl',
+            'seal_brown': 'Seal Pearl',
         }
         ctx.phenotype = dilution_map[base]
 
-    # Cr/Prl - Compound heterozygote (pseudo-double dilute)
+    # Cr/Prl - Compound heterozygote (one cream + one pearl)
     elif cr_count == 1 and prl_count == 1:
         dilution_map = {
-            'chestnut': 'Pseudo-Cremello',
-            'bay': 'Pseudo-Perlino',
-            'black': 'Pseudo-Smoky Cream'
+            'chestnut': 'Palomino Pearl',
+            'bay': 'Buckskin Pearl',
+            'black': 'Smoky Black Pearl',
+            'seal_brown': 'Seal Buckskin Pearl',
         }
         ctx.phenotype = dilution_map[base]
 
@@ -129,7 +137,8 @@ def apply_dilution(ctx: PhenotypeContext) -> None:
         dilution_map = {
             'chestnut': 'Palomino',
             'bay': 'Buckskin',
-            'black': 'Smoky Black'
+            'black': 'Smoky Black',
+            'seal_brown': 'Seal Buckskin',
         }
         ctx.phenotype = dilution_map[base]
 
@@ -153,20 +162,33 @@ def apply_champagne(ctx: PhenotypeContext) -> None:
     if not ctx.has_allele('champagne', 'Ch'):
         return
 
-    # Champagne mapping for different base colors and dilutions
+    # Champagne mapping for different base colors and dilutions.
+    # Longer/more specific keys must appear before their substrings
+    # (e.g. 'Seal Buckskin Pearl' before 'Seal Buckskin' before 'Buckskin').
     champagne_map = {
+        # Seal brown + compound dilutes (longest first)
+        'Seal Buckskin Pearl': 'Amber Pearl Champagne',
+        'Seal Perlino': 'Perlino Champagne',
+        'Seal Buckskin': 'Amber Cream Champagne',
+        'Seal Pearl': 'Amber Pearl Champagne',
+        'Seal Brown': 'Amber Champagne',
+        # Compound heterozygotes (one cream + one pearl)
+        'Smoky Black Pearl': 'Classic Pearl Champagne',
+        'Palomino Pearl': 'Ivory Pearl Champagne',
+        'Buckskin Pearl': 'Amber Pearl Champagne',
+        # Double cream dilutes
         'Cremello': 'Gold Cream Champagne',
         'Perlino': 'Perlino Champagne',
         'Smoky Cream': 'Smoky Cream Champagne',
+        # Single cream
         'Palomino': 'Gold Cream Champagne',
         'Buckskin': 'Amber Cream Champagne',
         'Smoky Black': 'Classic Cream Champagne',
-        'Pseudo-Cremello': 'Ivory Pearl Champagne',
-        'Pseudo-Perlino': 'Amber Pearl Champagne',
-        'Pseudo-Smoky Cream': 'Classic Pearl Champagne',
+        # Double pearl
         'Apricot': 'Gold Pearl Champagne',
         'Pearl Bay': 'Amber Pearl Champagne',
         'Smoky Pearl': 'Classic Pearl Champagne',
+        # Base colors
         'Chestnut': 'Gold Champagne',
         'Bay': 'Amber Champagne',
         'Black': 'Classic Champagne',
@@ -204,13 +226,25 @@ def apply_silver(ctx: PhenotypeContext) -> None:
     if ctx.base_color == 'chestnut':
         return
 
-    # Silver mapping for black/bay-based colors
+    # Silver mapping for black/bay-based colors.
+    # Sorted by key length (longest first) before iteration to prevent partial matches.
     silver_map = {
         # Double cream dilutes - Silver still applies
         'Perlino': 'Silver Perlino',
         'Smoky Cream': 'Silver Smoky Cream',
         'Pseudo-Perlino': 'Silver Pseudo-Perlino',
         'Pseudo-Smoky Cream': 'Silver Pseudo-Smoky Cream',
+        # Seal brown combinations
+        'Seal Buckskin Pearl': 'Silver Seal Buckskin Pearl',
+        'Seal Perlino': 'Silver Seal Perlino',
+        'Seal Buckskin': 'Silver Seal Buckskin',
+        'Seal Pearl': 'Silver Seal Pearl',
+        'Seal Brown': 'Silver Seal Brown',
+        # Compound heterozygotes (one cream + one pearl)
+        'Smoky Black Pearl': 'Silver Smoky Black Pearl',
+        'Buckskin Pearl': 'Silver Buckskin Pearl',
+        'Palomino Pearl': 'Silver Palomino Pearl',
+        # Standard colors
         'Black': 'Silver Black',
         'Bay': 'Silver Bay',
         'Smoky Black': 'Silver Smoky Black',
@@ -231,8 +265,8 @@ def apply_silver(ctx: PhenotypeContext) -> None:
             ctx.phenotype = ctx.phenotype.replace(base_color, silver_version)
             return
 
-    # Fallback for black/bay containing phenotypes
-    if any(keyword in ctx.phenotype.lower() for keyword in ['bay', 'black', 'classic', 'amber']):
+    # Fallback for black/bay/seal brown containing phenotypes
+    if any(keyword in ctx.phenotype.lower() for keyword in ['bay', 'black', 'classic', 'amber', 'seal', 'brown']):
         ctx.phenotype = f"Silver {ctx.phenotype}"
 
 
@@ -343,9 +377,9 @@ def apply_sooty(ctx: PhenotypeContext) -> None:
     if ctx.base_color == 'black':
         return
 
-    # Sooty is not visible on double cream dilutes (Cremello, Perlino, Smoky Cream)
-    # because the pigment is too diluted for the effect to show
-    double_dilutes = ('Cremello', 'Perlino', 'Smoky Cream')
+    # Sooty is not visible on double cream dilutes because the pigment is too diluted
+    double_dilutes = ('Cremello', 'Perlino', 'Smoky Cream',
+                      'Seal Perlino', 'Seal Pearl')
     if ctx.phenotype in double_dilutes:
         return
 

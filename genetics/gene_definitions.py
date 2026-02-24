@@ -91,11 +91,11 @@ AGOUTI = GeneDefinition(
     symbol='A',
     full_name='Agouti',
     locus='ASIP',
-    alleles=['A', 'a'],
-    dominance_order={'A': 10, 'a': 1},
+    alleles=['A', 'At', 'a'],
+    dominance_order={'A': 10, 'At': 5, 'a': 1},
     inheritance_pattern=InheritancePattern.DOMINANT,
-    description='Controls distribution of black pigment (only visible with E/_)',
-    effects='A = restricts black to points (bay), a/a = uniform black. Not expressed on e/e.'
+    description='Controls distribution of black pigment (only visible with E/_). Multiple alleles: A (bay), At (seal brown/black-and-tan), a (recessive black).',
+    effects='A/_ = bay (black restricted to points), At/At or At/a = seal brown (near-black body with tan muzzle/flanks/armpits), a/a = uniform black. Not expressed on e/e.'
 )
 
 DILUTION = GeneDefinition(
