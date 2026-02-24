@@ -13,7 +13,7 @@ Example usage:
         print("Suggestions:", suggest_fixes(result))
 """
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 import re
 
 
@@ -293,3 +293,32 @@ def get_example_genotype() -> str:
         E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n
     """
     return "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+
+
+def check_lethal_genotype(genotype: Dict[str, Tuple[str, str]]) -> Optional[str]:
+    """
+    Check if a genotype contains any known lethal allele combinations.
+
+    Uses LETHAL_COMBINATIONS from gene_definitions as the single source
+    of truth for lethal genotypes.
+
+    Args:
+        genotype: Complete genotype dictionary
+
+    Returns:
+        None if the genotype is viable, or a description string if lethal.
+
+    Example:
+        >>> from genetics.validation import check_lethal_genotype
+        >>> result = check_lethal_genotype({'frame': ('O', 'O'), 'extension': ('E', 'e')})
+        >>> result is not None
+        True
+    """
+    from genetics.gene_definitions import LETHAL_COMBINATIONS
+
+    for gene_name, info in LETHAL_COMBINATIONS.items():
+        if gene_name in genotype:
+            if genotype[gene_name] in info['genotypes']:
+                allele1, allele2 = genotype[gene_name]
+                return f"{info['description']} ({allele1}/{allele2})"
+    return None

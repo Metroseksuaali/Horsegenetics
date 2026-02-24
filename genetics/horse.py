@@ -24,6 +24,15 @@ from genetics.gene_registry import GeneRegistry, get_default_registry
 from genetics.gene_interaction import PhenotypeCalculator
 
 
+class LethalGenotypeError(ValueError):
+    """Raised when a lethal genotype is created without explicit permission.
+
+    Inherits from ValueError for backwards compatibility with existing
+    exception handlers.
+    """
+    pass
+
+
 class Horse:
     """
     Represents a horse with complete genetic information.
@@ -35,7 +44,8 @@ class Horse:
         self,
         genotype: Dict[str, Tuple[str, str]],
         registry: Optional[GeneRegistry] = None,
-        calculator: Optional[PhenotypeCalculator] = None
+        calculator: Optional[PhenotypeCalculator] = None,
+        allow_lethal: bool = False
     ):
         """
         Create a horse from a genotype.
@@ -44,16 +54,36 @@ class Horse:
             genotype: Complete genotype dictionary
             registry: Gene registry (uses default if None)
             calculator: Phenotype calculator (creates new if None)
+            allow_lethal: If False (default), raises LethalGenotypeError
+                for lethal genotypes. Set True to allow (e.g. for breeding).
+
+        Raises:
+            LethalGenotypeError: If genotype is lethal and allow_lethal is False
         """
         self.registry = registry or get_default_registry()
         self.calculator = calculator or PhenotypeCalculator(self.registry)
 
-        # Validate genotype
+        # Validate genotype format and allele values
         self.registry.validate_genotype(genotype)
         self._genotype = genotype
 
         # Calculate phenotype
         self._phenotype = self.calculator.determine_phenotype(genotype)
+
+        # Check for lethal combinations (after phenotype calc so is_lethal works)
+        if not allow_lethal:
+            from genetics.validation import check_lethal_genotype
+            lethal_reason = check_lethal_genotype(genotype)
+            if lethal_reason:
+                raise LethalGenotypeError(
+                    f"Lethal genotype: {lethal_reason}. "
+                    f"Use allow_lethal=True to create this horse explicitly."
+                )
+
+    @property
+    def is_lethal(self) -> bool:
+        """Check if this horse has a lethal genotype (NONVIABLE phenotype)."""
+        return 'NONVIABLE' in self._phenotype
 
     @property
     def genotype(self) -> Dict[str, Tuple[str, str]]:
@@ -178,7 +208,8 @@ class Horse:
         cls,
         genotype_str: str,
         registry: Optional[GeneRegistry] = None,
-        calculator: Optional[PhenotypeCalculator] = None
+        calculator: Optional[PhenotypeCalculator] = None,
+        allow_lethal: bool = False
     ) -> 'Horse':
         """
         Create horse from genotype string.
@@ -187,23 +218,29 @@ class Horse:
             genotype_str: Genotype string (e.g., "E:E/e A:A/a Dil:N/N ...")
             registry: Gene registry (uses default if None)
             calculator: Phenotype calculator (creates new if None)
+            allow_lethal: If False (default), raises LethalGenotypeError
+                for lethal genotypes like Frame Overo O/O.
 
         Returns:
             Horse: New horse with specified genotype
+
+        Raises:
+            LethalGenotypeError: If genotype is lethal and allow_lethal is False
 
         Example:
             horse = Horse.from_string("E:e/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:f/f STY:sty/sty G:g/g")
         """
         reg = registry or get_default_registry()
         genotype = reg.parse_genotype_string(genotype_str)
-        return cls(genotype, reg, calculator)
+        return cls(genotype, reg, calculator, allow_lethal=allow_lethal)
 
     @classmethod
     def from_dict(
         cls,
         data: dict,
         registry: Optional[GeneRegistry] = None,
-        calculator: Optional[PhenotypeCalculator] = None
+        calculator: Optional[PhenotypeCalculator] = None,
+        allow_lethal: bool = False
     ) -> 'Horse':
         """
         Create horse from dictionary.
@@ -212,16 +249,21 @@ class Horse:
             data: Dictionary with 'genotype' key
             registry: Gene registry (uses default if None)
             calculator: Phenotype calculator (creates new if None)
+            allow_lethal: If False (default), raises LethalGenotypeError
+                for lethal genotypes.
 
         Returns:
             Horse: New horse
+
+        Raises:
+            LethalGenotypeError: If genotype is lethal and allow_lethal is False
 
         Example:
             data = {'genotype': {'extension': ('E', 'e'), ...}}
             horse = Horse.from_dict(data)
         """
         genotype = data['genotype']
-        return cls(genotype, registry, calculator)
+        return cls(genotype, registry, calculator, allow_lethal=allow_lethal)
 
     @classmethod
     def breed(
@@ -235,7 +277,9 @@ class Horse:
         Breed two horses to produce offspring.
 
         Follows Mendelian inheritance - each parent contributes one
-        random allele from each gene.
+        random allele from each gene. Lethal offspring are allowed
+        since they are a realistic result of carrier crosses
+        (e.g. O/n x O/n can produce 25% O/O = LWOS).
 
         Args:
             parent1: First parent
@@ -244,7 +288,7 @@ class Horse:
             calculator: Phenotype calculator (creates new if None)
 
         Returns:
-            Horse: Offspring horse
+            Horse: Offspring horse (check .is_lethal for viability)
 
         Example:
             mare = Horse.random()
@@ -253,7 +297,7 @@ class Horse:
         """
         reg = registry or get_default_registry()
         offspring_genotype = reg.breed(parent1._genotype, parent2._genotype)
-        return cls(offspring_genotype, reg, calculator)
+        return cls(offspring_genotype, reg, calculator, allow_lethal=True)
 
 
 # ============================================================================

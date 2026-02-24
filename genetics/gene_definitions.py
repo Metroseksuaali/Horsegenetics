@@ -344,3 +344,22 @@ def get_all_gene_names() -> List[str]:
 def get_all_gene_symbols() -> List[str]:
     """Get list of all gene symbols."""
     return [gene.symbol for gene in ALL_GENES]
+
+
+# ============================================================================
+# LETHAL COMBINATIONS - Single source of truth
+# ============================================================================
+
+LETHAL_COMBINATIONS: Dict[str, Dict[str, Any]] = {
+    'frame': {
+        'genotypes': [('O', 'O')],
+        'description': 'Lethal White Overo Syndrome (LWOS)',
+    },
+    'dominant_white': {
+        'genotypes': [
+            ('W1', 'W1'), ('W5', 'W5'), ('W10', 'W10'),
+            ('W13', 'W13'), ('W22', 'W22'),
+        ],
+        'description': 'Homozygous Dominant White - embryonic lethal',
+    },
+}

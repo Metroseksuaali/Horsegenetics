@@ -406,9 +406,10 @@ def apply_dominant_white(ctx: PhenotypeContext) -> None:
     # Get genotype to check for lethal homozygous combinations
     dw_genotype = ctx.get_genotype('dominant_white')
 
-    # Check for lethal homozygous combinations
-    lethal_alleles = ['W1', 'W5', 'W10', 'W13', 'W22']
-    if dw_genotype[0] in lethal_alleles and dw_genotype[0] == dw_genotype[1]:
+    # Check for lethal homozygous combinations (uses shared constant)
+    from genetics.gene_definitions import LETHAL_COMBINATIONS
+    dw_lethals = LETHAL_COMBINATIONS['dominant_white']['genotypes']
+    if dw_genotype in dw_lethals:
         ctx.phenotype = f"NONVIABLE - Homozygous Dominant White ({dw_genotype[0]}/{dw_genotype[1]}) is lethal"
         return
 
@@ -441,9 +442,10 @@ def apply_white_patterns(ctx: PhenotypeContext) -> None:
 
     Modifies ctx.phenotype
     """
-    # Check for lethal Frame Overo homozygous
+    # Check for lethal Frame Overo homozygous (uses shared constant)
+    from genetics.gene_definitions import LETHAL_COMBINATIONS
     frame_genotype = ctx.get_genotype('frame')
-    if frame_genotype == ('O', 'O'):
+    if frame_genotype in LETHAL_COMBINATIONS['frame']['genotypes']:
         ctx.phenotype = "NONVIABLE - Homozygous Frame Overo (O/O) - Lethal White Overo Syndrome (LWOS)"
         return
 

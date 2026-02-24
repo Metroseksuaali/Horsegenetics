@@ -279,27 +279,19 @@ class GeneRegistry:
 
             pair = gene.sort_alleles([allele1, allele2])
 
-            # Check for lethal combinations
-            # Frame Overo: O/O is lethal
-            if gene.name == 'frame' and pair == ('O', 'O'):
-                continue
-
-            # Dominant White: Most homozygous combinations are lethal (except W20/W20)
-            if gene.name == 'dominant_white':
-                lethal_w_alleles = ['W1', 'W5', 'W10', 'W13', 'W22']
-                if pair[0] == pair[1] and pair[0] in lethal_w_alleles:
+            # Check for lethal combinations (uses shared constant)
+            from genetics.gene_definitions import LETHAL_COMBINATIONS
+            if gene.name in LETHAL_COMBINATIONS:
+                if pair in LETHAL_COMBINATIONS[gene.name]['genotypes']:
                     continue
 
             # Valid combination found
             return pair
 
-        # Fallback: force heterozygous or homozygous wildtype
-        if gene.name == 'frame':
-            return ('n', 'n')  # Safe: no Frame Overo
-        elif gene.name == 'dominant_white':
-            return ('n', 'n')  # Safe: no Dominant White
-        else:
-            return gene.sort_alleles([gene.alleles[0], gene.alleles[0]])
+        # Fallback: force safe genotype after max attempts
+        if gene.name in LETHAL_COMBINATIONS:
+            return ('n', 'n')  # Safe: wildtype
+        return gene.sort_alleles([gene.alleles[0], gene.alleles[0]])
 
     def _get_wildtype_allele(self, gene: GeneDefinition) -> str:
         """

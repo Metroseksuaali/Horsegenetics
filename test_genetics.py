@@ -10,7 +10,8 @@ import os
 import csv
 import tempfile
 from genetics.gene_interaction import PhenotypeCalculator
-from genetics.horse import Horse
+from genetics.horse import Horse, LethalGenotypeError
+from genetics.validation import check_lethal_genotype
 from genetics.breeding_stats import (
     calculate_gene_probabilities,
     calculate_single_gene_probability,
@@ -1819,6 +1820,80 @@ class TestLethalBreedingOutcomes(unittest.TestCase):
         )
 
 
+class TestLethalValidation(unittest.TestCase):
+    """Test early lethal genotype detection and validation.
+
+    Verifies that the Horse API rejects lethal genotypes by default
+    but allows them when explicitly requested (allow_lethal=True)
+    or when produced naturally through breeding.
+    """
+
+    _NEUTRAL = (
+        "E:E/e A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n "
+        "F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:{frame} "
+        "Sb:n/n W:{w} Spl:n/n Lp:lp/lp PATN1:n/n"
+    )
+
+    def test_from_string_rejects_frame_overo_oo(self):
+        """Horse.from_string with O:O/O must raise LethalGenotypeError."""
+        with self.assertRaises(LethalGenotypeError):
+            Horse.from_string(self._NEUTRAL.format(frame='O/O', w='n/n'))
+
+    def test_from_string_rejects_w1_homozygous(self):
+        """Horse.from_string with W:W1/W1 must raise LethalGenotypeError."""
+        with self.assertRaises(LethalGenotypeError):
+            Horse.from_string(self._NEUTRAL.format(frame='n/n', w='W1/W1'))
+
+    def test_from_string_rejects_w5_homozygous(self):
+        """Horse.from_string with W:W5/W5 must raise LethalGenotypeError."""
+        with self.assertRaises(LethalGenotypeError):
+            Horse.from_string(self._NEUTRAL.format(frame='n/n', w='W5/W5'))
+
+    def test_from_string_allows_w20_homozygous(self):
+        """W20/W20 is viable and must NOT raise."""
+        horse = Horse.from_string(self._NEUTRAL.format(frame='n/n', w='W20/W20'))
+        self.assertNotIn('NONVIABLE', horse.phenotype)
+        self.assertFalse(horse.is_lethal)
+
+    def test_from_string_allow_lethal_flag(self):
+        """allow_lethal=True creates a lethal horse without error."""
+        horse = Horse.from_string(
+            self._NEUTRAL.format(frame='O/O', w='n/n'),
+            allow_lethal=True
+        )
+        self.assertIn('NONVIABLE', horse.phenotype)
+        self.assertTrue(horse.is_lethal)
+
+    def test_breed_allows_lethal_offspring(self):
+        """Horse.breed() from two carriers must not raise for lethal offspring."""
+        parent1 = Horse.from_string(self._NEUTRAL.format(frame='O/n', w='n/n'))
+        parent2 = Horse.from_string(self._NEUTRAL.format(frame='O/n', w='n/n'))
+        # Breed many times — at least one should be lethal, none should raise
+        got_lethal = False
+        for _ in range(200):
+            foal = Horse.breed(parent1, parent2)
+            if foal.is_lethal:
+                got_lethal = True
+        self.assertTrue(got_lethal, "Expected some lethal offspring from O/n x O/n")
+
+    def test_is_lethal_property_false_for_normal_horse(self):
+        """is_lethal must be False for a normal horse."""
+        horse = Horse.from_string(self._NEUTRAL.format(frame='n/n', w='n/n'))
+        self.assertFalse(horse.is_lethal)
+
+    def test_check_lethal_genotype_returns_none_for_viable(self):
+        """check_lethal_genotype returns None for a viable genotype dict."""
+        genotype = {'frame': ('O', 'n'), 'dominant_white': ('n', 'n')}
+        self.assertIsNone(check_lethal_genotype(genotype))
+
+    def test_check_lethal_genotype_returns_description_for_lethal(self):
+        """check_lethal_genotype returns description string for lethal genotype."""
+        genotype = {'frame': ('O', 'O'), 'dominant_white': ('n', 'n')}
+        result = check_lethal_genotype(genotype)
+        self.assertIsNotNone(result)
+        self.assertIn('LWOS', result)
+
+
 class TestMultiGeneInteractions(unittest.TestCase):
     """Test interactions between multiple genes simultaneously.
 
@@ -1938,6 +2013,7 @@ def run_tests():
     suite.addTests(loader.loadTestsFromTestCase(TestBreedingStats))
     suite.addTests(loader.loadTestsFromTestCase(TestCSVRoundTrip))
     suite.addTests(loader.loadTestsFromTestCase(TestLethalBreedingOutcomes))
+    suite.addTests(loader.loadTestsFromTestCase(TestLethalValidation))
     suite.addTests(loader.loadTestsFromTestCase(TestMultiGeneInteractions))
 
     # Run tests with verbose output
