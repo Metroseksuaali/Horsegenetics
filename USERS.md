@@ -18,9 +18,9 @@ to be added to this list!
 2. Fill in the template with your project details
 3. The maintainer will add you to this list
 
-## License requirement
+## Credit (optional)
 
-Per the [license](LICENSE), publicly released projects that use this
-library should include a visible credit such as:
+This project uses the [MIT License](LICENSE) — no credit required.
+That said, a shout-out is warmly appreciated:
 
 > Horse genetics powered by [Horse Genetics](https://github.com/Metroseksuaali/Horsegenetics) by Metroseksuaali

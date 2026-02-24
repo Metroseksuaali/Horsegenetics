@@ -3,7 +3,7 @@
 A scientifically accurate horse color genetics simulator that generates random horses and enables breeding between two horses. The program works both in terminal and with a graphical user interface.
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: Custom](https://img.shields.io/badge/License-Horse%20Genetics%201.0-green.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 
 ## ✨ Features
@@ -331,7 +331,7 @@ python3 test_performance.py
 ## 🧪 Testing
 
 ```bash
-# Run all unit tests (65 tests)
+# Run all unit tests (118 tests)
 python3 test_genetics.py
 
 # Run performance benchmarks
@@ -400,7 +400,7 @@ Contributions welcome! Areas for improvement:
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file
+[MIT License](LICENSE) — free to use in any project.
 
 ## 📞 Support
 
@@ -456,13 +456,13 @@ This program simulates realistic horse coat color genetics using Mendelian inher
 
 ## 📋 License
 
-This project uses the **Horse Genetics License 1.0** — free to use, modify, and distribute.
-
-**If you use this in a published project** (game, app, website, etc.), please include a visible credit:
-
-> Horse genetics powered by [Horse Genetics](https://github.com/Metroseksuaali/Horsegenetics) by Metroseksuaali
+This project is licensed under the **MIT License** — free to use, modify, and distribute in any project (commercial or personal), no strings attached.
 
 See [LICENSE](LICENSE) for the full terms.
+
+**If you use this in a published project** (game, app, website, etc.), a shout-out is warmly appreciated but not required:
+
+> Horse genetics powered by [Horse Genetics](https://github.com/Metroseksuaali/Horsegenetics) by Metroseksuaali
 
 ## 🏆 Using Horse Genetics in your project?
 
