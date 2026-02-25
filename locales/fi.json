@@ -15,7 +15,7 @@
 
   "sidebar": {
     "title": "Hevosgenetiikka",
-    "version": "Simulaattori v2.1",
+    "version": "Simulaattori Beta 2.1",
     "language": "Kieli",
     "quick_stats": "Tilastot",
     "total_horses": "Hevosia yhteensä",
@@ -200,12 +200,12 @@
 
   "about": {
     "title": "Tietoja",
-    "subtitle": "Hevosgenetiikkasimulaattori v2.1",
+    "subtitle": "Hevosgenetiikkasimulaattori Beta 2.1",
     "tab_genetics": "🧬 Genetiikka",
     "tab_colors": "🎨 Värit",
     "tab_tech": "💻 Tekniikka",
     "genetics_title": "Tieteellisesti Tarkka Simulaatio",
-    "genetics_description": "Tämä simulaattori mallintaa **9 geneettistä ominaisuutta** vertaisarvioidun hevosgenetiikan tutkimuksen perusteella:",
+    "genetics_description": "Tämä simulaattori mallintaa **14 geneettistä ominaisuutta** vertaisarvioidun hevosgenetiikan tutkimuksen perusteella:",
     "genetics_1": "**Extension (E/e)** - Musta vs. punainen pigmentti",
     "genetics_2": "**Agouti (A/a)** - Mustan pigmentin jakautuminen",
     "genetics_3": "**Dilution (N/Cr/Prl)** - Cream- ja Pearl-laimennukset",
@@ -215,9 +215,14 @@
     "genetics_7": "**Flaxen (F/f)** - Vaaleuttaa harpan/hännän vain keltaisilla",
     "genetics_8": "**Sooty (STY/sty)** - Lisää tummempia karvoja",
     "genetics_9": "**Gray (G/g)** - Asteittainen harmaantuminen iän myötä",
+    "genetics_10": "**KIT (n/sb1/rn/to/W)** - Roan, Tobiano, Sabino & White -kuviot",
+    "genetics_11": "**Frame (O/n)** - Frame Overo -kuvio",
+    "genetics_12": "**Splash (Spl/n)** - Splash White -kuvio",
+    "genetics_13": "**Leopard (Lp/lp)** - Leopard Complex / Appaloosa",
+    "genetics_14": "**PATN1 (PATN1/n)** - Leopard Complexin kuviomuokkaaja",
     "mendelian": "Mendeliläinen Periytyminen",
     "mendelian_description": "Kumpikin vanhempi antaa yhden satunnaisen alleelin jokaisesta geenistä jälkeläiselle.\nMonimutkaiset geeni-interaktiot mallinnetaan tarkasti tieteellisen kirjallisuuden perusteella.",
-    "colors_title": "Yli 50 Erilaista Fenotyyppiä",
+    "colors_title": "Yli 100 Erilaista Fenotyyppiä",
     "colors_base": "**Perusvärit:**\n- Bay, Black, Chestnut",
     "colors_cream": "**Cream-laimennukset:**\n- Palomino, Buckskin, Smoky Black\n- Cremello, Perlino, Smoky Cream",
     "colors_pearl": "**Pearl-värit:**\n- Apricot, Pearl Bay, Smoky Pearl",
@@ -230,7 +235,7 @@
     "performance_title": "Suorituskyky",
     "performance_generation": "**Generointi:** >50 000 ops/sek",
     "performance_breeding": "**Jalostus:** >40 000 ops/sek",
-    "performance_tests": "**Testit:** 65/65 läpi",
+    "performance_tests": "**Testit:** 142/142 läpi",
     "performance_memory": "**Muisti:** ~184 tavua/hevonen",
     "total_genes": "Geenejä Yhteensä",
     "phenotypes": "Fenotyyppejä",
@@ -254,7 +259,7 @@
   },
 
   "footer": {
-    "made_with": "Hevosgenetiikkasimulaattori v2.1 | Tehty ❤️:llä",
+    "made_with": "Hevosgenetiikkasimulaattori Beta 2.1 | Tehty ❤️:llä",
     "github": "GitHub"
   }
 }

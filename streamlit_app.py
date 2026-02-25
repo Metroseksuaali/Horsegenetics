@@ -2029,6 +2029,11 @@ else:  # About
         7. {t('about.genetics_7', lang)}
         8. {t('about.genetics_8', lang)}
         9. {t('about.genetics_9', lang)}
+        10. {t('about.genetics_10', lang)}
+        11. {t('about.genetics_11', lang)}
+        12. {t('about.genetics_12', lang)}
+        13. {t('about.genetics_13', lang)}
+        14. {t('about.genetics_14', lang)}
 
         ### 🧮 {t('about.mendelian', lang)}
 
@@ -2075,11 +2080,11 @@ else:  # About
 
     col_metric1, col_metric2, col_metric3 = st.columns(3)
     with col_metric1:
-        st.metric(t('about.total_genes', lang), "9")
+        st.metric(t('about.total_genes', lang), "14")
     with col_metric2:
-        st.metric(t('about.phenotypes', lang), "50+")
+        st.metric(t('about.phenotypes', lang), "100+")
     with col_metric3:
-        st.metric(t('about.tests', lang), "65/65 ✅")
+        st.metric(t('about.tests', lang), "142/142 ✅")
 
 # Footer
 st.markdown("---")

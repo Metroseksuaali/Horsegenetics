@@ -15,7 +15,7 @@
 
   "sidebar": {
     "title": "Horse Genetics",
-    "version": "Simulator v2.1",
+    "version": "Simulator Beta 2.1",
     "language": "Language",
     "quick_stats": "Quick Stats",
     "total_horses": "Total Horses",
@@ -200,12 +200,12 @@
 
   "about": {
     "title": "About",
-    "subtitle": "Horse Genetics Simulator v2.1",
+    "subtitle": "Horse Genetics Simulator Beta 2.1",
     "tab_genetics": "🧬 Genetics",
     "tab_colors": "🎨 Colors",
     "tab_tech": "💻 Tech",
     "genetics_title": "Scientifically Accurate Simulation",
-    "genetics_description": "This simulator models **9 genetic traits** based on peer-reviewed equine genetics research:",
+    "genetics_description": "This simulator models **14 genetic traits** based on peer-reviewed equine genetics research:",
     "genetics_1": "**Extension (E/e)** - Black vs. red pigment production",
     "genetics_2": "**Agouti (A/a)** - Distribution of black pigment",
     "genetics_3": "**Dilution (N/Cr/Prl)** - Cream and Pearl dilutions",
@@ -215,9 +215,14 @@
     "genetics_7": "**Flaxen (F/f)** - Lightens mane/tail on chestnuts only",
     "genetics_8": "**Sooty (STY/sty)** - Adds darker hairs",
     "genetics_9": "**Gray (G/g)** - Progressive graying with age",
+    "genetics_10": "**KIT (n/sb1/rn/to/W)** - Roan, Tobiano, Sabino & White patterns",
+    "genetics_11": "**Frame (O/n)** - Frame Overo pattern",
+    "genetics_12": "**Splash (Spl/n)** - Splash White pattern",
+    "genetics_13": "**Leopard (Lp/lp)** - Leopard Complex / Appaloosa",
+    "genetics_14": "**PATN1 (PATN1/n)** - Pattern modifier for Leopard Complex",
     "mendelian": "Mendelian Inheritance",
     "mendelian_description": "Each parent contributes one random allele from each gene to the offspring.\nComplex gene interactions are modeled accurately based on scientific literature.",
-    "colors_title": "Over 50 Different Phenotypes",
+    "colors_title": "Over 100 Different Phenotypes",
     "colors_base": "**Base Colors:**\n- Bay, Black, Chestnut",
     "colors_cream": "**Cream Dilutes:**\n- Palomino, Buckskin, Smoky Black\n- Cremello, Perlino, Smoky Cream",
     "colors_pearl": "**Pearl Colors:**\n- Apricot, Pearl Bay, Smoky Pearl",
@@ -230,7 +235,7 @@
     "performance_title": "Performance",
     "performance_generation": "**Generation:** >50,000 ops/sec",
     "performance_breeding": "**Breeding:** >40,000 ops/sec",
-    "performance_tests": "**Tests:** 65/65 passing",
+    "performance_tests": "**Tests:** 142/142 passing",
     "performance_memory": "**Memory:** ~184 bytes/horse",
     "total_genes": "Total Genes",
     "phenotypes": "Phenotypes",
@@ -254,7 +259,7 @@
   },
 
   "footer": {
-    "made_with": "Horse Genetics Simulator v2.1 | Made with ❤️",
+    "made_with": "Horse Genetics Simulator Beta 2.1 | Made with ❤️",
     "github": "GitHub"
   }
 }
