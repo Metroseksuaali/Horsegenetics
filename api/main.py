@@ -45,7 +45,7 @@ from genetics.breeding_stats import (
 app = FastAPI(
     title="Horse Genetics Simulator API",
     description="Scientifically accurate horse coat color genetics simulator for game integration",
-    version="2.0.0",
+    version="Beta 2.1",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -200,7 +200,7 @@ async def root():
     """API root endpoint with welcome message."""
     return {
         "message": "Horse Genetics Simulator API",
-        "version": "2.0.0",
+        "version": "Beta 2.1",
         "documentation": "/docs",
         "endpoints": {
             "POST /api/random": "Generate random horse",
@@ -219,7 +219,7 @@ async def health_check():
     """Health check endpoint for monitoring."""
     return {
         "status": "healthy",
-        "version": "2.0.0",
+        "version": "Beta 2.1",
         "genes_loaded": len(registry.get_all_gene_names())
     }
 

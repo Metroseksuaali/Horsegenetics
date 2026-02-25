@@ -21,4 +21,4 @@ __all__ = [
     'get_default_registry',
     'PhenotypeCalculator',
 ]
-__version__ = '2.0.0'
+__version__ = 'Beta 2.1'

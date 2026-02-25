@@ -326,7 +326,7 @@ def main():
     parser.add_argument(
         '--version', '-v',
         action='version',
-        version='Horse Genetics Simulator v2.0.0'
+        version='Horse Genetics Simulator Beta 2.1'
     )
 
     args = parser.parse_args()
