@@ -150,25 +150,16 @@ class GeneRegistry:
             # Roan/Leopard uncommon (5-10%), Frame rare (3-7%), Splash/Champagne very rare (2-5%),
             # Dominant White extremely rare (1-3%)
 
-            elif gene.name == 'dominant_white':
-                # Dominant White: extremely rare (~1-3% population)
-                # "Quite rare, only handful of families" - research
-                if random.random() < 0.99:  # 99% chance of 'n' per allele → ~2% DW
-                    allele1 = 'n'
-                else:
-                    w_alleles = [a for a in gene.alleles if a != 'n']
-                    allele1 = random.choice(w_alleles)
-
-                if random.random() < 0.99:
-                    allele2 = 'n'
-                else:
-                    w_alleles = [a for a in gene.alleles if a != 'n']
-                    allele2 = random.choice(w_alleles)
+            elif gene.name == 'kit':
+                # KIT gene: single locus with multiple alleles
+                # Alleles: n (wild-type), sb1 (sabino), rn (roan), to (tobiano), W alleles (dominant white)
+                # Weighted random selection reflecting real-world frequencies
+                allele1 = self._random_kit_allele(gene)
+                allele2 = self._random_kit_allele(gene)
 
             elif gene.name == 'frame':
                 # Frame Overo: rare (~3-7% population pure Frame, additional Tovero combinations)
                 # "Rare in most breeds except Paint" - research
-                # Note: Tovero (Tobiano + Frame) will add to total Frame count
                 if random.random() < 0.98:  # 98% chance of 'n' → ~4% pure Frame
                     allele1 = 'n'
                 else:
@@ -178,32 +169,6 @@ class GeneRegistry:
                     allele2 = 'n'
                 else:
                     allele2 = 'O'
-
-            elif gene.name == 'tobiano':
-                # Tobiano: moderately common (~15-25% population)
-                # Common in Paint, moderate elsewhere
-                if random.random() < 0.88:  # 88% chance of 'n' → ~23% Tobiano
-                    allele1 = 'n'
-                else:
-                    allele1 = 'To'
-
-                if random.random() < 0.88:
-                    allele2 = 'n'
-                else:
-                    allele2 = 'To'
-
-            elif gene.name == 'sabino':
-                # Sabino: common (~25-35% population)
-                # "Extremely widespread, found in virtually all breeds" - research
-                if random.random() < 0.80:  # 80% chance of 'n' → ~36% Sabino
-                    allele1 = 'n'
-                else:
-                    allele1 = 'Sb1'
-
-                if random.random() < 0.80:
-                    allele2 = 'n'
-                else:
-                    allele2 = 'Sb1'
 
             elif gene.name == 'splash':
                 # Splash White: very rare (~2-5% population)
@@ -219,19 +184,6 @@ class GeneRegistry:
                 else:
                     splash_alleles = [a for a in gene.alleles if a != 'n']
                     allele2 = random.choice(splash_alleles)
-
-            elif gene.name == 'roan':
-                # Roan: uncommon (~5-10% population)
-                # "Rare in Icelandic horse population" - research
-                if random.random() < 0.962:  # 96.2% chance of 'n' → ~7.5% Roan
-                    allele1 = 'n'
-                else:
-                    allele1 = 'Rn'
-
-                if random.random() < 0.962:
-                    allele2 = 'n'
-                else:
-                    allele2 = 'Rn'
 
             elif gene.name == 'leopard':
                 # Leopard/Appaloosa: uncommon (~5-10% general population)
@@ -309,12 +261,9 @@ class GeneRegistry:
             'agouti': 'a',
             'dilution': 'N',
             'dun': 'nd2',
-            'dominant_white': 'n',
+            'kit': 'n',
             'frame': 'n',
-            'tobiano': 'n',
-            'sabino': 'n',
             'splash': 'n',
-            'roan': 'n',
             'leopard': 'lp',
             'gray': 'g',
             'champagne': 'n',
@@ -322,6 +271,32 @@ class GeneRegistry:
             'sooty': 'sty'
         }
         return wildtype_map.get(gene.name, gene.alleles[0])
+
+    def _random_kit_allele(self, gene: GeneDefinition) -> str:
+        """
+        Return a random KIT allele with realistic frequency weights.
+
+        Most horses are n/n. KIT pattern alleles are relatively rare.
+        Frequencies approximate real-world population genetics:
+        - n (wild-type): ~80%
+        - sb1 (sabino): ~8%
+        - rn (roan): ~5%
+        - to (tobiano): ~5%
+        - W alleles (dominant white): ~2% total
+        """
+        roll = random.random()
+        if roll < 0.80:
+            return 'n'
+        elif roll < 0.88:
+            return 'sb1'
+        elif roll < 0.93:
+            return 'rn'
+        elif roll < 0.98:
+            return 'to'
+        else:
+            # Dominant White — pick a random W allele
+            w_alleles = [a for a in gene.alleles if a.startswith('W')]
+            return random.choice(w_alleles)
 
     def _generate_with_custom_probability(
         self, gene: GeneDefinition, probability: float
@@ -553,7 +528,7 @@ class GeneRegistry:
                     error_text += f"  • {info}\n"
 
             error_text += "\nExpected format:\n"
-            error_text += "  E:E/e A:A/a Dil:N/Cr D:D/nd1 Z:n/n Ch:n/n F:F/f STY:STY/sty G:G/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+            error_text += "  E:E/e A:A/a Dil:N/Cr D:D/nd1 Z:n/n Ch:n/n F:F/f STY:STY/sty G:G/g KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
 
             raise ValueError(error_text)
 

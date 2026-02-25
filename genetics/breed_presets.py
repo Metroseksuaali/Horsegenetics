@@ -44,30 +44,25 @@ REALISTIC_BREEDS = {
     'arabian': BreedPreset(
         name="Arabian",
         description="Ancient desert breed - grays common, no heavy patterns",
-        excluded_genes={'tobiano', 'frame', 'splash', 'leopard'},
+        excluded_genes={'kit', 'frame', 'splash', 'leopard'},
         custom_probabilities={
             'gray': 0.5,      # 75% gray (very common in Arabians)
-            'roan': 0.99,     # Very rare
-            'sabino': 0.85,   # Some sabino
         }
     ),
 
     'thoroughbred': BreedPreset(
         name="Thoroughbred",
         description="Racing breed - solid colors, minimal white",
-        excluded_genes={'tobiano', 'frame', 'splash', 'leopard', 'roan', 'champagne'},
+        excluded_genes={'kit', 'frame', 'splash', 'leopard', 'champagne'},
         custom_probabilities={
             'gray': 0.92,     # Uncommon but exists
-            'sabino': 0.9,    # Minimal white
-            'dominant_white': 0.999,  # Extremely rare
         }
     ),
 
     'friesian': BreedPreset(
         name="Friesian",
         description="Dutch breed - only black, no white patterns",
-        excluded_genes={'gray', 'tobiano', 'frame', 'splash', 'leopard', 'roan',
-                       'sabino', 'champagne', 'dominant_white'},
+        excluded_genes={'gray', 'kit', 'frame', 'splash', 'leopard', 'champagne'},
         custom_probabilities={}
     ),
 
@@ -76,9 +71,7 @@ REALISTIC_BREEDS = {
         description="American breed - tobiano and overo patterns common",
         excluded_genes={'leopard', 'champagne'},
         custom_probabilities={
-            'tobiano': 0.4,   # 84% tobiano (very common)
             'frame': 0.9,     # 19% frame (common in Paint)
-            'sabino': 0.7,    # Common
             'splash': 0.9,    # Some splash
             'gray': 0.95,     # Less common
         }
@@ -87,11 +80,9 @@ REALISTIC_BREEDS = {
     'appaloosa': BreedPreset(
         name="Appaloosa",
         description="American spotted breed - leopard patterns",
-        excluded_genes={'tobiano', 'frame'},
+        excluded_genes={'frame'},
         custom_probabilities={
             'leopard': 0.3,   # 91% leopard (breed defining)
-            'roan': 0.85,     # Some roan
-            'sabino': 0.8,    # Common
             'gray': 0.95,     # Uncommon
         }
     ),
@@ -99,12 +90,9 @@ REALISTIC_BREEDS = {
     'quarter_horse': BreedPreset(
         name="Quarter Horse",
         description="American stock horse - solid colors, some roan",
-        excluded_genes={'tobiano', 'frame', 'splash', 'leopard', 'champagne'},
+        excluded_genes={'frame', 'splash', 'leopard', 'champagne'},
         custom_probabilities={
-            'roan': 0.88,     # 23% roan (relatively common)
-            'sabino': 0.85,   # Some white
             'gray': 0.95,     # Uncommon
-            'dominant_white': 0.999,
         }
     ),
 
@@ -113,11 +101,8 @@ REALISTIC_BREEDS = {
         description="Nordic breed - all colors, minimal tobiano",
         excluded_genes={'frame', 'leopard'},
         custom_probabilities={
-            'tobiano': 0.98,   # Very rare
-            'roan': 0.88,      # Present but not common
             'champagne': 0.98, # Very rare
             'gray': 0.8,       # Common
-            'sabino': 0.75,    # Common
         }
     ),
 }
@@ -131,11 +116,9 @@ FANTASY_BREEDS = {
     'unicorn': BreedPreset(
         name="Unicorn",
         description="Magical - mostly white and gray, ethereal colors",
-        excluded_genes={'leopard', 'roan'},
+        excluded_genes={'leopard'},
         custom_probabilities={
-            'dominant_white': 0.7,  # 51% white (magical)
             'gray': 0.6,            # 64% gray (ethereal)
-            'sabino': 0.5,          # Lots of white
             'splash': 0.8,          # Some splash
             'champagne': 0.9,       # Diluted colors
         }
@@ -144,33 +127,25 @@ FANTASY_BREEDS = {
     'shadow_steed': BreedPreset(
         name="Shadow Steed",
         description="Dark fantasy - blacks, grays, minimal white",
-        excluded_genes={'tobiano', 'frame', 'splash', 'leopard', 'sabino',
-                       'dominant_white', 'champagne'},
+        excluded_genes={'kit', 'frame', 'splash', 'leopard', 'champagne'},
         custom_probabilities={
             'gray': 0.7,  # 51% gray (mysterious)
-            'roan': 0.92, # Rare
         }
     ),
 
     'wildfire': BreedPreset(
         name="Wildfire",
         description="Fiery colors - chestnuts, palominos, no grays/whites",
-        excluded_genes={'gray', 'dominant_white', 'tobiano', 'frame', 'splash',
-                       'leopard', 'champagne'},
-        custom_probabilities={
-            'sabino': 0.9,  # Minimal white
-            'roan': 0.95,   # Rare
-        }
+        excluded_genes={'gray', 'kit', 'frame', 'splash', 'leopard', 'champagne'},
+        custom_probabilities={}
     ),
 
     'leopard_spirit': BreedPreset(
         name="Leopard Spirit",
         description="Spotted fantasy breed - all leopard patterns",
-        excluded_genes={'tobiano', 'frame', 'gray', 'dominant_white'},
+        excluded_genes={'frame', 'gray'},
         custom_probabilities={
             'leopard': 0.1,   # 99% leopard (breed defining)
-            'roan': 0.7,      # Some roan-leopard combos
-            'sabino': 0.7,    # Some white
             'champagne': 0.85, # Some dilution
         }
     ),
@@ -180,12 +155,9 @@ FANTASY_BREEDS = {
         description="Maximum pinto - all white patterns combined",
         excluded_genes={'leopard'},
         custom_probabilities={
-            'tobiano': 0.3,   # 91% tobiano
             'frame': 0.8,     # 36% frame
-            'sabino': 0.4,    # 84% sabino
             'splash': 0.7,    # 51% splash
             'gray': 0.9,      # Some gray
-            'roan': 0.88,     # Some roan
         }
     ),
 }

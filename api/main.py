@@ -63,9 +63,9 @@ app.add_middleware(
 registry = get_default_registry()
 calculator = PhenotypeCalculator(registry)
 
-# Example genotype string with all 17 genes (used in API documentation)
-_EXAMPLE_GENOTYPE = "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
-_EXAMPLE_GENOTYPE_2 = "E:e/e A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+# Example genotype string with all 14 genes (used in API documentation)
+_EXAMPLE_GENOTYPE = "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+_EXAMPLE_GENOTYPE_2 = "E:e/e A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
 
 
 # ============================================================================
@@ -83,9 +83,8 @@ class HorseResponse(BaseModel):
                 "dilution": ["N", "Cr"], "dun": ["nd2", "nd2"],
                 "silver": ["n", "n"], "champagne": ["n", "n"],
                 "flaxen": ["F", "f"], "sooty": ["sty", "sty"],
-                "gray": ["g", "g"], "roan": ["n", "n"],
-                "tobiano": ["n", "n"], "frame": ["n", "n"],
-                "sabino": ["n", "n"], "dominant_white": ["n", "n"],
+                "gray": ["g", "g"], "kit": ["n", "n"],
+                "frame": ["n", "n"],
                 "splash": ["n", "n"], "leopard": ["lp", "lp"],
                 "patn1": ["n", "n"]
             }

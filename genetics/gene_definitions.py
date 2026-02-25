@@ -182,28 +182,24 @@ GRAY = GeneDefinition(
     effects='G = horse born with base color, progressively grays/whitens with age'
 )
 
-ROAN = GeneDefinition(
-    name='roan',
-    symbol='Rn',
-    full_name='Roan',
+KIT = GeneDefinition(
+    name='kit',
+    symbol='KIT',
+    full_name='KIT',
     locus='KIT',
-    alleles=['Rn', 'n'],
-    dominance_order={'Rn': 10, 'n': 1},
+    alleles=['n', 'sb1', 'rn', 'to', 'W1', 'W5', 'W10', 'W13', 'W20', 'W22'],
+    dominance_order={
+        'W1': 100, 'W5': 99, 'W10': 98, 'W13': 97, 'W20': 96, 'W22': 95,
+        'to': 50, 'rn': 40, 'sb1': 30, 'n': 1
+    },
     inheritance_pattern=InheritancePattern.DOMINANT,
-    description='Intermingled white and colored hairs throughout coat. Historically thought lethal when homozygous, but recent research shows Rn/Rn horses are viable.',
-    effects='Rn/Rn or Rn/n = roan pattern (white hairs evenly intermixed), n/n = solid. Note: Homozygous roans may be less common due to historical beliefs.'
-)
-
-TOBIANO = GeneDefinition(
-    name='tobiano',
-    symbol='To',
-    full_name='Tobiano',
-    locus='KIT',
-    alleles=['To', 'n'],
-    dominance_order={'To': 10, 'n': 1},
-    inheritance_pattern=InheritancePattern.DOMINANT,
-    description='White spotting pattern with rounded edges, white crosses back',
-    effects='To/To or To/n = tobiano pattern (white patches with clean edges). Crosses back between withers and tail.'
+    description='KIT gene controls multiple white patterns: Roan (rn), Tobiano (to), Sabino (sb1), '
+                'and Dominant White (W alleles). A horse has exactly 2 KIT alleles, so patterns like '
+                'Tobiano + Roan (to/rn) are possible but Tobiano + Roan + Sabino requires 3 alleles '
+                'and is impossible in a diploid organism.',
+    effects='n/n = solid, sb1/n = sabino, sb1/sb1 = maximum sabino (mostly white), '
+            'rn/n or rn/rn = roan, to/n or to/to = tobiano, to/rn = tobiano roan, '
+            'W_/n = dominant white, W1/W1 etc = LETHAL (except W20/W20 = viable)'
 )
 
 FRAME_OVERO = GeneDefinition(
@@ -216,30 +212,6 @@ FRAME_OVERO = GeneDefinition(
     inheritance_pattern=InheritancePattern.DOMINANT,
     description='White spotting pattern, rarely crosses back. LETHAL when homozygous (LWOS).',
     effects='O/n = frame overo pattern (white usually horizontal), O/O = LETHAL (Lethal White Overo Syndrome), n/n = solid'
-)
-
-SABINO = GeneDefinition(
-    name='sabino',
-    symbol='Sb',
-    full_name='Sabino',
-    locus='KIT',
-    alleles=['Sb1', 'n'],
-    dominance_order={'Sb1': 10, 'n': 1},
-    inheritance_pattern=InheritancePattern.INCOMPLETE_DOMINANT,
-    description='White spotting with irregular edges, high white on legs, white face',
-    effects='Sb1/Sb1 = maximum sabino (often mostly white), Sb1/n = sabino pattern, n/n = solid'
-)
-
-DOMINANT_WHITE = GeneDefinition(
-    name='dominant_white',
-    symbol='W',
-    full_name='Dominant White',
-    locus='KIT',
-    alleles=['W1', 'W5', 'W10', 'W13', 'W20', 'W22', 'n'],
-    dominance_order={'W1': 10, 'W5': 9, 'W10': 8, 'W13': 7, 'W20': 6, 'W22': 5, 'n': 1},
-    inheritance_pattern=InheritancePattern.DOMINANT,
-    description='White or mostly white coat. Multiple alleles (W1-W39 exist). Most are LETHAL when homozygous.',
-    effects='W_/n = white/mostly white, W20/W20 = viable white, W1/W1, W5/W5, W10/W10, W13/W13, W22/W22 = LETHAL (embryonic death)'
 )
 
 SPLASH_WHITE = GeneDefinition(
@@ -294,11 +266,8 @@ ALL_GENES: List[GeneDefinition] = [
     FLAXEN,
     SOOTY,
     GRAY,
-    ROAN,
-    TOBIANO,
+    KIT,
     FRAME_OVERO,
-    SABINO,
-    DOMINANT_WHITE,
     SPLASH_WHITE,
     LEOPARD_COMPLEX,
     PATN1
@@ -355,11 +324,11 @@ LETHAL_COMBINATIONS: Dict[str, Dict[str, Any]] = {
         'genotypes': [('O', 'O')],
         'description': 'Lethal White Overo Syndrome (LWOS)',
     },
-    'dominant_white': {
+    'kit': {
         'genotypes': [
             ('W1', 'W1'), ('W5', 'W5'), ('W10', 'W10'),
             ('W13', 'W13'), ('W22', 'W22'),
         ],
-        'description': 'Homozygous Dominant White - embryonic lethal',
+        'description': 'Homozygous Dominant White (KIT) - embryonic lethal',
     },
 }

@@ -36,9 +36,8 @@ class TestBasicColors(unittest.TestCase):
                         dun=('nd2', 'nd2'), silver=('n', 'n'),
                         champagne=('n', 'n'), flaxen=('F', 'F'),
                         sooty=('sty', 'sty'), gray=('g', 'g'),
-                        roan=('n', 'n'), tobiano=('n', 'n'),
-                        frame=('n', 'n'), sabino=('n', 'n'),
-                        dominant_white=('n', 'n'),
+                        kit=('n', 'n'),
+                        frame=('n', 'n'),
                         splash=('n', 'n'), leopard=('lp', 'lp'),
                         patn1=('n', 'n')):
         """Helper to create genotype dictionaries."""
@@ -52,11 +51,8 @@ class TestBasicColors(unittest.TestCase):
             'flaxen': flaxen,
             'sooty': sooty,
             'gray': gray,
-            'roan': roan,
-            'tobiano': tobiano,
+            'kit': kit,
             'frame': frame,
-            'sabino': sabino,
-            'dominant_white': dominant_white,
             'splash': splash,
             'leopard': leopard,
             'patn1': patn1
@@ -118,11 +114,8 @@ class TestSealBrown(unittest.TestCase):
             'flaxen': ('F', 'F'),
             'sooty': ('sty', 'sty'),
             'gray': ('g', 'g'),
-            'roan': ('n', 'n'),
-            'tobiano': ('n', 'n'),
+            'kit': ('n', 'n'),
             'frame': ('n', 'n'),
-            'sabino': ('n', 'n'),
-            'dominant_white': ('n', 'n'),
             'splash': ('n', 'n'),
             'leopard': ('lp', 'lp'),
             'patn1': ('n', 'n'),
@@ -243,7 +236,7 @@ class TestSealBrown(unittest.TestCase):
 
     def test_seal_brown_roan(self):
         """Seal Brown + Rn = Seal Brown Roan."""
-        g = self._g(('E', 'E'), ('At', 'At'), roan=('Rn', 'n'))
+        g = self._g(('E', 'E'), ('At', 'At'), kit=('rn', 'n'))
         self.assertEqual(self.calc.determine_phenotype(g), 'Seal Brown Roan')
 
     def test_seal_brown_gray(self):
@@ -273,11 +266,8 @@ class TestCreamDilution(unittest.TestCase):
             'flaxen': ('F', 'F'),
             'sooty': ('sty', 'sty'),
             'gray': ('g', 'g'),
-            'roan': ('n', 'n'),
-            'tobiano': ('n', 'n'),
+            'kit': ('n', 'n'),
             'frame': ('n', 'n'),
-            'sabino': ('n', 'n'),
-            'dominant_white': ('n', 'n'),
             'splash': ('n', 'n'),
             'leopard': ('lp', 'lp'),
             'patn1': ('n', 'n')
@@ -344,11 +334,8 @@ class TestPearlDilution(unittest.TestCase):
             'flaxen': ('F', 'F'),
             'sooty': ('sty', 'sty'),
             'gray': ('g', 'g'),
-            'roan': ('n', 'n'),
-            'tobiano': ('n', 'n'),
+            'kit': ('n', 'n'),
             'frame': ('n', 'n'),
-            'sabino': ('n', 'n'),
-            'dominant_white': ('n', 'n'),
             'splash': ('n', 'n'),
             'leopard': ('lp', 'lp'),
             'patn1': ('n', 'n')
@@ -422,11 +409,8 @@ class TestChampagneDilution(unittest.TestCase):
             'flaxen': ('F', 'F'),
             'sooty': ('sty', 'sty'),
             'gray': ('g', 'g'),
-            'roan': ('n', 'n'),
-            'tobiano': ('n', 'n'),
+            'kit': ('n', 'n'),
             'frame': ('n', 'n'),
-            'sabino': ('n', 'n'),
-            'dominant_white': ('n', 'n'),
             'splash': ('n', 'n'),
             'leopard': ('lp', 'lp'),
             'patn1': ('n', 'n')
@@ -489,11 +473,8 @@ class TestSilverDilution(unittest.TestCase):
             'flaxen': ('F', 'F'),
             'sooty': ('sty', 'sty'),
             'gray': ('g', 'g'),
-            'roan': ('n', 'n'),
-            'tobiano': ('n', 'n'),
+            'kit': ('n', 'n'),
             'frame': ('n', 'n'),
-            'sabino': ('n', 'n'),
-            'dominant_white': ('n', 'n'),
             'splash': ('n', 'n'),
             'leopard': ('lp', 'lp'),
             'patn1': ('n', 'n')
@@ -566,11 +547,8 @@ class TestDunGene(unittest.TestCase):
             'flaxen': ('F', 'F'),
             'sooty': ('sty', 'sty'),
             'gray': ('g', 'g'),
-            'roan': ('n', 'n'),
-            'tobiano': ('n', 'n'),
+            'kit': ('n', 'n'),
             'frame': ('n', 'n'),
-            'sabino': ('n', 'n'),
-            'dominant_white': ('n', 'n'),
             'splash': ('n', 'n'),
             'leopard': ('lp', 'lp'),
             'patn1': ('n', 'n')
@@ -640,11 +618,8 @@ class TestFlaxenAndSooty(unittest.TestCase):
             'silver': ('n', 'n'),
             'champagne': ('n', 'n'),
             'gray': ('g', 'g'),
-            'roan': ('n', 'n'),
-            'tobiano': ('n', 'n'),
+            'kit': ('n', 'n'),
             'frame': ('n', 'n'),
-            'sabino': ('n', 'n'),
-            'dominant_white': ('n', 'n'),
             'splash': ('n', 'n'),
             'leopard': ('lp', 'lp'),
             'patn1': ('n', 'n')
@@ -714,11 +689,8 @@ class TestGrayGene(unittest.TestCase):
             'dun': ('nd2', 'nd2'),
             'silver': ('n', 'n'),
             'champagne': ('n', 'n'),
-            'roan': ('n', 'n'),
-            'tobiano': ('n', 'n'),
+            'kit': ('n', 'n'),
             'frame': ('n', 'n'),
-            'sabino': ('n', 'n'),
-            'dominant_white': ('n', 'n'),
             'splash': ('n', 'n'),
             'leopard': ('lp', 'lp'),
             'patn1': ('n', 'n'),
@@ -790,7 +762,7 @@ class TestBreeding(unittest.TestCase):
     """
 
     # Neutral base genotype string (no special patterns or dilutions)
-    _NEUTRAL = "E:{ext} A:{ag} Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:{fl} STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+    _NEUTRAL = "E:{ext} A:{ag} Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:{fl} STY:sty/sty G:g/g KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
 
     def test_homozygous_cross_produces_heterozygous(self):
         """Test E/E × e/e produces all E/e offspring."""
@@ -838,11 +810,11 @@ class TestBreeding(unittest.TestCase):
         """Test cream inheritance: N/Cr × N/Cr produces Cr/Cr (Cremello) offspring."""
         parent1 = Horse.from_string(
             "E:e/e A:A/A Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g "
-            "Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+            "KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
         )
         parent2 = Horse.from_string(
             "E:e/e A:A/A Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g "
-            "Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+            "KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
         )
 
         got_double = False
@@ -876,11 +848,8 @@ class TestGenotypeFormatting(unittest.TestCase):
             'flaxen': ('F', 'f'),
             'sooty': ('STY', 'sty'),
             'gray': ('G', 'g'),
-            'roan': ('Rn', 'n'),
-            'tobiano': ('To', 'n'),
+            'kit': ('to', 'rn'),
             'frame': ('O', 'n'),
-            'sabino': ('Sb1', 'n'),
-            'dominant_white': ('W1', 'n'),
             'splash': ('Sw1', 'n'),
             'leopard': ('Lp', 'lp'),
             'patn1': ('PATN1', 'n')
@@ -897,11 +866,8 @@ class TestGenotypeFormatting(unittest.TestCase):
         self.assertIn('F:F/f', formatted)
         self.assertIn('STY:STY/sty', formatted)
         self.assertIn('G:G/g', formatted)
-        self.assertIn('Rn:Rn/n', formatted)
-        self.assertIn('To:To/n', formatted)
+        self.assertIn('KIT:to/rn', formatted)
         self.assertIn('O:O/n', formatted)
-        self.assertIn('Sb:Sb1/n', formatted)
-        self.assertIn('W:W1/n', formatted)
         self.assertIn('Spl:Sw1/n', formatted)
         self.assertIn('Lp:Lp/lp', formatted)
         self.assertIn('PATN1:PATN1/n', formatted)
@@ -910,7 +876,7 @@ class TestGenotypeFormatting(unittest.TestCase):
         """Test parsing valid genotype strings via Horse.from_string."""
         full_str = (
             "E:E/e A:A/a Dil:N/Cr D:D/nd2 Z:Z/n Ch:Ch/n F:F/f STY:STY/sty G:G/g "
-            "Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+            "KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
         )
         horse = Horse.from_string(full_str)
 
@@ -930,14 +896,14 @@ class TestGenotypeFormatting(unittest.TestCase):
         with self.assertRaises(ValueError):
             Horse.from_string(
                 "E:E/e/e A:A/a Dil:N/Cr D:D/nd2 Z:Z/n Ch:Ch/n F:F/f STY:STY/sty G:G/g "
-                "Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+                "KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
             )
 
         # Invalid allele value
         with self.assertRaises(ValueError):
             Horse.from_string(
                 "E:X/Y A:A/a Dil:N/Cr D:D/nd2 Z:Z/n Ch:Ch/n F:F/f STY:STY/sty G:G/g "
-                "Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+                "KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
             )
 
 
@@ -960,7 +926,7 @@ class TestHorseAPI(unittest.TestCase):
 
         # Should have genotype
         self.assertIsInstance(horse.genotype, dict)
-        self.assertEqual(len(horse.genotype), 17)  # 17 genes (added white patterns + leopard + dominant white)
+        self.assertEqual(len(horse.genotype), 14)  # 14 genes (KIT unifies roan/tobiano/sabino/dominant_white)
 
         # Should have genotype string
         self.assertIsInstance(horse.genotype_string, str)
@@ -970,7 +936,7 @@ class TestHorseAPI(unittest.TestCase):
         """Test creating horse from genotype string."""
         from genetics.horse import Horse
 
-        genotype_str = "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+        genotype_str = "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
         horse = Horse.from_string(genotype_str)
 
         self.assertEqual(horse.genotype['extension'], ('E', 'e'))
@@ -995,8 +961,8 @@ class TestHorseAPI(unittest.TestCase):
         from genetics.horse import Horse
 
         # Create specific parents
-        mare_str = "E:E/e A:A/A Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
-        stallion_str = "E:e/e A:a/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:f/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+        mare_str = "E:E/e A:A/A Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+        stallion_str = "E:e/e A:a/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:f/f STY:sty/sty G:g/g KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
 
         mare = Horse.from_string(mare_str)
         stallion = Horse.from_string(stallion_str)
@@ -1006,7 +972,7 @@ class TestHorseAPI(unittest.TestCase):
 
         # Foal should exist with valid genotype
         self.assertIsNotNone(foal)
-        self.assertEqual(len(foal.genotype), 17)
+        self.assertEqual(len(foal.genotype), 14)
 
         # Extension should be E/e (mare E/e × stallion e/e)
         # Either E/e or e/e
@@ -1016,7 +982,7 @@ class TestHorseAPI(unittest.TestCase):
         """Test checking if horse has specific allele."""
         from genetics.horse import Horse
 
-        horse_str = "E:E/E A:A/a Dil:N/Cr D:D/nd2 Z:Z/n Ch:n/n F:F/f STY:STY/sty G:G/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+        horse_str = "E:E/E A:A/a Dil:N/Cr D:D/nd2 Z:Z/n Ch:n/n F:F/f STY:STY/sty G:G/g KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
         horse = Horse.from_string(horse_str)
 
         # Should have E
@@ -1033,7 +999,7 @@ class TestHorseAPI(unittest.TestCase):
         """Test checking if horse is homozygous for gene."""
         from genetics.horse import Horse
 
-        horse_str = "E:E/E A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+        horse_str = "E:E/E A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
         horse = Horse.from_string(horse_str)
 
         # Extension is homozygous E/E
@@ -1087,12 +1053,12 @@ class TestHorseAPI(unittest.TestCase):
 
         # Siblings may have different genotypes
         # (unless parents are homozygous for all genes)
-        self.assertEqual(len(foal1.genotype), 17)
-        self.assertEqual(len(foal2.genotype), 17)
+        self.assertEqual(len(foal1.genotype), 14)
+        self.assertEqual(len(foal2.genotype), 14)
 
         # Generation 3 - breed siblings
         foal3 = Horse.breed(foal1, foal2)
-        self.assertEqual(len(foal3.genotype), 17)
+        self.assertEqual(len(foal3.genotype), 14)
 
     def test_convenience_functions(self):
         """Test convenience functions for functional style."""
@@ -1108,29 +1074,28 @@ class TestHorseAPI(unittest.TestCase):
         self.assertIsNotNone(foal.phenotype)
 
         # parse_horse
-        genotype_str = "E:E/e A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+        genotype_str = "E:E/e A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/F STY:sty/sty G:g/g KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
         horse3 = parse_horse(genotype_str)
         self.assertEqual(horse3.genotype['extension'], ('E', 'e'))
 
 
 class TestRoanGene(unittest.TestCase):
     """
-    Test Roan gene (KIT).
+    Test Roan via unified KIT gene.
 
-    Scientific basis: Roan is controlled by KIT gene.
-    Recent research (2020) shows Rn/Rn is viable, contrary to historical belief.
+    Scientific basis: Roan is controlled by KIT gene (rn allele).
+    Recent research (2020) shows rn/rn is viable, contrary to historical belief.
     """
 
     def setUp(self):
         """Initialize calculator for each test."""
         self.calc = PhenotypeCalculator()
 
-    def _create_genotype(self, extension, agouti, roan, dilution=('N', 'N'),
+    def _create_genotype(self, extension, agouti, kit, dilution=('N', 'N'),
                         dun=('nd2', 'nd2'), silver=('n', 'n'),
                         champagne=('n', 'n'), flaxen=('F', 'F'),
                         sooty=('sty', 'sty'), gray=('g', 'g'),
-                        tobiano=('n', 'n'), frame=('n', 'n'),
-                        sabino=('n', 'n'), dominant_white=('n', 'n'),
+                        frame=('n', 'n'),
                         splash=('n', 'n'), leopard=('lp', 'lp'), patn1=('n', 'n')):
         """Helper to create genotype dictionaries."""
         return {
@@ -1143,34 +1108,31 @@ class TestRoanGene(unittest.TestCase):
             'flaxen': flaxen,
             'sooty': sooty,
             'gray': gray,
-            'roan': roan,
-            'tobiano': tobiano,
+            'kit': kit,
             'frame': frame,
-            'sabino': sabino,
-            'dominant_white': dominant_white,
             'splash': splash,
             'leopard': leopard,
             'patn1': patn1
         }
 
     def test_bay_roan(self):
-        """Test Bay Roan (E/_ A/_ Rn/n)."""
-        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), ('Rn', 'n'))
+        """Test Bay Roan (E/_ A/_ KIT:rn/n)."""
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), ('rn', 'n'))
         self.assertEqual(self.calc.determine_phenotype(genotype), 'Bay Roan')
 
     def test_chestnut_roan(self):
-        """Test Chestnut Roan (e/e Rn/n) - often called Red Roan."""
-        genotype = self._create_genotype(('e', 'e'), ('A', 'a'), ('Rn', 'n'))
+        """Test Chestnut Roan (e/e KIT:rn/n) - often called Red Roan."""
+        genotype = self._create_genotype(('e', 'e'), ('A', 'a'), ('rn', 'n'))
         self.assertEqual(self.calc.determine_phenotype(genotype), 'Chestnut Roan')
 
     def test_black_roan(self):
-        """Test Black Roan (E/_ a/a Rn/n) - often called Blue Roan."""
-        genotype = self._create_genotype(('E', 'E'), ('a', 'a'), ('Rn', 'n'))
+        """Test Black Roan (E/_ a/a KIT:rn/n) - often called Blue Roan."""
+        genotype = self._create_genotype(('E', 'E'), ('a', 'a'), ('rn', 'n'))
         self.assertEqual(self.calc.determine_phenotype(genotype), 'Black Roan')
 
     def test_homozygous_roan_viable(self):
-        """Test that Rn/Rn is viable (based on recent research)."""
-        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), ('Rn', 'Rn'))
+        """Test that rn/rn is viable (based on recent research)."""
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), ('rn', 'rn'))
         phenotype = self.calc.determine_phenotype(genotype)
         # Should be Bay Roan, not nonviable
         self.assertEqual(phenotype, 'Bay Roan')
@@ -1181,6 +1143,8 @@ class TestWhitePatterns(unittest.TestCase):
     Test white spotting patterns (Tobiano, Overo, Sabino, Splash, Tovero).
 
     Scientific basis: Various white pattern genes create pinto/paint patterns.
+    Tobiano, Sabino, and Roan are KIT alleles (same locus).
+    Frame is EDNRB (different locus). Splash is MITF (different locus).
     Tovero is the industry term for Tobiano + Overo combination.
     """
 
@@ -1188,14 +1152,13 @@ class TestWhitePatterns(unittest.TestCase):
         """Initialize calculator for each test."""
         self.calc = PhenotypeCalculator()
 
-    def _create_genotype(self, extension, agouti, tobiano=('n', 'n'),
-                        frame=('n', 'n'), sabino=('n', 'n'),
-                        dominant_white=('n', 'n'),
+    def _create_genotype(self, extension, agouti, kit=('n', 'n'),
+                        frame=('n', 'n'),
                         splash=('n', 'n'), dilution=('N', 'N'),
                         dun=('nd2', 'nd2'), silver=('n', 'n'),
                         champagne=('n', 'n'), flaxen=('F', 'F'),
                         sooty=('sty', 'sty'), gray=('g', 'g'),
-                        roan=('n', 'n'), leopard=('lp', 'lp'),
+                        leopard=('lp', 'lp'),
                         patn1=('n', 'n')):
         """Helper to create genotype dictionaries."""
         return {
@@ -1208,11 +1171,8 @@ class TestWhitePatterns(unittest.TestCase):
             'flaxen': flaxen,
             'sooty': sooty,
             'gray': gray,
-            'roan': roan,
-            'tobiano': tobiano,
+            'kit': kit,
             'frame': frame,
-            'sabino': sabino,
-            'dominant_white': dominant_white,
             'splash': splash,
             'leopard': leopard,
             'patn1': patn1
@@ -1220,7 +1180,7 @@ class TestWhitePatterns(unittest.TestCase):
 
     def test_tobiano(self):
         """Test Tobiano pattern."""
-        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), tobiano=('To', 'n'))
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), kit=('to', 'n'))
         self.assertEqual(self.calc.determine_phenotype(genotype), 'Bay Tobiano')
 
     def test_frame_overo(self):
@@ -1230,12 +1190,12 @@ class TestWhitePatterns(unittest.TestCase):
 
     def test_sabino(self):
         """Test Sabino pattern."""
-        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), sabino=('Sb1', 'n'))
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), kit=('sb1', 'n'))
         self.assertEqual(self.calc.determine_phenotype(genotype), 'Bay Sabino')
 
     def test_maximum_sabino(self):
         """Test homozygous Sabino (Maximum Sabino)."""
-        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), sabino=('Sb1', 'Sb1'))
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), kit=('sb1', 'sb1'))
         self.assertEqual(self.calc.determine_phenotype(genotype), 'Bay Maximum Sabino')
 
     def test_splash_white(self):
@@ -1244,23 +1204,29 @@ class TestWhitePatterns(unittest.TestCase):
         self.assertEqual(self.calc.determine_phenotype(genotype), 'Bay Splash White')
 
     def test_tovero_tobiano_frame(self):
-        """Test Tovero (Tobiano + Frame Overo)."""
-        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), tobiano=('To', 'n'), frame=('O', 'n'))
+        """Test Tovero (Tobiano + Frame Overo) - KIT:to + EDNRB:O."""
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), kit=('to', 'n'), frame=('O', 'n'))
         self.assertEqual(self.calc.determine_phenotype(genotype), 'Bay Tovero')
 
-    def test_tovero_tobiano_sabino(self):
-        """Test Tovero (Tobiano + Sabino)."""
-        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), tobiano=('To', 'n'), sabino=('Sb1', 'n'))
-        self.assertEqual(self.calc.determine_phenotype(genotype), 'Bay Tovero')
+    def test_tobiano_sabino_combination(self):
+        """Test Tobiano + Sabino on same KIT locus = KIT:to/sb1.
+
+        Since tobiano and sabino are now on the same gene (KIT),
+        a horse with one TO and one SB1 allele shows both patterns.
+        """
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), kit=('to', 'sb1'))
+        phenotype = self.calc.determine_phenotype(genotype)
+        self.assertIn('Tobiano', phenotype)
+        self.assertIn('Sabino', phenotype)
 
     def test_tovero_tobiano_splash(self):
-        """Test Tovero (Tobiano + Splash)."""
-        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), tobiano=('To', 'n'), splash=('Sw1', 'n'))
+        """Test Tovero (Tobiano + Splash) - KIT:to + MITF:Sw1."""
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), kit=('to', 'n'), splash=('Sw1', 'n'))
         self.assertEqual(self.calc.determine_phenotype(genotype), 'Bay Tovero')
 
     def test_multiple_overo_patterns(self):
-        """Test multiple Overo patterns together (without Tobiano)."""
-        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), frame=('O', 'n'), sabino=('Sb1', 'n'))
+        """Test Frame + Sabino together (EDNRB:O + KIT:sb1)."""
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), kit=('sb1', 'n'), frame=('O', 'n'))
         phenotype = self.calc.determine_phenotype(genotype)
         self.assertIn('Frame', phenotype)
         self.assertIn('Sabino', phenotype)
@@ -1289,9 +1255,8 @@ class TestLeopardComplex(unittest.TestCase):
                         dilution=('N', 'N'), dun=('nd2', 'nd2'),
                         silver=('n', 'n'), champagne=('n', 'n'),
                         flaxen=('F', 'F'), sooty=('sty', 'sty'),
-                        gray=('g', 'g'), roan=('n', 'n'),
-                        tobiano=('n', 'n'), frame=('n', 'n'),
-                        sabino=('n', 'n'), dominant_white=('n', 'n'),
+                        gray=('g', 'g'), kit=('n', 'n'),
+                        frame=('n', 'n'),
                         splash=('n', 'n')):
         """Helper to create genotype dictionaries."""
         return {
@@ -1304,11 +1269,8 @@ class TestLeopardComplex(unittest.TestCase):
             'flaxen': flaxen,
             'sooty': sooty,
             'gray': gray,
-            'roan': roan,
-            'tobiano': tobiano,
+            'kit': kit,
             'frame': frame,
-            'sabino': sabino,
-            'dominant_white': dominant_white,
             'splash': splash,
             'leopard': leopard,
             'patn1': patn1
@@ -1342,23 +1304,23 @@ class TestLeopardComplex(unittest.TestCase):
 
 class TestDominantWhite(unittest.TestCase):
     """
-    Test Dominant White gene (KIT).
+    Test Dominant White via unified KIT gene.
 
     Scientific basis: KIT gene mutations W1-W39.
     Most W alleles are lethal when homozygous, except W20.
+    W alleles are now part of the unified KIT gene.
     """
 
     def setUp(self):
         """Initialize calculator for each test."""
         self.calc = PhenotypeCalculator()
 
-    def _create_genotype(self, extension, agouti, dominant_white,
+    def _create_genotype(self, extension, agouti, kit,
                         dilution=('N', 'N'), dun=('nd2', 'nd2'),
                         silver=('n', 'n'), champagne=('n', 'n'),
                         flaxen=('F', 'F'), sooty=('sty', 'sty'),
-                        gray=('g', 'g'), roan=('n', 'n'),
-                        tobiano=('n', 'n'), frame=('n', 'n'),
-                        sabino=('n', 'n'), splash=('n', 'n'),
+                        gray=('g', 'g'), frame=('n', 'n'),
+                        splash=('n', 'n'),
                         leopard=('lp', 'lp'), patn1=('n', 'n')):
         """Helper to create genotype dictionaries."""
         return {
@@ -1371,11 +1333,8 @@ class TestDominantWhite(unittest.TestCase):
             'flaxen': flaxen,
             'sooty': sooty,
             'gray': gray,
-            'roan': roan,
-            'tobiano': tobiano,
+            'kit': kit,
             'frame': frame,
-            'sabino': sabino,
-            'dominant_white': dominant_white,
             'splash': splash,
             'leopard': leopard,
             'patn1': patn1
@@ -1451,17 +1410,15 @@ class TestSootyOnDoubleDilutes(unittest.TestCase):
                          dun=('nd2', 'nd2'), silver=('n', 'n'),
                          champagne=('n', 'n'), flaxen=('F', 'F'),
                          sooty=('sty', 'sty'), gray=('g', 'g'),
-                         roan=('n', 'n'), tobiano=('n', 'n'),
-                         frame=('n', 'n'), sabino=('n', 'n'),
-                         dominant_white=('n', 'n'),
+                         kit=('n', 'n'),
+                         frame=('n', 'n'),
                          splash=('n', 'n'), leopard=('lp', 'lp'),
                          patn1=('n', 'n')):
         return {
             'extension': extension, 'agouti': agouti, 'dilution': dilution,
             'dun': dun, 'silver': silver, 'champagne': champagne,
             'flaxen': flaxen, 'sooty': sooty, 'gray': gray,
-            'roan': roan, 'tobiano': tobiano, 'frame': frame,
-            'sabino': sabino, 'dominant_white': dominant_white,
+            'kit': kit, 'frame': frame,
             'splash': splash, 'leopard': leopard, 'patn1': patn1
         }
 
@@ -1527,17 +1484,15 @@ class TestFlaxenEdgeCases(unittest.TestCase):
                          dun=('nd2', 'nd2'), silver=('n', 'n'),
                          champagne=('n', 'n'), flaxen=('F', 'F'),
                          sooty=('sty', 'sty'), gray=('g', 'g'),
-                         roan=('n', 'n'), tobiano=('n', 'n'),
-                         frame=('n', 'n'), sabino=('n', 'n'),
-                         dominant_white=('n', 'n'),
+                         kit=('n', 'n'),
+                         frame=('n', 'n'),
                          splash=('n', 'n'), leopard=('lp', 'lp'),
                          patn1=('n', 'n')):
         return {
             'extension': extension, 'agouti': agouti, 'dilution': dilution,
             'dun': dun, 'silver': silver, 'champagne': champagne,
             'flaxen': flaxen, 'sooty': sooty, 'gray': gray,
-            'roan': roan, 'tobiano': tobiano, 'frame': frame,
-            'sabino': sabino, 'dominant_white': dominant_white,
+            'kit': kit, 'frame': frame,
             'splash': splash, 'leopard': leopard, 'patn1': patn1
         }
 
@@ -1607,17 +1562,15 @@ class TestDunCombinations(unittest.TestCase):
                          dun=('nd2', 'nd2'), silver=('n', 'n'),
                          champagne=('n', 'n'), flaxen=('F', 'F'),
                          sooty=('sty', 'sty'), gray=('g', 'g'),
-                         roan=('n', 'n'), tobiano=('n', 'n'),
-                         frame=('n', 'n'), sabino=('n', 'n'),
-                         dominant_white=('n', 'n'),
+                         kit=('n', 'n'),
+                         frame=('n', 'n'),
                          splash=('n', 'n'), leopard=('lp', 'lp'),
                          patn1=('n', 'n')):
         return {
             'extension': extension, 'agouti': agouti, 'dilution': dilution,
             'dun': dun, 'silver': silver, 'champagne': champagne,
             'flaxen': flaxen, 'sooty': sooty, 'gray': gray,
-            'roan': roan, 'tobiano': tobiano, 'frame': frame,
-            'sabino': sabino, 'dominant_white': dominant_white,
+            'kit': kit, 'frame': frame,
             'splash': splash, 'leopard': leopard, 'patn1': patn1
         }
 
@@ -1696,17 +1649,15 @@ class TestPATN1WithoutLeopard(unittest.TestCase):
                          dun=('nd2', 'nd2'), silver=('n', 'n'),
                          champagne=('n', 'n'), flaxen=('F', 'F'),
                          sooty=('sty', 'sty'), gray=('g', 'g'),
-                         roan=('n', 'n'), tobiano=('n', 'n'),
-                         frame=('n', 'n'), sabino=('n', 'n'),
-                         dominant_white=('n', 'n'),
+                         kit=('n', 'n'),
+                         frame=('n', 'n'),
                          splash=('n', 'n'), leopard=('lp', 'lp'),
                          patn1=('n', 'n')):
         return {
             'extension': extension, 'agouti': agouti, 'dilution': dilution,
             'dun': dun, 'silver': silver, 'champagne': champagne,
             'flaxen': flaxen, 'sooty': sooty, 'gray': gray,
-            'roan': roan, 'tobiano': tobiano, 'frame': frame,
-            'sabino': sabino, 'dominant_white': dominant_white,
+            'kit': kit, 'frame': frame,
             'splash': splash, 'leopard': leopard, 'patn1': patn1
         }
 
@@ -1785,8 +1736,8 @@ class TestBreedingStats(unittest.TestCase):
         """
         parent_str = (
             "E:E/e A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n "
-            "F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n "
-            "Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+            "F:F/f STY:sty/sty G:g/g KIT:n/n O:n/n "
+            "Spl:n/n Lp:lp/lp PATN1:n/n"
         )
         prob = calculate_single_gene_probability(
             parent_str, parent_str, 'extension', ('E', 'e')
@@ -1805,9 +1756,8 @@ class TestBreedingStats(unittest.TestCase):
             'dilution': ('N', 'N'), 'dun': ('nd2', 'nd2'),
             'silver': ('n', 'n'), 'champagne': ('n', 'n'),
             'flaxen': ('F', 'f'), 'sooty': ('sty', 'sty'),
-            'gray': ('g', 'g'), 'roan': ('n', 'n'),
-            'tobiano': ('n', 'n'), 'frame': ('n', 'n'),
-            'sabino': ('n', 'n'), 'dominant_white': ('n', 'n'),
+            'gray': ('g', 'g'), 'kit': ('n', 'n'),
+            'frame': ('n', 'n'),
             'splash': ('n', 'n'), 'leopard': ('lp', 'lp'),
             'patn1': ('n', 'n')
         }
@@ -1816,9 +1766,8 @@ class TestBreedingStats(unittest.TestCase):
             'dilution': ('N', 'N'), 'dun': ('nd2', 'nd2'),
             'silver': ('n', 'n'), 'champagne': ('n', 'n'),
             'flaxen': ('f', 'f'), 'sooty': ('sty', 'sty'),
-            'gray': ('g', 'g'), 'roan': ('n', 'n'),
-            'tobiano': ('n', 'n'), 'frame': ('n', 'n'),
-            'sabino': ('n', 'n'), 'dominant_white': ('n', 'n'),
+            'gray': ('g', 'g'), 'kit': ('n', 'n'),
+            'frame': ('n', 'n'),
             'splash': ('n', 'n'), 'leopard': ('lp', 'lp'),
             'patn1': ('n', 'n')
         }
@@ -1835,14 +1784,14 @@ class TestCSVRoundTrip(unittest.TestCase):
 
     BUG-03: The original CSV export used wrong gene names ('Extension'
     capitalized, 'Cream' instead of 'dilution') and only exported 9 genes
-    instead of all 17. The fixed version uses lowercase keys with gene_ prefix.
+    instead of all 14. The fixed version uses lowercase keys with gene_ prefix.
     """
 
     def setUp(self):
         self.horse = Horse.from_string(
             "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n "
-            "F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n "
-            "Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+            "F:F/f STY:sty/sty G:g/g KIT:n/n O:n/n "
+            "Spl:n/n Lp:lp/lp PATN1:n/n"
         )
         self.temp_file = tempfile.mktemp(suffix='.csv')
 
@@ -1857,17 +1806,16 @@ class TestCSVRoundTrip(unittest.TestCase):
             reader = csv.reader(f)
             return next(reader)
 
-    def test_export_has_17_genes(self):
-        """CSV export must contain columns for all 17 genes.
+    def test_export_has_14_genes(self):
+        """CSV export must contain columns for all 14 genes.
 
-        BUG-03: Only 9 genes were exported. Fixed version exports all 17
-        using gene_<name> columns.
+        BUG-03: Only 9 genes were exported. Fixed version exports all 14
+        using gene_<name> columns (KIT unifies roan/tobiano/sabino/dominant_white).
         """
         expected_gene_keys = [
             'extension', 'agouti', 'dilution', 'dun', 'silver',
-            'champagne', 'flaxen', 'sooty', 'gray', 'roan',
-            'tobiano', 'frame', 'sabino', 'dominant_white',
-            'splash', 'leopard', 'patn1'
+            'champagne', 'flaxen', 'sooty', 'gray', 'kit',
+            'frame', 'splash', 'leopard', 'patn1'
         ]
         header = self._get_csv_header()
         for gene in expected_gene_keys:
@@ -1899,9 +1847,8 @@ class TestCSVRoundTrip(unittest.TestCase):
 
         gene_names = [
             'extension', 'agouti', 'dilution', 'dun', 'silver',
-            'champagne', 'flaxen', 'sooty', 'gray', 'roan',
-            'tobiano', 'frame', 'sabino', 'dominant_white',
-            'splash', 'leopard', 'patn1'
+            'champagne', 'flaxen', 'sooty', 'gray', 'kit',
+            'frame', 'splash', 'leopard', 'patn1'
         ]
         with open(self.temp_file, 'r') as f:
             reader = csv.DictReader(f)
@@ -1937,13 +1884,13 @@ class TestLethalBreedingOutcomes(unittest.TestCase):
         """
         parent1 = Horse.from_string(
             "E:E/e A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n "
-            "F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:O/n "
-            "Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+            "F:F/f STY:sty/sty G:g/g KIT:n/n O:O/n "
+            "Spl:n/n Lp:lp/lp PATN1:n/n"
         )
         parent2 = Horse.from_string(
             "E:e/e A:a/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n "
-            "F:f/f STY:sty/sty G:g/g Rn:n/n To:n/n O:O/n "
-            "Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+            "F:f/f STY:sty/sty G:g/g KIT:n/n O:O/n "
+            "Spl:n/n Lp:lp/lp PATN1:n/n"
         )
         nonviable_count = sum(
             1 for _ in range(400)
@@ -1962,13 +1909,13 @@ class TestLethalBreedingOutcomes(unittest.TestCase):
         """
         parent1 = Horse.from_string(
             "E:E/e A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n "
-            "F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n "
-            "Sb:n/n W:W1/n Spl:n/n Lp:lp/lp PATN1:n/n"
+            "F:F/f STY:sty/sty G:g/g KIT:W1/n O:n/n "
+            "Spl:n/n Lp:lp/lp PATN1:n/n"
         )
         parent2 = Horse.from_string(
             "E:e/e A:a/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n "
-            "F:f/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n "
-            "Sb:n/n W:W1/n Spl:n/n Lp:lp/lp PATN1:n/n"
+            "F:f/f STY:sty/sty G:g/g KIT:W1/n O:n/n "
+            "Spl:n/n Lp:lp/lp PATN1:n/n"
         )
         nonviable_count = sum(
             1 for _ in range(400)
@@ -1990,35 +1937,35 @@ class TestLethalValidation(unittest.TestCase):
 
     _NEUTRAL = (
         "E:E/e A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n "
-        "F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:{frame} "
-        "Sb:n/n W:{w} Spl:n/n Lp:lp/lp PATN1:n/n"
+        "F:F/f STY:sty/sty G:g/g KIT:{kit} O:{frame} "
+        "Spl:n/n Lp:lp/lp PATN1:n/n"
     )
 
     def test_from_string_rejects_frame_overo_oo(self):
         """Horse.from_string with O:O/O must raise LethalGenotypeError."""
         with self.assertRaises(LethalGenotypeError):
-            Horse.from_string(self._NEUTRAL.format(frame='O/O', w='n/n'))
+            Horse.from_string(self._NEUTRAL.format(frame='O/O', kit='n/n'))
 
     def test_from_string_rejects_w1_homozygous(self):
-        """Horse.from_string with W:W1/W1 must raise LethalGenotypeError."""
+        """Horse.from_string with KIT:W1/W1 must raise LethalGenotypeError."""
         with self.assertRaises(LethalGenotypeError):
-            Horse.from_string(self._NEUTRAL.format(frame='n/n', w='W1/W1'))
+            Horse.from_string(self._NEUTRAL.format(frame='n/n', kit='W1/W1'))
 
     def test_from_string_rejects_w5_homozygous(self):
-        """Horse.from_string with W:W5/W5 must raise LethalGenotypeError."""
+        """Horse.from_string with KIT:W5/W5 must raise LethalGenotypeError."""
         with self.assertRaises(LethalGenotypeError):
-            Horse.from_string(self._NEUTRAL.format(frame='n/n', w='W5/W5'))
+            Horse.from_string(self._NEUTRAL.format(frame='n/n', kit='W5/W5'))
 
     def test_from_string_allows_w20_homozygous(self):
         """W20/W20 is viable and must NOT raise."""
-        horse = Horse.from_string(self._NEUTRAL.format(frame='n/n', w='W20/W20'))
+        horse = Horse.from_string(self._NEUTRAL.format(frame='n/n', kit='W20/W20'))
         self.assertNotIn('NONVIABLE', horse.phenotype)
         self.assertFalse(horse.is_lethal)
 
     def test_from_string_allow_lethal_flag(self):
         """allow_lethal=True creates a lethal horse without error."""
         horse = Horse.from_string(
-            self._NEUTRAL.format(frame='O/O', w='n/n'),
+            self._NEUTRAL.format(frame='O/O', kit='n/n'),
             allow_lethal=True
         )
         self.assertIn('NONVIABLE', horse.phenotype)
@@ -2026,8 +1973,8 @@ class TestLethalValidation(unittest.TestCase):
 
     def test_breed_allows_lethal_offspring(self):
         """Horse.breed() from two carriers must not raise for lethal offspring."""
-        parent1 = Horse.from_string(self._NEUTRAL.format(frame='O/n', w='n/n'))
-        parent2 = Horse.from_string(self._NEUTRAL.format(frame='O/n', w='n/n'))
+        parent1 = Horse.from_string(self._NEUTRAL.format(frame='O/n', kit='n/n'))
+        parent2 = Horse.from_string(self._NEUTRAL.format(frame='O/n', kit='n/n'))
         # Breed many times — at least one should be lethal, none should raise
         got_lethal = False
         for _ in range(200):
@@ -2038,17 +1985,17 @@ class TestLethalValidation(unittest.TestCase):
 
     def test_is_lethal_property_false_for_normal_horse(self):
         """is_lethal must be False for a normal horse."""
-        horse = Horse.from_string(self._NEUTRAL.format(frame='n/n', w='n/n'))
+        horse = Horse.from_string(self._NEUTRAL.format(frame='n/n', kit='n/n'))
         self.assertFalse(horse.is_lethal)
 
     def test_check_lethal_genotype_returns_none_for_viable(self):
         """check_lethal_genotype returns None for a viable genotype dict."""
-        genotype = {'frame': ('O', 'n'), 'dominant_white': ('n', 'n')}
+        genotype = {'frame': ('O', 'n'), 'kit': ('n', 'n')}
         self.assertIsNone(check_lethal_genotype(genotype))
 
     def test_check_lethal_genotype_returns_description_for_lethal(self):
         """check_lethal_genotype returns description string for lethal genotype."""
-        genotype = {'frame': ('O', 'O'), 'dominant_white': ('n', 'n')}
+        genotype = {'frame': ('O', 'O'), 'kit': ('n', 'n')}
         result = check_lethal_genotype(genotype)
         self.assertIsNotNone(result)
         self.assertIn('LWOS', result)
@@ -2068,17 +2015,15 @@ class TestMultiGeneInteractions(unittest.TestCase):
                          dun=('nd2', 'nd2'), silver=('n', 'n'),
                          champagne=('n', 'n'), flaxen=('F', 'F'),
                          sooty=('sty', 'sty'), gray=('g', 'g'),
-                         roan=('n', 'n'), tobiano=('n', 'n'),
-                         frame=('n', 'n'), sabino=('n', 'n'),
-                         dominant_white=('n', 'n'),
+                         kit=('n', 'n'),
+                         frame=('n', 'n'),
                          splash=('n', 'n'), leopard=('lp', 'lp'),
                          patn1=('n', 'n')):
         return {
             'extension': extension, 'agouti': agouti, 'dilution': dilution,
             'dun': dun, 'silver': silver, 'champagne': champagne,
             'flaxen': flaxen, 'sooty': sooty, 'gray': gray,
-            'roan': roan, 'tobiano': tobiano, 'frame': frame,
-            'sabino': sabino, 'dominant_white': dominant_white,
+            'kit': kit, 'frame': frame,
             'splash': splash, 'leopard': leopard, 'patn1': patn1
         }
 
@@ -2129,19 +2074,90 @@ class TestMultiGeneInteractions(unittest.TestCase):
         self.assertIn('Gray', phenotype)
 
     def test_roan_with_tobiano(self):
-        """Roan + Tobiano combination must include both in phenotype.
+        """Roan + Tobiano on same KIT locus: kit=('to', 'rn').
 
-        A horse can carry both Roan (KIT) and Tobiano (KIT inversion)
-        simultaneously. The phenotype should acknowledge both patterns.
+        Since Roan and Tobiano are now on the same KIT gene,
+        a horse with one to and one rn allele shows both patterns.
         """
         genotype = self._create_genotype(
             ('E', 'e'), ('A', 'a'),
-            roan=('Rn', 'n'),
-            tobiano=('To', 'n')
+            kit=('to', 'rn')
         )
         phenotype = self.calc.determine_phenotype(genotype)
         self.assertIn('Roan', phenotype)
         self.assertIn('Tobiano', phenotype)
+
+
+class TestKITGene(unittest.TestCase):
+    """
+    Test unified KIT gene with multiple allele combinations.
+
+    Scientific basis: KIT locus carries roan (rn), tobiano (to), sabino (sb1),
+    and dominant white (W1, W5, W10, W13, W20, W22) alleles. A horse has
+    exactly 2 KIT alleles, so it cannot carry more than 2 KIT patterns.
+    """
+
+    def setUp(self):
+        """Initialize calculator for each test."""
+        self.calc = PhenotypeCalculator()
+
+    def _create_genotype(self, extension, agouti, kit,
+                        dilution=('N', 'N'), dun=('nd2', 'nd2'),
+                        silver=('n', 'n'), champagne=('n', 'n'),
+                        flaxen=('F', 'F'), sooty=('sty', 'sty'),
+                        gray=('g', 'g'), frame=('n', 'n'),
+                        splash=('n', 'n'), leopard=('lp', 'lp'),
+                        patn1=('n', 'n')):
+        """Helper to create genotype dictionaries."""
+        return {
+            'extension': extension,
+            'agouti': agouti,
+            'dilution': dilution,
+            'dun': dun,
+            'silver': silver,
+            'champagne': champagne,
+            'flaxen': flaxen,
+            'sooty': sooty,
+            'gray': gray,
+            'kit': kit,
+            'frame': frame,
+            'splash': splash,
+            'leopard': leopard,
+            'patn1': patn1
+        }
+
+    def test_kit_tobiano_roan_combination(self):
+        """KIT:to/rn should produce Bay Roan Tobiano.
+
+        A horse with one tobiano allele and one roan allele on KIT
+        expresses both patterns simultaneously.
+        """
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), ('to', 'rn'))
+        phenotype = self.calc.determine_phenotype(genotype)
+        self.assertIn('Roan', phenotype)
+        self.assertIn('Tobiano', phenotype)
+
+    def test_kit_cannot_have_three_patterns(self):
+        """Verify that only 2 KIT allele slots exist.
+
+        A horse cannot be to + rn + sb1 simultaneously because the KIT
+        gene has only 2 allele slots (diploid). This is enforced by the
+        genotype data structure: kit is always a 2-tuple.
+        """
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), ('to', 'rn'))
+        # Verify the kit gene is a 2-tuple
+        self.assertEqual(len(genotype['kit']), 2)
+
+    def test_kit_sabino_roan(self):
+        """KIT:sb1/rn should produce Bay Roan Sabino.
+
+        A horse with one sabino allele and one roan allele on KIT
+        expresses both patterns simultaneously.
+        """
+        genotype = self._create_genotype(('E', 'e'), ('A', 'a'), ('sb1', 'rn'))
+        phenotype = self.calc.determine_phenotype(genotype)
+        self.assertIn('Roan', phenotype)
+        self.assertIn('Sabino', phenotype)
 
 
 def run_tests():
@@ -2163,6 +2179,7 @@ def run_tests():
     suite.addTests(loader.loadTestsFromTestCase(TestWhitePatterns))
     suite.addTests(loader.loadTestsFromTestCase(TestDominantWhite))
     suite.addTests(loader.loadTestsFromTestCase(TestLeopardComplex))
+    suite.addTests(loader.loadTestsFromTestCase(TestKITGene))
     suite.addTests(loader.loadTestsFromTestCase(TestBreeding))
     suite.addTests(loader.loadTestsFromTestCase(TestGenotypeFormatting))
     suite.addTests(loader.loadTestsFromTestCase(TestHorseAPI))

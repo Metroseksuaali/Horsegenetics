@@ -40,7 +40,7 @@ def validate_genotype_string(genotype_str: str) -> Dict[str, List[str]]:
     # Check if string is empty
     if not genotype_str.strip():
         errors.append("Genotype string is empty")
-        info.append("Expected format: E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n")
+        info.append("Expected format: E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n")
         return {'errors': errors, 'warnings': warnings, 'info': info}
 
     # Check for basic format
@@ -259,7 +259,7 @@ def quick_validate(genotype_str: str) -> Tuple[bool, str]:
 
     Example:
         >>> from genetics.validation import quick_validate
-        >>> is_valid, msg = quick_validate("E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n")
+        >>> is_valid, msg = quick_validate("E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n")
         >>> is_valid
         True
     """
@@ -290,9 +290,9 @@ def get_example_genotype() -> str:
     Example:
         >>> from genetics.validation import get_example_genotype
         >>> print(get_example_genotype())
-        E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n
+        E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n
     """
-    return "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g Rn:n/n To:n/n O:n/n Sb:n/n W:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+    return "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
 
 
 def check_lethal_genotype(genotype: Dict[str, Tuple[str, str]]) -> Optional[str]:

@@ -401,76 +401,66 @@ def apply_gray(ctx: PhenotypeContext) -> None:
         ctx.phenotype = f"{ctx.phenotype} (Gray - will lighten with age)"
 
 
-def apply_roan(ctx: PhenotypeContext) -> None:
+def apply_kit_gene(ctx: PhenotypeContext) -> None:
     """
-    Apply roan pattern to phenotype.
+    Apply KIT gene effects (Roan, Tobiano, Sabino, Dominant White).
 
-    Roan (KIT gene) adds white hairs evenly distributed through coat.
-    Pattern does not change with age (unlike Gray).
+    The KIT gene has multiple alleles on a single locus. A horse has exactly
+    2 KIT alleles. Alleles: n, sb1, rn, to, W1, W5, W10, W13, W20, W22.
 
-    NOTE: Historically thought to be lethal when homozygous, but recent
-    research (2020) on Icelandic horses shows Rn/Rn is viable.
+    Dominance: W alleles > to > rn > sb1 > n
+
+    This means a horse CAN be tobiano + roan (KIT: to/rn) but CANNOT be
+    tobiano + roan + sabino (would need 3 alleles — impossible).
 
     Modifies ctx.phenotype
     """
-    if ctx.has_allele('roan', 'Rn'):
+    kit_genotype = ctx.get_genotype('kit')
+    allele1, allele2 = kit_genotype
+
+    # Collect W alleles
+    w_alleles_present = [a for a in kit_genotype if a.startswith('W')]
+
+    # --- Dominant White handling (highest priority) ---
+    if w_alleles_present:
+        from genetics.gene_definitions import LETHAL_COMBINATIONS
+        kit_lethals = LETHAL_COMBINATIONS['kit']['genotypes']
+
+        # Check for lethal homozygous W combinations
+        if kit_genotype in kit_lethals:
+            ctx.phenotype = f"NONVIABLE - Homozygous Dominant White ({allele1}/{allele2}) is lethal"
+            return
+
+        # W20/W20 is viable but causes maximum white
+        if kit_genotype == ('W20', 'W20'):
+            ctx.phenotype = f"Dominant White (Homozygous {allele1})"
+            return
+
+        # Heterozygous or compound W — show dominant W allele
+        # Pick the highest-priority W allele present
+        w_allele = w_alleles_present[0]  # Already sorted by dominance
+        ctx.phenotype = f"Dominant White ({w_allele})"
+        return
+
+    # --- Roan (applies before white pattern labels) ---
+    has_roan = 'rn' in kit_genotype
+    if has_roan:
         ctx.phenotype = f"{ctx.phenotype} Roan"
 
-
-def apply_dominant_white(ctx: PhenotypeContext) -> None:
-    """
-    Apply Dominant White pattern.
-
-    Dominant White is caused by mutations in the KIT gene (W1-W39 alleles exist).
-    Most W alleles are LETHAL when homozygous, except W20.
-
-    Lethal combinations:
-    - W1/W1, W5/W5, W10/W10, W13/W13, W22/W22 = embryonic lethal
-    - W20/W20 = viable (rare exception)
-
-    Modifies ctx.phenotype
-    """
-    # Check if horse has any W allele
-    w_alleles = ['W1', 'W5', 'W10', 'W13', 'W20', 'W22']
-    has_w = any(ctx.has_allele('dominant_white', allele) for allele in w_alleles)
-
-    if not has_w:
-        return
-
-    # Get genotype to check for lethal homozygous combinations
-    dw_genotype = ctx.get_genotype('dominant_white')
-
-    # Check for lethal homozygous combinations (uses shared constant)
-    from genetics.gene_definitions import LETHAL_COMBINATIONS
-    dw_lethals = LETHAL_COMBINATIONS['dominant_white']['genotypes']
-    if dw_genotype in dw_lethals:
-        ctx.phenotype = f"NONVIABLE - Homozygous Dominant White ({dw_genotype[0]}/{dw_genotype[1]}) is lethal"
-        return
-
-    # W20/W20 is viable but causes maximum white
-    if dw_genotype == ('W20', 'W20'):
-        ctx.phenotype = f"Dominant White (Homozygous {dw_genotype[0]})"
-        return
-
-    # Heterozygous W alleles cause white/mostly white
-    # Identify which W allele is present
-    w_allele = None
-    for allele in w_alleles:
-        if ctx.has_allele('dominant_white', allele):
-            w_allele = allele
-            break
-
-    if w_allele:
-        ctx.phenotype = f"Dominant White ({w_allele})"
+    # Store KIT pattern info for apply_white_patterns to use
+    ctx._kit_has_tobiano = 'to' in kit_genotype
+    ctx._kit_has_sabino = 'sb1' in kit_genotype
+    ctx._kit_sabino_homozygous = (allele1 == 'sb1' and allele2 == 'sb1')
 
 
 def apply_white_patterns(ctx: PhenotypeContext) -> None:
     """
-    Apply white spotting patterns (Tobiano, Overo, Sabino, Splash).
+    Apply white spotting patterns from KIT (Tobiano, Sabino) + Frame (EDNRB) + Splash (MITF).
 
     Handles special cases:
-    - Tovero: Combination of Tobiano + any Overo pattern
+    - Tovero: Combination of Tobiano (KIT) + any Overo pattern (Frame/Splash)
     - Frame Overo O/O is LETHAL (Lethal White Overo Syndrome)
+    - Sabino from KIT gene
 
     Uses industry-standard terminology.
 
@@ -483,10 +473,13 @@ def apply_white_patterns(ctx: PhenotypeContext) -> None:
         ctx.phenotype = "NONVIABLE - Homozygous Frame Overo (O/O) - Lethal White Overo Syndrome (LWOS)"
         return
 
-    # Collect which patterns are present
-    has_tobiano = ctx.has_allele('tobiano', 'To')
+    # Get KIT pattern info (set by apply_kit_gene)
+    has_tobiano = getattr(ctx, '_kit_has_tobiano', False)
+    has_sabino = getattr(ctx, '_kit_has_sabino', False)
+    sabino_homozygous = getattr(ctx, '_kit_sabino_homozygous', False)
+
+    # Frame and Splash are on separate genes (EDNRB and MITF)
     has_frame = ctx.has_allele('frame', 'O')
-    has_sabino = ctx.has_allele('sabino', 'Sb1')
     has_splash = ctx.has_allele('splash', 'Sw1') or ctx.has_allele('splash', 'Sw2') or ctx.has_allele('splash', 'Sw3')
 
     # Count overo-type patterns (Frame, Sabino, Splash)
@@ -494,27 +487,41 @@ def apply_white_patterns(ctx: PhenotypeContext) -> None:
     if has_frame:
         overo_patterns.append('Frame')
     if has_sabino:
-        sabino_genotype = ctx.get_genotype('sabino')
-        if sabino_genotype == ('Sb1', 'Sb1'):
+        if sabino_homozygous:
             overo_patterns.append('Maximum Sabino')
         else:
             overo_patterns.append('Sabino')
     if has_splash:
         overo_patterns.append('Splash White')
 
-    # Tovero: Tobiano + any Overo pattern
-    if has_tobiano and len(overo_patterns) > 0:
+    # Tovero: Tobiano + any Overo pattern (Frame or Splash — NOT sabino from same KIT)
+    # Note: Sabino from KIT is on the same allele pair as tobiano, so a horse
+    # with to/sb1 shows both patterns. We treat Frame/Splash combos as Tovero
+    # since they come from different genes.
+    non_kit_overo = []
+    if has_frame:
+        non_kit_overo.append('Frame')
+    if has_splash:
+        non_kit_overo.append('Splash White')
+
+    if has_tobiano and len(non_kit_overo) > 0:
         ctx.phenotype = f"{ctx.phenotype} Tovero"
         return
 
-    # Just Tobiano
+    # Just Tobiano (possibly with Sabino from KIT — show both)
     if has_tobiano:
-        ctx.phenotype = f"{ctx.phenotype} Tobiano"
+        if has_sabino:
+            # to/sb1 — both patterns expressed
+            if sabino_homozygous:
+                ctx.phenotype = f"{ctx.phenotype} Tobiano Maximum Sabino"
+            else:
+                ctx.phenotype = f"{ctx.phenotype} Tobiano Sabino"
+        else:
+            ctx.phenotype = f"{ctx.phenotype} Tobiano"
         return
 
     # Overo patterns (without Tobiano)
     if len(overo_patterns) > 0:
-        # If multiple overo patterns, list them
         if len(overo_patterns) == 1:
             ctx.phenotype = f"{ctx.phenotype} {overo_patterns[0]}"
         else:
@@ -588,9 +595,8 @@ class PhenotypeCalculator:
             apply_dun,
             apply_flaxen,
             apply_sooty,
-            apply_roan,  # Apply before white patterns
-            apply_dominant_white,  # Dominant White (usually overrides base color completely)
-            apply_white_patterns,  # Tobiano, Overo, Sabino, Splash, Tovero
+            apply_kit_gene,  # KIT: Roan, Dominant White, sets up Tobiano/Sabino flags
+            apply_white_patterns,  # Tobiano, Sabino (KIT) + Frame (EDNRB), Splash (MITF), Tovero
             apply_leopard_complex,  # Appaloosa patterns
             apply_gray,  # Usually last (epistatic)
         ]

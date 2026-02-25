@@ -210,8 +210,8 @@ def check_breeding_risks(parent1, parent2):
 
     # Check Dominant White lethal combinations
     lethal_w_alleles = ['W1', 'W5', 'W10', 'W13', 'W22']
-    parent1_w = parent1.genotype.get('dominant_white', ('n', 'n'))
-    parent2_w = parent2.genotype.get('dominant_white', ('n', 'n'))
+    parent1_w = parent1.genotype.get('kit', ('n', 'n'))
+    parent2_w = parent2.genotype.get('kit', ('n', 'n'))
 
     parent1_has_lethal_w = any(allele in lethal_w_alleles for allele in parent1_w)
     parent2_has_lethal_w = any(allele in lethal_w_alleles for allele in parent2_w)
@@ -444,11 +444,11 @@ def export_horses_to_csv(horses_list):
     output = io.StringIO()
     writer = csv.writer(output)
 
-    # All 17 gene keys matching Horse.genotype dictionary keys
+    # All 14 gene keys matching Horse.genotype dictionary keys
     gene_keys = [
         'extension', 'agouti', 'dilution', 'dun', 'silver', 'champagne',
-        'flaxen', 'sooty', 'gray', 'roan', 'tobiano', 'frame', 'sabino',
-        'dominant_white', 'splash', 'leopard', 'patn1'
+        'flaxen', 'sooty', 'gray', 'kit', 'frame',
+        'splash', 'leopard', 'patn1'
     ]
 
     # Write header
@@ -484,7 +484,7 @@ def import_horses_from_csv(csv_content):
     registry = get_default_registry()
     calculator = PhenotypeCalculator(registry)
 
-    # All 17 gene keys with their default (wild-type homozygous) alleles
+    # All 14 gene keys with their default (wild-type homozygous) alleles
     gene_defaults = {
         'extension': ('E', 'E'),
         'agouti': ('A', 'A'),
@@ -495,11 +495,8 @@ def import_horses_from_csv(csv_content):
         'flaxen': ('F', 'F'),
         'sooty': ('sty', 'sty'),
         'gray': ('g', 'g'),
-        'roan': ('n', 'n'),
-        'tobiano': ('n', 'n'),
+        'kit': ('n', 'n'),
         'frame': ('n', 'n'),
-        'sabino': ('n', 'n'),
-        'dominant_white': ('n', 'n'),
         'splash': ('n', 'n'),
         'leopard': ('lp', 'lp'),
         'patn1': ('n', 'n'),
@@ -725,45 +722,37 @@ if page == t('nav.generator', lang):
 
             with col_ex1:
                 exclude_gray = st.checkbox("No Gray", value=False, key="ex_gray")
-                exclude_dw = st.checkbox("No Dominant White", value=False, key="ex_dw")
-                exclude_roan = st.checkbox("No Roan", value=False, key="ex_roan")
+                exclude_kit = st.checkbox("No KIT Patterns", value=False, key="ex_kit",
+                                         help="Excludes Roan, Tobiano, Sabino, Dominant White (all KIT locus)")
 
             with col_ex2:
-                exclude_tobiano = st.checkbox("No Tobiano", value=False, key="ex_tobiano")
                 exclude_frame = st.checkbox("No Frame", value=False, key="ex_frame")
-                exclude_sabino = st.checkbox("No Sabino", value=False, key="ex_sabino")
+                exclude_splash = st.checkbox("No Splash", value=False, key="ex_splash")
 
             with col_ex3:
                 exclude_leopard = st.checkbox("No Leopard", value=False, key="ex_leopard")
                 exclude_champagne = st.checkbox("No Champagne", value=False, key="ex_champ")
-                exclude_splash = st.checkbox("No Splash", value=False, key="ex_splash")
 
             # Build exclusion set
             excluded_genes = set()
             if exclude_gray:
                 excluded_genes.add('gray')
-            if exclude_dw:
-                excluded_genes.add('dominant_white')
-            if exclude_roan:
-                excluded_genes.add('roan')
-            if exclude_tobiano:
-                excluded_genes.add('tobiano')
+            if exclude_kit:
+                excluded_genes.add('kit')
             if exclude_frame:
                 excluded_genes.add('frame')
-            if exclude_sabino:
-                excluded_genes.add('sabino')
+            if exclude_splash:
+                excluded_genes.add('splash')
             if exclude_leopard:
                 excluded_genes.add('leopard')
             if exclude_champagne:
                 excluded_genes.add('champagne')
-            if exclude_splash:
-                excluded_genes.add('splash')
 
             st.markdown("---")
             st.markdown("**🎯 Custom Probabilities** - Adjust gene frequencies")
             st.caption("0.0 = always present, 1.0 = never present. Default uses realistic frequencies.")
 
-            st.markdown("##### Common Genes (25-35%)")
+            st.markdown("##### Common Genes")
             col_common1, col_common2 = st.columns(2)
 
             with col_common1:
@@ -771,64 +760,45 @@ if page == t('nav.generator', lang):
                                      help="Default: 0.84 (→ 30% gray horses)")
 
             with col_common2:
-                sabino_prob = st.slider("Sabino", 0.0, 1.0, 0.80, 0.01, key="prob_sabino",
-                                       help="Default: 0.80 (→ 26% sabino horses)")
+                kit_prob = st.slider("KIT Patterns", 0.0, 1.0, 0.80, 0.01, key="prob_kit",
+                                    help="KIT locus: Roan, Tobiano, Sabino, Dominant White. Default: 0.80 (→ 20% with KIT pattern)")
 
-            st.markdown("##### Moderate Genes (15-25%)")
+            st.markdown("##### Moderate Genes")
             col_mod1, col_mod2 = st.columns(2)
 
             with col_mod1:
-                tobiano_prob = st.slider("Tobiano", 0.0, 1.0, 0.88, 0.01, key="prob_tobiano",
-                                        help="Default: 0.88 (→ 24% tobiano horses)")
-
-            with col_mod2:
                 leopard_prob = st.slider("Leopard", 0.0, 1.0, 0.962, 0.01, key="prob_leopard",
                                         help="Default: 0.962 (→ 7.8% leopard horses)")
 
-            st.markdown("##### Uncommon Genes (5-10%)")
-            col_unc1, col_unc2 = st.columns(2)
-
-            with col_unc1:
-                roan_prob = st.slider("Roan", 0.0, 1.0, 0.962, 0.01, key="prob_roan",
-                                     help="Default: 0.962 (→ 7.4% roan horses)")
-
-            with col_unc2:
+            with col_mod2:
                 champagne_prob = st.slider("Champagne", 0.0, 1.0, 0.985, 0.01, key="prob_champ",
                                           help="Default: 0.985 (→ 2.5% champagne horses)")
 
-            st.markdown("##### Rare Genes (2-7%)")
+            st.markdown("##### Rare Genes")
             col_rare1, col_rare2 = st.columns(2)
 
             with col_rare1:
                 frame_prob = st.slider("Frame", 0.0, 1.0, 0.98, 0.01, key="prob_frame",
                                       help="Default: 0.98 (→ 3.8% frame horses)")
-                splash_prob = st.slider("Splash", 0.0, 1.0, 0.975, 0.01, key="prob_splash",
-                                       help="Default: 0.975 (→ 4.2% splash horses)")
 
             with col_rare2:
-                dw_prob = st.slider("Dominant White", 0.0, 1.0, 0.99, 0.01, key="prob_dw",
-                                   help="Default: 0.99 (→ 2% dominant white horses)")
+                splash_prob = st.slider("Splash", 0.0, 1.0, 0.975, 0.01, key="prob_splash",
+                                       help="Default: 0.975 (→ 4.2% splash horses)")
 
             # Build custom probabilities dict (only include non-default values)
             custom_probs = {}
             if gray_prob != 0.84:
                 custom_probs['gray'] = gray_prob
-            if sabino_prob != 0.80:
-                custom_probs['sabino'] = sabino_prob
-            if tobiano_prob != 0.88:
-                custom_probs['tobiano'] = tobiano_prob
+            if kit_prob != 0.80:
+                custom_probs['kit'] = kit_prob
             if leopard_prob != 0.962:
                 custom_probs['leopard'] = leopard_prob
-            if roan_prob != 0.962:
-                custom_probs['roan'] = roan_prob
             if champagne_prob != 0.985:
                 custom_probs['champagne'] = champagne_prob
             if frame_prob != 0.98:
                 custom_probs['frame'] = frame_prob
             if splash_prob != 0.975:
                 custom_probs['splash'] = splash_prob
-            if dw_prob != 0.99:
-                custom_probs['dominant_white'] = dw_prob
 
         if st.button(t('generator.generate_button', lang), type="primary", use_container_width=True):
             with st.spinner(f"🔮 {t('generator.generating', lang)}"):
@@ -982,12 +952,12 @@ elif page == t('nav.breeding', lang):
             with influence_col1:
                 force_no_gray = st.checkbox("Force no Gray", value=False, key="breed_no_gray")
                 force_no_leopard = st.checkbox("Force no Leopard", value=False, key="breed_no_leopard")
-                force_no_roan = st.checkbox("Force no Roan", value=False, key="breed_no_roan")
+                force_no_kit = st.checkbox("Force no KIT Patterns", value=False, key="breed_no_kit",
+                                          help="Excludes Roan, Tobiano, Sabino, Dominant White")
 
             with influence_col2:
-                force_no_tobiano = st.checkbox("Force no Tobiano", value=False, key="breed_no_tobiano")
                 force_no_frame = st.checkbox("Force no Frame", value=False, key="breed_no_frame")
-                force_no_dw = st.checkbox("Force no Dominant White", value=False, key="breed_no_dw")
+                force_no_splash = st.checkbox("Force no Splash", value=False, key="breed_no_splash")
 
             # Build forced exclusions
             forced_exclusions = set()
@@ -995,14 +965,12 @@ elif page == t('nav.breeding', lang):
                 forced_exclusions.add('gray')
             if force_no_leopard:
                 forced_exclusions.add('leopard')
-            if force_no_roan:
-                forced_exclusions.add('roan')
-            if force_no_tobiano:
-                forced_exclusions.add('tobiano')
+            if force_no_kit:
+                forced_exclusions.add('kit')
             if force_no_frame:
                 forced_exclusions.add('frame')
-            if force_no_dw:
-                forced_exclusions.add('dominant_white')
+            if force_no_splash:
+                forced_exclusions.add('splash')
 
             if forced_exclusions:
                 st.warning(f"⚠️ Forcing exclusion of: {', '.join(forced_exclusions)}")
@@ -1847,7 +1815,7 @@ elif page == t('nav.statistics', lang):
         st.caption("Shows percentage of horses carrying at least one copy of each pattern gene")
 
         # Calculate prevalence for pattern genes
-        pattern_genes = ['gray', 'dominant_white', 'roan', 'tobiano', 'frame', 'sabino',
+        pattern_genes = ['gray', 'kit', 'frame',
                         'splash', 'leopard', 'champagne']
         pattern_prevalence = {}
 
@@ -1864,16 +1832,10 @@ elif page == t('nav.statistics', lang):
 
                 if gene_name == 'gray':
                     has_dominant = 'G' in alleles
-                elif gene_name == 'dominant_white':
-                    has_dominant = 'W' in alleles or any('W' in a for a in alleles)
-                elif gene_name == 'roan':
-                    has_dominant = 'Rn' in alleles
-                elif gene_name == 'tobiano':
-                    has_dominant = 'TO' in alleles
+                elif gene_name == 'kit':
+                    has_dominant = any(a != 'n' for a in alleles)
                 elif gene_name == 'frame':
                     has_dominant = 'O' in alleles
-                elif gene_name == 'sabino':
-                    has_dominant = 'Sb1' in alleles
                 elif gene_name == 'splash':
                     has_dominant = 'Spl' in alleles or any('Spl' in a for a in alleles)
                 elif gene_name == 'leopard':
