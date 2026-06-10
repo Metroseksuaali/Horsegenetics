@@ -32,6 +32,7 @@ except ImportError:
     print("Error: FastAPI not installed. Install with: pip install fastapi uvicorn")
     sys.exit(1)
 
+from genetics import __version__
 from genetics.horse import Horse
 from genetics.gene_registry import get_default_registry
 from genetics.gene_interaction import PhenotypeCalculator
@@ -45,7 +46,7 @@ from genetics.breeding_stats import (
 app = FastAPI(
     title="Horse Genetics Simulator API",
     description="Scientifically accurate horse coat color genetics simulator for game integration",
-    version="Beta 2.1",
+    version=__version__,
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -200,7 +201,7 @@ async def root():
     """API root endpoint with welcome message."""
     return {
         "message": "Horse Genetics Simulator API",
-        "version": "Beta 2.1",
+        "version": __version__,
         "documentation": "/docs",
         "endpoints": {
             "POST /api/random": "Generate random horse",
@@ -219,7 +220,7 @@ async def health_check():
     """Health check endpoint for monitoring."""
     return {
         "status": "healthy",
-        "version": "Beta 2.1",
+        "version": __version__,
         "genes_loaded": len(registry.get_all_gene_names())
     }
 

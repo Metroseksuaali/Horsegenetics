@@ -9,6 +9,7 @@ Flaxen, Sooty, and Gray genes.
 This is the command-line interface using the new modular Horse API.
 """
 
+from genetics import __version__
 from genetics.horse import Horse
 from genetics.gene_registry import get_default_registry
 from genetics.gene_interaction import PhenotypeCalculator
@@ -326,7 +327,7 @@ def main():
     parser.add_argument(
         '--version', '-v',
         action='version',
-        version='Horse Genetics Simulator Beta 2.1'
+        version=f'Horse Genetics Simulator {__version__}'
     )
 
     args = parser.parse_args()

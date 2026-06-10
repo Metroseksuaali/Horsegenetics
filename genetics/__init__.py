@@ -2,11 +2,11 @@
 Horse Genetics Module
 
 This module provides comprehensive horse coat color genetics simulation
-with support for thousands of genetic combinations across 17 genes.
+with support for thousands of genetic combinations across 14 genes.
 
 Main components:
 - horse: Main Horse class with fluent API
-- gene_registry: Dynamic gene management (17 genes)
+- gene_registry: Dynamic gene management (14 genes)
 - gene_interaction: Phenotype calculation pipeline
 - breeding_stats: Breeding probability calculations
 """
@@ -21,4 +21,8 @@ __all__ = [
     'get_default_registry',
     'PhenotypeCalculator',
 ]
+
+# === Single source of truth for project metadata ===
 __version__ = 'Beta 2.1'
+__test_count__ = 142
+__phenotype_estimate__ = '100+'

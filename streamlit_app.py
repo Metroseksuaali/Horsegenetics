@@ -16,6 +16,7 @@ Or with Docker:
 
 import os
 import streamlit as st
+from genetics import __version__, __test_count__, __phenotype_estimate__
 from genetics.horse import Horse
 from genetics.breeding_stats import calculate_offspring_probabilities
 from genetics.gene_registry import get_default_registry
@@ -608,7 +609,7 @@ lang = st.session_state.lang
 # Sidebar
 with st.sidebar:
     st.markdown(f"# 🐴 {t('sidebar.title', lang)}")
-    st.markdown(f"### {t('sidebar.version', lang)}")
+    st.markdown(f"### {t('sidebar.version', lang, version=__version__)}")
     st.markdown("---")
 
     # Language selector
@@ -2010,7 +2011,7 @@ elif page == t('nav.statistics', lang):
 
 else:  # About
     st.markdown(f'<p class="main-header">📖 {t("about.title", lang)}</p>', unsafe_allow_html=True)
-    st.markdown(f'<p class="subtitle">{t("about.subtitle", lang)}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="subtitle">{t("about.subtitle", lang, version=__version__)}</p>', unsafe_allow_html=True)
 
     tab1, tab2, tab3 = st.tabs([t('about.tab_genetics', lang), t('about.tab_colors', lang), t('about.tab_tech', lang)])
 
@@ -2018,7 +2019,7 @@ else:  # About
         st.markdown(f"""
         ### 🔬 {t('about.genetics_title', lang)}
 
-        {t('about.genetics_description', lang)}
+        {t('about.genetics_description', lang, gene_count=len(get_default_registry().get_all_gene_names()))}
 
         1. {t('about.genetics_1', lang)}
         2. {t('about.genetics_2', lang)}
@@ -2042,7 +2043,7 @@ else:  # About
 
     with tab2:
         st.markdown(f"""
-        ### 🎨 {t('about.colors_title', lang)}
+        ### 🎨 {t('about.colors_title', lang, phenotype_count=__phenotype_estimate__)}
 
         {t('about.colors_base', lang)}
 
@@ -2072,7 +2073,7 @@ else:  # About
 
             - {t('about.performance_generation', lang)}
             - {t('about.performance_breeding', lang)}
-            - {t('about.performance_tests', lang)}
+            - {t('about.performance_tests', lang, test_count=__test_count__)}
             - {t('about.performance_memory', lang)}
             """)
 
@@ -2080,17 +2081,17 @@ else:  # About
 
     col_metric1, col_metric2, col_metric3 = st.columns(3)
     with col_metric1:
-        st.metric(t('about.total_genes', lang), "14")
+        st.metric(t('about.total_genes', lang), str(len(get_default_registry().get_all_gene_names())))
     with col_metric2:
-        st.metric(t('about.phenotypes', lang), "100+")
+        st.metric(t('about.phenotypes', lang), __phenotype_estimate__)
     with col_metric3:
-        st.metric(t('about.tests', lang), "142/142 ✅")
+        st.metric(t('about.tests', lang), f"{__test_count__}/{__test_count__} ✅")
 
 # Footer
 st.markdown("---")
 st.markdown(f"""
 <div style="text-align: center; color: #6c757d;">
-    <p>🐴 {t('footer.made_with', lang)}</p>
+    <p>🐴 {t('footer.made_with', lang, version=__version__)}</p>
     <p><a href="https://github.com/Metroseksuaali/Horsegenetics" target="_blank">{t('footer.github', lang)}</a></p>
 </div>
 """, unsafe_allow_html=True)
