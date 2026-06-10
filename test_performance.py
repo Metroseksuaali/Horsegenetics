@@ -139,7 +139,7 @@ class TestPerformance(unittest.TestCase):
         print("BENCHMARK: Genotype Validation")
         print("=" * 60)
 
-        genotype_str = "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g"
+        genotype_str = "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
 
         def validate():
             return self.registry.parse_genotype_string(genotype_str)
@@ -162,8 +162,8 @@ class TestPerformance(unittest.TestCase):
         print("BENCHMARK: Probability Calculation (Monte Carlo)")
         print("=" * 60)
 
-        parent1 = "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g"
-        parent2 = "E:e/e A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g"
+        parent1 = "E:E/e A:A/a Dil:N/Cr D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
+        parent2 = "E:e/e A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g KIT:n/n O:n/n Spl:n/n Lp:lp/lp PATN1:n/n"
 
         start_time = time.time()
         probabilities = calculate_offspring_probabilities(

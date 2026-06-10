@@ -32,8 +32,16 @@ class PhenotypeContext:
         """
         self.genotype = genotype
         self.registry = registry
-        self.base_color: str = ""  # 'chestnut', 'bay', or 'black'
+        self.base_color: str = ""  # 'chestnut', 'bay', 'seal_brown' or 'black'
         self.phenotype: str = ""  # Current phenotype name (built incrementally)
+
+        # Structured trait state, filled in by pipeline modifiers so later
+        # modifiers can reason about traits without parsing phenotype strings
+        self.cream_count: int = 0
+        self.pearl_count: int = 0
+        self.kit_has_tobiano: bool = False
+        self.kit_has_sabino: bool = False
+        self.kit_sabino_homozygous: bool = False
 
     def has_allele(self, gene_name: str, allele: str) -> bool:
         """Check if genotype has at least one copy of an allele."""
@@ -82,6 +90,58 @@ def determine_base_color(ctx: PhenotypeContext) -> None:
         ctx.phenotype = 'Black'
 
 
+# Color names per (base color, dilution state): (plain name, champagne name).
+# Single source of truth for the cream/pearl/champagne naming - replaces the
+# old chain of string-replacement maps that was fragile to partial matches.
+#
+# Dilution states:
+# - none:        N/N or N/Prl (single pearl has no visible effect)
+# - cream1:      N/Cr (single cream)
+# - cream2:      Cr/Cr (double cream)
+# - pearl2:      Prl/Prl (double pearl)
+# - cream_pearl: Cr/Prl (compound heterozygote, pseudo-double dilute)
+BASE_DILUTION_NAMES: Dict[Tuple[str, str], Tuple[str, str]] = {
+    ('chestnut', 'none'): ('Chestnut', 'Gold Champagne'),
+    ('bay', 'none'): ('Bay', 'Amber Champagne'),
+    ('seal_brown', 'none'): ('Seal Brown', 'Amber Champagne'),
+    ('black', 'none'): ('Black', 'Classic Champagne'),
+
+    ('chestnut', 'cream1'): ('Palomino', 'Gold Cream Champagne'),
+    ('bay', 'cream1'): ('Buckskin', 'Amber Cream Champagne'),
+    ('seal_brown', 'cream1'): ('Seal Buckskin', 'Amber Cream Champagne'),
+    ('black', 'cream1'): ('Smoky Black', 'Classic Cream Champagne'),
+
+    ('chestnut', 'cream2'): ('Cremello', 'Gold Cream Champagne'),
+    ('bay', 'cream2'): ('Perlino', 'Perlino Champagne'),
+    ('seal_brown', 'cream2'): ('Seal Perlino', 'Perlino Champagne'),
+    ('black', 'cream2'): ('Smoky Cream', 'Smoky Cream Champagne'),
+
+    ('chestnut', 'pearl2'): ('Apricot', 'Gold Pearl Champagne'),
+    ('bay', 'pearl2'): ('Pearl Bay', 'Amber Pearl Champagne'),
+    ('seal_brown', 'pearl2'): ('Seal Pearl', 'Amber Pearl Champagne'),
+    ('black', 'pearl2'): ('Smoky Pearl', 'Classic Pearl Champagne'),
+
+    ('chestnut', 'cream_pearl'): ('Palomino Pearl', 'Ivory Pearl Champagne'),
+    ('bay', 'cream_pearl'): ('Buckskin Pearl', 'Amber Pearl Champagne'),
+    ('seal_brown', 'cream_pearl'): ('Seal Buckskin Pearl', 'Amber Pearl Champagne'),
+    ('black', 'cream_pearl'): ('Smoky Black Pearl', 'Classic Pearl Champagne'),
+}
+
+
+def _dilution_state(cream_count: int, pearl_count: int) -> str:
+    """Map cream/pearl allele counts to a dilution state key."""
+    if cream_count == 2:
+        return 'cream2'
+    if pearl_count == 2:
+        return 'pearl2'
+    if cream_count == 1 and pearl_count == 1:
+        return 'cream_pearl'
+    if cream_count == 1:
+        return 'cream1'
+    # N/N or N/Prl - single pearl is carrier-only, no visible effect
+    return 'none'
+
+
 def apply_dilution(ctx: PhenotypeContext) -> None:
     """
     Apply dilution based on SLC45A2 genotype (Cream/Pearl gene).
@@ -96,53 +156,15 @@ def apply_dilution(ctx: PhenotypeContext) -> None:
 
     Note: Cream is incomplete dominant, Pearl is recessive.
 
-    Modifies ctx.phenotype
+    Stores cream/pearl counts on ctx and sets ctx.phenotype from
+    BASE_DILUTION_NAMES.
     """
-    cr_count = ctx.count_alleles('dilution', 'Cr')
-    prl_count = ctx.count_alleles('dilution', 'Prl')
-    base = ctx.base_color
+    ctx.cream_count = ctx.count_alleles('dilution', 'Cr')
+    ctx.pearl_count = ctx.count_alleles('dilution', 'Prl')
 
-    # Cr/Cr - Double cream dilution
-    if cr_count == 2:
-        dilution_map = {
-            'chestnut': 'Cremello',
-            'bay': 'Perlino',
-            'black': 'Smoky Cream',
-            'seal_brown': 'Seal Perlino',
-        }
-        ctx.phenotype = dilution_map[base]
-
-    # Prl/Prl - Double pearl dilution
-    elif prl_count == 2:
-        dilution_map = {
-            'chestnut': 'Apricot',
-            'bay': 'Pearl Bay',
-            'black': 'Smoky Pearl',
-            'seal_brown': 'Seal Pearl',
-        }
-        ctx.phenotype = dilution_map[base]
-
-    # Cr/Prl - Compound heterozygote (one cream + one pearl)
-    elif cr_count == 1 and prl_count == 1:
-        dilution_map = {
-            'chestnut': 'Palomino Pearl',
-            'bay': 'Buckskin Pearl',
-            'black': 'Smoky Black Pearl',
-            'seal_brown': 'Seal Buckskin Pearl',
-        }
-        ctx.phenotype = dilution_map[base]
-
-    # N/Cr - Single cream dilution
-    elif cr_count == 1:
-        dilution_map = {
-            'chestnut': 'Palomino',
-            'bay': 'Buckskin',
-            'black': 'Smoky Black',
-            'seal_brown': 'Seal Buckskin',
-        }
-        ctx.phenotype = dilution_map[base]
-
-    # N/Prl or N/N - No visible dilution (phenotype already set)
+    state = _dilution_state(ctx.cream_count, ctx.pearl_count)
+    plain_name, _ = BASE_DILUTION_NAMES[(ctx.base_color, state)]
+    ctx.phenotype = plain_name
 
 
 def apply_champagne(ctx: PhenotypeContext) -> None:
@@ -157,51 +179,14 @@ def apply_champagne(ctx: PhenotypeContext) -> None:
     - Amber Champagne = bay base
     - Classic Champagne = black base
 
-    Modifies ctx.phenotype
+    Sets ctx.phenotype to the champagne name from BASE_DILUTION_NAMES.
     """
     if not ctx.has_allele('champagne', 'Ch'):
         return
 
-    # Champagne mapping for different base colors and dilutions.
-    # Longer/more specific keys must appear before their substrings
-    # (e.g. 'Seal Buckskin Pearl' before 'Seal Buckskin' before 'Buckskin').
-    champagne_map = {
-        # Seal brown + compound dilutes (longest first)
-        'Seal Buckskin Pearl': 'Amber Pearl Champagne',
-        'Seal Perlino': 'Perlino Champagne',
-        'Seal Buckskin': 'Amber Cream Champagne',
-        'Seal Pearl': 'Amber Pearl Champagne',
-        'Seal Brown': 'Amber Champagne',
-        # Compound heterozygotes (one cream + one pearl)
-        'Smoky Black Pearl': 'Classic Pearl Champagne',
-        'Palomino Pearl': 'Ivory Pearl Champagne',
-        'Buckskin Pearl': 'Amber Pearl Champagne',
-        # Double cream dilutes
-        'Cremello': 'Gold Cream Champagne',
-        'Perlino': 'Perlino Champagne',
-        'Smoky Cream': 'Smoky Cream Champagne',
-        # Single cream
-        'Palomino': 'Gold Cream Champagne',
-        'Buckskin': 'Amber Cream Champagne',
-        'Smoky Black': 'Classic Cream Champagne',
-        # Double pearl
-        'Apricot': 'Gold Pearl Champagne',
-        'Pearl Bay': 'Amber Pearl Champagne',
-        'Smoky Pearl': 'Classic Pearl Champagne',
-        # Base colors
-        'Chestnut': 'Gold Champagne',
-        'Bay': 'Amber Champagne',
-        'Black': 'Classic Champagne',
-    }
-
-    # Check if phenotype contains any mapped colors
-    for base_color, champ_version in champagne_map.items():
-        if base_color in ctx.phenotype:
-            ctx.phenotype = ctx.phenotype.replace(base_color, champ_version)
-            return
-
-    # Fallback - add Champagne prefix
-    ctx.phenotype = f"Champagne {ctx.phenotype}"
+    state = _dilution_state(ctx.cream_count, ctx.pearl_count)
+    _, champagne_name = BASE_DILUTION_NAMES[(ctx.base_color, state)]
+    ctx.phenotype = champagne_name
 
 
 def apply_silver(ctx: PhenotypeContext) -> None:
@@ -226,48 +211,9 @@ def apply_silver(ctx: PhenotypeContext) -> None:
     if ctx.base_color == 'chestnut':
         return
 
-    # Silver mapping for black/bay-based colors.
-    # Sorted by key length (longest first) before iteration to prevent partial matches.
-    silver_map = {
-        # Double cream dilutes - Silver still applies
-        'Perlino': 'Silver Perlino',
-        'Smoky Cream': 'Silver Smoky Cream',
-        'Pseudo-Perlino': 'Silver Pseudo-Perlino',
-        'Pseudo-Smoky Cream': 'Silver Pseudo-Smoky Cream',
-        # Seal brown combinations
-        'Seal Buckskin Pearl': 'Silver Seal Buckskin Pearl',
-        'Seal Perlino': 'Silver Seal Perlino',
-        'Seal Buckskin': 'Silver Seal Buckskin',
-        'Seal Pearl': 'Silver Seal Pearl',
-        'Seal Brown': 'Silver Seal Brown',
-        # Compound heterozygotes (one cream + one pearl)
-        'Smoky Black Pearl': 'Silver Smoky Black Pearl',
-        'Buckskin Pearl': 'Silver Buckskin Pearl',
-        'Palomino Pearl': 'Silver Palomino Pearl',
-        # Standard colors
-        'Black': 'Silver Black',
-        'Bay': 'Silver Bay',
-        'Smoky Black': 'Silver Smoky Black',
-        'Buckskin': 'Silver Buckskin',
-        'Pearl Bay': 'Silver Pearl Bay',
-        'Smoky Pearl': 'Silver Smoky Pearl',
-        # Champagne colors with black/bay base
-        'Classic Champagne': 'Silver Classic Champagne',
-        'Amber Champagne': 'Silver Amber Champagne',
-        'Amber Cream Champagne': 'Silver Amber Cream Champagne',
-        'Classic Cream Champagne': 'Silver Classic Cream Champagne',
-    }
-
-    # Apply silver mapping - sort by length (longest first) to avoid partial matches
-    sorted_map = sorted(silver_map.items(), key=lambda x: len(x[0]), reverse=True)
-    for base_color, silver_version in sorted_map:
-        if base_color in ctx.phenotype:
-            ctx.phenotype = ctx.phenotype.replace(base_color, silver_version)
-            return
-
-    # Fallback for black/bay/seal brown containing phenotypes
-    if any(keyword in ctx.phenotype.lower() for keyword in ['bay', 'black', 'classic', 'amber', 'seal', 'brown']):
-        ctx.phenotype = f"Silver {ctx.phenotype}"
+    # All other bases carry black pigment; runs before dun/patterns so the
+    # phenotype is still a plain dilution/champagne name at this point
+    ctx.phenotype = f"Silver {ctx.phenotype}"
 
 
 def apply_dun(ctx: PhenotypeContext) -> None:
@@ -448,9 +394,9 @@ def apply_kit_gene(ctx: PhenotypeContext) -> None:
         ctx.phenotype = f"{ctx.phenotype} Roan"
 
     # Store KIT pattern info for apply_white_patterns to use
-    ctx._kit_has_tobiano = 'to' in kit_genotype
-    ctx._kit_has_sabino = 'sb1' in kit_genotype
-    ctx._kit_sabino_homozygous = (allele1 == 'sb1' and allele2 == 'sb1')
+    ctx.kit_has_tobiano = 'to' in kit_genotype
+    ctx.kit_has_sabino = 'sb1' in kit_genotype
+    ctx.kit_sabino_homozygous = (allele1 == 'sb1' and allele2 == 'sb1')
 
 
 def apply_white_patterns(ctx: PhenotypeContext) -> None:
@@ -474,9 +420,9 @@ def apply_white_patterns(ctx: PhenotypeContext) -> None:
         return
 
     # Get KIT pattern info (set by apply_kit_gene)
-    has_tobiano = getattr(ctx, '_kit_has_tobiano', False)
-    has_sabino = getattr(ctx, '_kit_has_sabino', False)
-    sabino_homozygous = getattr(ctx, '_kit_sabino_homozygous', False)
+    has_tobiano = ctx.kit_has_tobiano
+    has_sabino = ctx.kit_has_sabino
+    sabino_homozygous = ctx.kit_sabino_homozygous
 
     # Frame and Splash are on separate genes (EDNRB and MITF)
     has_frame = ctx.has_allele('frame', 'O')

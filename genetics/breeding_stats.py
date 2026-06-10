@@ -23,6 +23,13 @@ from genetics.gene_registry import get_default_registry
 from genetics.gene_interaction import PhenotypeCalculator
 import itertools
 
+# Exact enumeration grows as the product of per-gene genotype counts
+# (worst case 3-4 per gene -> millions of combinations with 14 genes).
+# Above this limit calculate_offspring_probabilities falls back to
+# Monte Carlo sampling automatically.
+MAX_EXACT_COMBINATIONS = 100_000
+AUTO_MONTE_CARLO_SAMPLES = 20_000
+
 
 def calculate_gene_probabilities(
     parent1_alleles: Tuple[str, str],
@@ -81,8 +88,9 @@ def calculate_all_genotype_combinations(
     """
     Calculate all possible offspring genotypes with their probabilities.
 
-    This can generate many combinations (up to 4^9 = 262,144 for 9 genes),
-    so we use a smart approach to combine probabilities.
+    This can generate millions of combinations when many genes are
+    heterozygous (up to 3-4 genotypes per gene, 14 genes), so callers
+    should check estimate_exact_combinations() first for large crosses.
 
     Args:
         parent1_genotype: Parent 1 complete genotype
@@ -134,17 +142,58 @@ def calculate_all_genotype_combinations(
     return all_combinations
 
 
+def estimate_exact_combinations(
+    parent1_genotype: Dict[str, Tuple[str, str]],
+    parent2_genotype: Dict[str, Tuple[str, str]],
+    registry=None
+) -> int:
+    """
+    Estimate how many genotype combinations exact enumeration would produce.
+
+    The count is the product of distinct offspring genotypes per gene
+    (1 for homozygous x homozygous crosses, up to 4 for fully
+    heterozygous crosses). Cheap to compute - no enumeration happens.
+
+    Args:
+        parent1_genotype: Parent 1 genotype dict
+        parent2_genotype: Parent 2 genotype dict
+        registry: Optional GeneRegistry instance
+
+    Returns:
+        int: Number of combinations exact calculation would enumerate
+    """
+    if registry is None:
+        registry = get_default_registry()
+
+    total = 1
+    for gene_name in registry.get_all_gene_names():
+        gene_def = registry.get_gene(gene_name)
+        gene_probs = calculate_gene_probabilities(
+            parent1_genotype[gene_name],
+            parent2_genotype[gene_name],
+            gene_def
+        )
+        total *= len(gene_probs)
+    return total
+
+
 def calculate_offspring_probabilities(
     parent1: str,
     parent2: str,
     sample_size: Optional[int] = None,
     registry=None,
-    calculator=None
+    calculator=None,
+    max_exact_combinations: int = MAX_EXACT_COMBINATIONS
 ) -> Dict[str, float]:
     """
     Calculate probability distribution of offspring phenotypes.
 
     This is the main function game developers will use!
+
+    Uses exact enumeration when the cross is small enough, and falls
+    back to Monte Carlo sampling (AUTO_MONTE_CARLO_SAMPLES draws)
+    automatically when exact enumeration would exceed
+    max_exact_combinations. Pass sample_size to force Monte Carlo.
 
     Args:
         parent1: Parent 1 genotype string
@@ -152,6 +201,8 @@ def calculate_offspring_probabilities(
         sample_size: If provided, use Monte Carlo sampling instead of exact calculation
         registry: Optional GeneRegistry instance
         calculator: Optional PhenotypeCalculator instance
+        max_exact_combinations: Threshold above which Monte Carlo is used
+            automatically (default MAX_EXACT_COMBINATIONS)
 
     Returns:
         dict: {phenotype: probability}
@@ -163,7 +214,7 @@ def calculate_offspring_probabilities(
         ...     "E:e/e A:A/a Dil:N/N D:nd2/nd2 Z:n/n Ch:n/n F:F/f STY:sty/sty G:g/g"
         ... )
         >>> print(f"Buckskin: {probs.get('Buckskin', 0):.1%}")
-        Buckskin: 25.0%
+        Buckskin: 18.8%
     """
     if registry is None:
         registry = get_default_registry()
@@ -173,6 +224,14 @@ def calculate_offspring_probabilities(
     # Parse parent genotypes
     parent1_genotype = registry.parse_genotype_string(parent1)
     parent2_genotype = registry.parse_genotype_string(parent2)
+
+    # Auto-switch to Monte Carlo when exact enumeration would be too large
+    if sample_size is None:
+        estimated = estimate_exact_combinations(
+            parent1_genotype, parent2_genotype, registry
+        )
+        if estimated > max_exact_combinations:
+            sample_size = AUTO_MONTE_CARLO_SAMPLES
 
     phenotype_probabilities = defaultdict(float)
 
